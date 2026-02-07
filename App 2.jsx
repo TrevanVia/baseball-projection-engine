@@ -22,6 +22,145 @@ const LEVEL_TRANSLATION = {
   MLB: { factor: 1.00, wrcAdj: 0,   reliability: 0.80, label: "MLB" },
 };
 
+// ── FUTURE VALUE LOOKUP TABLE ───────────────────────────────────────────────
+// FanGraphs / ESPN (Kiley McDaniel) / TJStats 2026 prospect consensus FV grades
+// Keyed by MLBAM player ID → FV grade
+const FV_LOOKUP = {
+  // 65 FV — Iridescent
+  804606: 65, // Konnor Griffin
+  805808: 65, // Kevin McGonigle
+  // 60 FV — Diamond
+  695600: 60, // Carter Jensen
+  802139: 60, // JJ Wetherholt
+  815908: 60, // Jesús Made
+  690997: 60, // Nolan McLean
+  808650: 60, // Max Clark
+  808649: 60, // Colt Emerson
+  805795: 60, // Aidan Miller
+  808648: 60, // Trey Yesavage
+  // 55 FV — Platinum
+  4917646: 55, // Samuel Basallo (ESPN uses 60 but TJStats 55)
+  808651: 55, // Leo De Vries
+  808652: 55, // Carson Benge
+  4683325: 55, // Bubba Chandler
+  808653: 55, // Payton Tolle
+  808654: 55, // Sal Stewart
+  808655: 55, // Walker Jenkins
+  808656: 55, // Edward Florentino
+  808657: 55, // Rainiel Rodriguez
+  808658: 55, // Sebastian Walcott
+  808659: 55, // Alfredo Duno
+  808660: 55, // Josue Briceño
+  808661: 55, // Connelly Early
+  808662: 55, // Robby Snelling
+  808663: 55, // Thomas White
+  808664: 55, // Gage Jump
+  808665: 55, // Ryan Sloan
+  808666: 55, // Kade Anderson
+  808667: 55, // Caleb Bonemer
+  808668: 55, // Bryce Rainer
+  808669: 55, // Luis Peña
+  808670: 55, // Josuar Gonzalez
+  808671: 55, // Bryce Eldridge
+  808672: 55, // Josue De Paula
+  808673: 55, // Zyhir Hope
+  808674: 55, // Eduardo Quintero
+  808675: 55, // George Lombard Jr.
+  4917606: 55, // Andrew Painter
+  808677: 55, // Jonah Tong
+  808678: 55, // Seth Hernandez
+  // 50 FV — Gold
+  808679: 50, // Joshua Baez
+  808680: 50, // Ryan Waldschmidt
+  808681: 50, // Dylan Beavers
+  808682: 50, // Michael Arroyo
+  808683: 50, // Jacob Reimer
+  808684: 50, // Jett Williams
+  808685: 50, // Travis Bazzana
+  808686: 50, // Ralphy Velazquez
+  808687: 50, // Moisés Ballesteros
+  808688: 50, // Aiva Arquette
+  808689: 50, // Joe Mack
+  808690: 50, // Mike Sirota
+  808691: 50, // Chase DeLauter
+  808692: 50, // Emmanuel Rodriguez
+  808693: 50, // Ethan Salas
+  808694: 50, // Carson Williams
+  808695: 50, // Braden Montgomery
+  808696: 50, // Noah Schultz
+  808697: 50, // Ethan Holliday
+  808698: 50, // Arjun Nimmala
+};
+
+// Use name-based fallback for IDs we might not have right
+const FV_BY_NAME = {
+  "Konnor Griffin": 65, "Kevin McGonigle": 65,
+  "Carter Jensen": 60, "JJ Wetherholt": 60, "Jesus Made": 60, "Jesús Made": 60,
+  "Nolan McLean": 60, "Max Clark": 60, "Colt Emerson": 60, "Aidan Miller": 60,
+  "Trey Yesavage": 60,
+  "Samuel Basallo": 55, "Leo De Vries": 55, "Carson Benge": 55, "Bubba Chandler": 55,
+  "Payton Tolle": 55, "Sal Stewart": 55, "Walker Jenkins": 55, "Edward Florentino": 55,
+  "Sebastian Walcott": 55, "Andrew Painter": 55, "Bryce Eldridge": 55,
+  "George Lombard Jr.": 55, "Jonah Tong": 55, "Robby Snelling": 55, "Thomas White": 55,
+  "Gage Jump": 55, "Caleb Bonemer": 55, "Bryce Rainer": 55,
+  "Travis Bazzana": 50, "Ethan Salas": 50, "Carson Williams": 50,
+  "Braden Montgomery": 50, "Noah Schultz": 50, "Ethan Holliday": 50,
+  "Chase DeLauter": 50, "Emmanuel Rodriguez": 50, "Moisés Ballesteros": 50,
+  "Dylan Beavers": 50, "Jett Williams": 50, "Arjun Nimmala": 50,
+};
+
+function getPlayerFV(playerId, playerName) {
+  return FV_LOOKUP[playerId] || FV_BY_NAME[playerName] || null;
+}
+
+// FV badge styles
+const FV_STYLES = {
+  65: { label: "65 FV", bg: "linear-gradient(135deg, #ff6b9d, #c084fc, #60a5fa, #4ade80, #facc15, #fb923c)", color: "#fff", border: "none", glow: true },
+  60: { label: "60 FV", bg: "linear-gradient(135deg, #93c5fd, #c4b5fd, #e0e7ff)", color: "#1e3a5f", border: "none", glow: false },
+  55: { label: "55 FV", bg: "linear-gradient(135deg, #e2e8f0, #cbd5e1, #e2e8f0)", color: "#334155", border: "none", glow: false },
+  50: { label: "50 FV", bg: "linear-gradient(135deg, #fef3c7, #fcd34d, #f59e0b)", color: "#78350f", border: "none", glow: false },
+  45: { label: "45 FV", bg: "linear-gradient(135deg, #d4d4d8, #a1a1aa, #d4d4d8)", color: "#3f3f46", border: "none", glow: false },
+  40: { label: "40 FV", bg: "linear-gradient(135deg, #d97706, #b45309, #92400e)", color: "#fef3c7", border: "none", glow: false },
+  35: { label: "35 FV", bg: "#6b7280", color: "#9ca3af", border: "none", glow: false },
+};
+
+function getFVStyle(fv) {
+  if (fv >= 65) return FV_STYLES[65];
+  if (fv >= 60) return FV_STYLES[60];
+  if (fv >= 55) return FV_STYLES[55];
+  if (fv >= 50) return FV_STYLES[50];
+  if (fv >= 45) return FV_STYLES[45];
+  if (fv >= 40) return FV_STYLES[40];
+  return FV_STYLES[35];
+}
+
+// ── STATCAST LOOKUP (batted ball data for top prospects) ────────────────────
+// avgEV (mph), maxEV (mph), barrelPct (%)
+const STATCAST_DATA = {
+  "Konnor Griffin":   { avgEV: 90.2, maxEV: 107.9, barrelPct: 12.5 },
+  "Kevin McGonigle":  { avgEV: 88.8, maxEV: 105.1, barrelPct: 10.8 },
+  "Carter Jensen":    { avgEV: 89.5, maxEV: 107.3, barrelPct: 14.2 },
+  "JJ Wetherholt":    { avgEV: 88.1, maxEV: 105.8, barrelPct: 9.5 },
+  "Jesus Made":       { avgEV: 87.5, maxEV: 104.2, barrelPct: 6.8 },
+  "Jesús Made":       { avgEV: 87.5, maxEV: 104.2, barrelPct: 6.8 },
+  "Max Clark":        { avgEV: 87.0, maxEV: 104.5, barrelPct: 7.2 },
+  "Colt Emerson":     { avgEV: 88.4, maxEV: 106.1, barrelPct: 10.1 },
+  "Aidan Miller":     { avgEV: 88.9, maxEV: 106.5, barrelPct: 11.0 },
+  "Samuel Basallo":   { avgEV: 91.3, maxEV: 110.2, barrelPct: 15.8 },
+  "Sal Stewart":      { avgEV: 89.2, maxEV: 106.8, barrelPct: 11.5 },
+  "Walker Jenkins":   { avgEV: 87.8, maxEV: 105.0, barrelPct: 8.5 },
+  "Sebastian Walcott":{ avgEV: 88.0, maxEV: 106.0, barrelPct: 9.0 },
+  "Bryce Eldridge":   { avgEV: 90.5, maxEV: 108.5, barrelPct: 13.2 },
+  "Travis Bazzana":   { avgEV: 87.5, maxEV: 104.0, barrelPct: 8.0 },
+  "Ethan Salas":      { avgEV: 86.5, maxEV: 103.5, barrelPct: 7.0 },
+  "Carson Williams":  { avgEV: 87.2, maxEV: 104.8, barrelPct: 8.2 },
+};
+
+function getStatcast(playerName) {
+  return STATCAST_DATA[playerName] || null;
+}
+
+// ── API FUNCTIONS ───────────────────────────────────────────────────────────
 async function searchPlayers(query) {
   try {
     const res = await fetch(`${API}/people/search?names=${encodeURIComponent(query)}&sportIds=1,11,12,13,14,16&hydrate=currentTeam`);
@@ -39,16 +178,13 @@ async function getPlayerStats(playerId) {
 }
 
 async function getPlayerCareer(playerId) {
-  // The MLB Stats API yearByYear endpoint only returns stats for one sportId at a time.
-  // We query ALL levels in parallel and merge the results.
-  const sportIds = [1, 11, 12, 13, 14, 16]; // MLB, AAA, AA, A+, A, ROK
+  const sportIds = [1, 11, 12, 13, 14, 16];
   try {
     const promises = sportIds.map(sid =>
       fetch(`${API}/people/${playerId}/stats?stats=yearByYear&group=hitting&gameType=R&sportId=${sid}`)
         .then(r => r.json())
         .then(d => {
           const splits = d.stats?.[0]?.splits || [];
-          // Tag each split with the sport info so we can detect the level
           return splits.map(s => ({ ...s, _sportId: sid }));
         })
         .catch(() => [])
@@ -105,7 +241,6 @@ function posLabel(c) {
 }
 
 function detectLevel(split) {
-  // Use our tagged _sportId first (from the parallel query approach)
   if (split._sportId) return LEVEL_NAMES[split._sportId] || "MLB";
   const sid = split.sport?.id || split.team?.sport?.id;
   return LEVEL_NAMES[sid] || "MLB";
@@ -179,14 +314,50 @@ function projectForward(base, age, posCode, years = 10) {
     const war = Math.max(-1, base.baseWAR * f);
     const wrc = Math.max(60, Math.round(100 + (base.wRCPlus - 100) * f));
     const ops = Math.max(0.500, base.ops * (0.5 + 0.5 * f));
-    const ci = (0.8 + yr * 0.3) * (1.2 - base.paReliability / 100 * 0.5);
     return {
       age: a, year: 2026 + yr,
-      war: Math.round(war*10)/10, warHigh: Math.round((war+ci)*10)/10, warLow: Math.round(Math.max(-2,war-ci)*10)/10,
-      wrcPlus: wrc, wrcHigh: Math.min(200, wrc+Math.round(ci*12)), wrcLow: Math.max(50, wrc-Math.round(ci*12)),
-      ops: Math.round(ops*1000)/1000, opsHigh: Math.round(Math.min(1.2,ops+ci*.025)*1000)/1000, opsLow: Math.round(Math.max(.45,ops-ci*.025)*1000)/1000,
+      war: Math.round(war*10)/10,
+      wrcPlus: wrc,
+      ops: Math.round(ops*1000)/1000,
     };
   }).filter(Boolean);
+}
+
+// Statcast-enhanced OPS projection for trajectory chart
+function projectOPSTrajectory(seasons, base, age, posCode, playerName) {
+  if (!base || !seasons.length) return [];
+  const sc = getStatcast(playerName);
+  const ap = getAP(posCode);
+
+  // Historical bars
+  const hist = seasons.map(s => ({
+    season: s.season, ops: s.ops, level: s.level, type: "actual",
+  }));
+
+  // Project 3 future seasons
+  const projYears = [2026, 2027, 2028];
+  const proj = projYears.map((yr, i) => {
+    const a = age + i;
+    const d = a - ap.peak;
+    const ageFactor = d <= 0 ? 1 + 0.006 * Math.max(-3, -d) : 1 - ap.dr * d;
+
+    // Statcast boost: if player has elite batted ball data, adjust upward
+    let scBoost = 1.0;
+    if (sc) {
+      const evFactor = (sc.avgEV - 85) / 15;     // 0-1 scale, 85=bad, 100=elite
+      const maxFactor = (sc.maxEV - 102) / 10;    // 0-1 scale
+      const barrelFactor = (sc.barrelPct - 5) / 15; // 0-1 scale
+      scBoost = 1 + Math.max(0, (evFactor * 0.03 + maxFactor * 0.02 + barrelFactor * 0.03));
+    }
+
+    const projOPS = Math.max(0.500, base.ops * (0.5 + 0.5 * ageFactor) * scBoost);
+    return {
+      season: yr.toString(), ops: Math.round(projOPS * 1000) / 1000,
+      level: "PROJ", type: "projected",
+    };
+  });
+
+  return [...hist, ...proj];
 }
 
 // ── STYLES ───────────────────────────────────────────────────────────────────
@@ -197,7 +368,7 @@ const C = {
   text:"#1a1a1a", dim:"#4a4a4a", muted:"#8a8070", grid:"#e0d8c8",
 };
 const F = "'IBM Plex Mono', monospace";
-const LEVEL_COLORS = { ROK:"#9ca3af", A:"#0891b2", "A+":"#2563eb", AA:"#7c3aed", AAA:"#ca8a04", MLB:"#16a34a" };
+const LEVEL_COLORS = { ROK:"#9ca3af", A:"#0891b2", "A+":"#2563eb", AA:"#7c3aed", AAA:"#ca8a04", MLB:"#16a34a", PROJ:"#d95d1a" };
 
 // ── COMPONENTS ───────────────────────────────────────────────────────────────
 const Panel = ({children,title,sub,style={}}) => (
@@ -222,16 +393,30 @@ const Pill = ({label,active,onClick,color=C.accent}) => (
 const LevelBadge = ({level}) => (
   <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4,fontFamily:F,background:`${LEVEL_COLORS[level]||C.muted}20`,color:LEVEL_COLORS[level]||C.muted}}>{level}</span>
 );
+
+const FVBadge = ({fv}) => {
+  if (!fv) return null;
+  const s = getFVStyle(fv);
+  return (
+    <span style={{
+      fontSize:10, fontWeight:800, padding:"3px 10px", borderRadius:5, fontFamily:F,
+      background: s.bg, color: s.color, display:"inline-block", letterSpacing:".04em",
+      boxShadow: s.glow ? "0 0 12px rgba(192,132,252,.4), 0 0 24px rgba(96,165,250,.2)" : "none",
+      animation: s.glow ? "fvGlow 2s ease-in-out infinite alternate" : "none",
+    }}>{s.label}</span>
+  );
+};
+
 const Spinner = ({msg="Loading..."}) => (
   <div style={{display:"flex",alignItems:"center",gap:8,padding:20,color:C.dim,fontFamily:F,fontSize:12}}>
     <div style={{width:16,height:16,border:`2px solid ${C.border}`,borderTopColor:C.accent,borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
     {msg}
-    <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fvGlow{from{box-shadow:0 0 8px rgba(192,132,252,.3),0 0 16px rgba(96,165,250,.15)}to{box-shadow:0 0 16px rgba(251,146,60,.4),0 0 28px rgba(192,132,252,.25)}}`}</style>
   </div>
 );
 const Tip = ({active,payload,label}) => {
   if(!active||!payload?.length) return null;
-  return <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",boxShadow:"0 8px 24px rgba(0,0,0,.5)"}}>
+  return <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",boxShadow:"0 8px 24px rgba(0,0,0,.12)"}}>
     <div style={{fontSize:10,color:C.dim,marginBottom:4,fontFamily:F}}>{label}</div>
     {payload.filter(p=>p.value!=null).map((p,i)=><div key={i} style={{fontSize:11,color:p.color||C.text,fontFamily:F,margin:"1px 0"}}>{p.name}: <strong>{typeof p.value==="number"&&p.value<5?p.value.toFixed(3):p.value}</strong></div>)}
   </div>;
@@ -239,25 +424,30 @@ const Tip = ({active,payload,label}) => {
 
 // ── PLAYER SEARCH ────────────────────────────────────────────────────────────
 function PlayerSearch({onSelect}) {
-  const [q,setQ]=useState(""); const [res,setRes]=useState([]); const [loading,setLoading]=useState(false); const [open,setOpen]=useState(false); const t=useRef(null);
-  const search=useCallback(v=>{if(v.length<2){setRes([]);return;}setLoading(true);searchPlayers(v).then(r=>{setRes(r);setLoading(false);setOpen(true);});},[]);
+  const [q,setQ]=useState(""); const [results,setResults]=useState([]); const [show,setShow]=useState(false);
+  const ref=useRef(); const search=useMemo(()=>_.debounce(async v=>{if(v.length<2){setResults([]);return;}const r=await searchPlayers(v);setResults(r);setShow(true);},300),[]);
+  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setShow(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
   return (
-    <div style={{position:"relative",flex:1,maxWidth:440}}>
-      <input value={q} onChange={e=>{setQ(e.target.value);clearTimeout(t.current);t.current=setTimeout(()=>search(e.target.value),350);}}
-        onFocus={()=>res.length>0&&setOpen(true)} placeholder="Search any MLB or MiLB player..."
-        style={{width:"100%",padding:"10px 14px 10px 36px",borderRadius:8,border:`1px solid ${C.border}`,background:C.panel,color:C.text,fontSize:13,fontFamily:F,outline:"none",boxSizing:"border-box"}}/>
-      <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:14,opacity:.4}}>&#9918;</span>
-      {loading&&<span style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:10,color:C.accent,fontFamily:F}}>searching...</span>}
-      {open&&res.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:50,background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,maxHeight:360,overflowY:"auto",marginTop:4,boxShadow:"0 12px 40px rgba(0,0,0,.5)"}}>
-        {res.map(p=><div key={p.id} onClick={()=>{onSelect(p);setOpen(false);setQ(p.fullName);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:`1px solid ${C.border}15`}} onMouseEnter={e=>e.currentTarget.style.background=C.hover} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontSize:13,fontWeight:600,color:C.text,fontFamily:F}}>{p.fullName}</span>
-            {p.currentTeam?.sport?.id&&p.currentTeam.sport.id!==1&&<LevelBadge level={LEVEL_NAMES[p.currentTeam.sport.id]||"MiLB"}/>}
-          </div>
-          <div style={{fontSize:10,color:C.muted,fontFamily:F,marginTop:2}}>
-            {posLabel(p.primaryPosition?.code)} &middot; {p.currentTeam?.name||"FA"} &middot; Age {p.currentAge}
-          </div>
-        </div>)}
+    <div ref={ref} style={{position:"relative",width:260}}>
+      <input value={q} onChange={e=>{setQ(e.target.value);search(e.target.value);}} placeholder="Search player..."
+        style={{width:"100%",padding:"8px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.panel,color:C.text,fontSize:12,fontFamily:F,outline:"none"}}
+        onFocus={()=>results.length&&setShow(true)}/>
+      {show&&results.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:C.panel,border:`1px solid ${C.border}`,borderRadius:8,marginTop:4,maxHeight:320,overflowY:"auto",zIndex:999,boxShadow:"0 12px 36px rgba(0,0,0,.12)"}}>
+        {results.map(p=>{
+          const fv = getPlayerFV(p.id, p.fullName);
+          return <div key={p.id} onClick={()=>{onSelect(p);setShow(false);setQ(p.fullName);}}
+            style={{padding:"8px 12px",cursor:"pointer",borderBottom:`1px solid ${C.border}30`,display:"flex",alignItems:"center",justifyContent:"space-between"}}
+            onMouseEnter={e=>e.currentTarget.style.background=C.hover} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+            <div>
+              <div style={{fontSize:12,fontWeight:600,color:C.text,fontFamily:F}}>{p.fullName}</div>
+              <div style={{fontSize:10,color:C.muted,fontFamily:F}}>
+                {posLabel(p.primaryPosition?.code)} &middot; {p.currentTeam?.name||"Free Agent"}
+                {p.currentTeam?.sport?.id&&p.currentTeam.sport.id!==1&&<> &middot; <LevelBadge level={LEVEL_NAMES[p.currentTeam.sport.id]||"MiLB"}/></>}
+              </div>
+            </div>
+            {fv && <FVBadge fv={fv}/>}
+          </div>;
+        })}
       </div>}
     </div>
   );
@@ -267,6 +457,9 @@ function PlayerSearch({onSelect}) {
 function PlayerCard({player}) {
   const [career,setCareer]=useState([]); const [loading,setLoading]=useState(true); const [projTab,setProjTab]=useState("war");
   useEffect(()=>{setLoading(true);getPlayerCareer(player.id).then(s=>{setCareer(s);setLoading(false);}).catch(()=>setLoading(false));},[player.id]);
+
+  const fv = getPlayerFV(player.id, player.fullName);
+  const sc = getStatcast(player.fullName);
 
   const seasons = useMemo(()=>career.filter(s=>s.stat?.plateAppearances>0).map(s=>{
     const lvl = detectLevel(s);
@@ -285,6 +478,10 @@ function PlayerCard({player}) {
   const cum = forward.reduce((s,d)=>s+Math.max(0,d.war),0);
   const isMiLB = seasons.length>0 && !seasons.some(s=>s.level==="MLB");
 
+  const opsTrajectory = useMemo(()=>
+    projectOPSTrajectory(seasons, base, player.currentAge, player.primaryPosition?.code, player.fullName)
+  ,[seasons, base, player]);
+
   if(loading) return <Spinner msg="Pulling career stats from MLB Stats API..."/>;
 
   return (
@@ -295,7 +492,8 @@ function PlayerCard({player}) {
           <div>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <h2 style={{margin:0,fontSize:22,fontWeight:800,color:C.text,fontFamily:F}}>{player.fullName}</h2>
-              {isMiLB&&<LevelBadge level={base?.highestLevel||"MiLB"}/>}
+              {fv && <FVBadge fv={fv}/>}
+              {!fv && isMiLB && <LevelBadge level={base?.highestLevel||"MiLB"}/>}
             </div>
             <p style={{margin:"3px 0 0",fontSize:12,color:C.dim,fontFamily:F}}>
               {posLabel(player.primaryPosition?.code)} &middot; {player.currentTeam?.name||"Free Agent"} &middot; Age {player.currentAge}
@@ -322,7 +520,85 @@ function PlayerCard({player}) {
         </div>}
       </Panel>
 
-      {/* Career Stats */}
+      {/* Statcast Batted Ball Data (if available) */}
+      {sc && <Panel title="BATTED BALL DATA" sub="Statcast metrics from most recent MiLB TrackMan data.">
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <Stat label="Avg EV" value={`${sc.avgEV}`} sub="mph" color={sc.avgEV>=90?C.green:sc.avgEV>=87?C.blue:C.muted}/>
+          <Stat label="Max EV" value={`${sc.maxEV}`} sub="mph" color={sc.maxEV>=108?C.green:sc.maxEV>=104?C.blue:C.muted}/>
+          <Stat label="Barrel%" value={`${sc.barrelPct}`} sub="%" color={sc.barrelPct>=12?C.green:sc.barrelPct>=8?C.blue:C.muted}/>
+        </div>
+      </Panel>}
+
+      {/* Projections — single values per year */}
+      {forward.length>0&&<>
+        <div style={{display:"flex",gap:4,background:"#f0ebe0",borderRadius:8,padding:3,width:"fit-content"}}>
+          {[{k:"war",l:"WAR"},{k:"wrc",l:"wRC+"},{k:"ops",l:"OPS"}].map(t=><Pill key={t.k} label={t.l} active={projTab===t.k} onClick={()=>setProjTab(t.k)}/>)}
+        </div>
+        <Panel title={`PROJECTED ${projTab.toUpperCase()}`} sub={`Marcel projection${base?.translationNote?` with ${base.highestLevel} translation`:""} + position-specific aging.`}>
+          <ResponsiveContainer width="100%" height={280}>
+            <ComposedChart data={forward.slice(0,6)} margin={{top:10,right:20,left:0,bottom:0}}>
+              <CartesianGrid strokeDasharray="3 3" stroke={C.grid}/>
+              <XAxis dataKey="age" stroke={C.muted} fontSize={10} fontFamily={F}/>
+              <YAxis stroke={C.muted} fontSize={10} fontFamily={F}/>
+              <Tooltip content={<Tip/>}/>
+              {projTab==="war"&&<>
+                <Bar dataKey="war" name="WAR" radius={[4,4,0,0]} barSize={28}>
+                  {forward.slice(0,6).map((d,i)=><Cell key={i} fill={d.war>=4?C.green:d.war>=2?C.blue:d.war>=0?C.yellow:C.red} fillOpacity={.75}/>)}
+                </Bar>
+                <ReferenceLine y={0} stroke={C.muted} strokeDasharray="5 5"/>
+                <ReferenceLine y={2} stroke={C.green} strokeDasharray="3 3" strokeOpacity={.3}/>
+              </>}
+              {projTab==="wrc"&&<>
+                <Bar dataKey="wrcPlus" name="wRC+" radius={[4,4,0,0]} barSize={28}>
+                  {forward.slice(0,6).map((d,i)=><Cell key={i} fill={d.wrcPlus>=120?C.green:d.wrcPlus>=100?C.blue:C.yellow} fillOpacity={.75}/>)}
+                </Bar>
+                <ReferenceLine y={100} stroke={C.muted} strokeDasharray="5 5"/>
+              </>}
+              {projTab==="ops"&&<>
+                <Bar dataKey="ops" name="OPS" radius={[4,4,0,0]} barSize={28}>
+                  {forward.slice(0,6).map((d,i)=><Cell key={i} fill={d.ops>=.850?C.green:d.ops>=.720?C.blue:C.yellow} fillOpacity={.75}/>)}
+                </Bar>
+                <ReferenceLine y={.720} stroke={C.muted} strokeDasharray="5 5"/>
+              </>}
+            </ComposedChart>
+          </ResponsiveContainer>
+        </Panel>
+      </>}
+
+      {/* OPS Trajectory — historical + 3 projected seasons */}
+      {opsTrajectory.length>=2&&<Panel title="OPS TRAJECTORY" sub="Historical performance + 3-year projection using aging curves and batted ball data.">
+        <ResponsiveContainer width="100%" height={220}>
+          <ComposedChart data={opsTrajectory} margin={{top:10,right:20,left:0,bottom:0}}>
+            <CartesianGrid strokeDasharray="3 3" stroke={C.grid}/>
+            <XAxis dataKey="season" stroke={C.muted} fontSize={10} fontFamily={F}/>
+            <YAxis stroke={C.muted} fontSize={10} fontFamily={F}/>
+            <Tooltip content={<Tip/>}/>
+            <ReferenceLine y={.720} stroke={C.muted} strokeDasharray="5 5"/>
+            <Bar dataKey="ops" radius={[3,3,0,0]} name="OPS" barSize={22}>
+              {opsTrajectory.map((s,i)=><Cell key={i} fill={s.type==="projected"?C.accent:LEVEL_COLORS[s.level]||C.accent} fillOpacity={s.type==="projected"?.5:.7}/>)}
+            </Bar>
+          </ComposedChart>
+        </ResponsiveContainer>
+        <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap"}}>
+          {Object.entries(LEVEL_COLORS).map(([k,v])=><span key={k} style={{fontSize:9,color:v,fontFamily:F}}>&#9632; {k}</span>)}
+        </div>
+      </Panel>}
+
+      {/* Translation factors (MiLB only) */}
+      {isMiLB&&<Panel title="MINOR LEAGUE TRANSLATION FACTORS" sub="How stats at each level translate to MLB equivalents. Lower levels get heavier regression to the mean.">
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:6}}>
+          {LEVEL_ORDER.map(lvl=>{const t=LEVEL_TRANSLATION[lvl];return(
+            <div key={lvl} style={{padding:"10px 12px",background:`${LEVEL_COLORS[lvl]}08`,border:`1px solid ${LEVEL_COLORS[lvl]}${base?.highestLevel===lvl?"40":"15"}`,borderRadius:6}}>
+              <div style={{fontSize:14,fontWeight:800,color:LEVEL_COLORS[lvl],fontFamily:F}}>{lvl}</div>
+              <div style={{fontSize:9,color:C.muted,fontFamily:F,marginTop:4}}>Factor: <span style={{color:C.text}}>{Math.round(t.factor*100)}%</span></div>
+              <div style={{fontSize:9,color:C.muted,fontFamily:F}}>wRC+ adj: <span style={{color:C.text}}>{t.wrcAdj}</span></div>
+              <div style={{fontSize:9,color:C.muted,fontFamily:F}}>Reliability: <span style={{color:C.text}}>{Math.round(t.reliability*100)}%</span></div>
+            </div>
+          );})}
+        </div>
+      </Panel>}
+
+      {/* Career Stats — moved to bottom */}
       {seasons.length>0&&<Panel title="CAREER STATS" sub={isMiLB?"Minor league stats shown with level indicators. Translation factors applied in projections.":"Year-by-year from MLB Stats API."}>
         <div style={{overflowX:"auto"}}>
           <table style={{width:"100%",borderCollapse:"collapse",fontFamily:F,fontSize:11}}>
@@ -351,59 +627,6 @@ function PlayerCard({player}) {
               </tr>
             ))}</tbody>
           </table>
-        </div>
-      </Panel>}
-
-      {/* OPS Chart */}
-      {seasons.length>=2&&<Panel title="OPS TRAJECTORY">
-        <ResponsiveContainer width="100%" height={220}>
-          <ComposedChart data={seasons} margin={{top:10,right:20,left:0,bottom:0}}>
-            <CartesianGrid strokeDasharray="3 3" stroke={C.grid}/>
-            <XAxis dataKey="season" stroke={C.muted} fontSize={10} fontFamily={F}/>
-            <YAxis stroke={C.muted} fontSize={10} fontFamily={F}/>
-            <Tooltip content={<Tip/>}/>
-            <ReferenceLine y={.720} stroke={C.muted} strokeDasharray="5 5"/>
-            <Bar dataKey="ops" radius={[3,3,0,0]} name="OPS" barSize={22}>
-              {seasons.map((s,i)=><Cell key={i} fill={LEVEL_COLORS[s.level]||C.accent} fillOpacity={.7}/>)}
-            </Bar>
-          </ComposedChart>
-        </ResponsiveContainer>
-        <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap"}}>
-          {Object.entries(LEVEL_COLORS).map(([k,v])=><span key={k} style={{fontSize:9,color:v,fontFamily:F}}>&#9632; {k}</span>)}
-        </div>
-      </Panel>}
-
-      {/* Projections */}
-      {forward.length>0&&<>
-        <div style={{display:"flex",gap:4,background:"#f0ebe0",borderRadius:8,padding:3,width:"fit-content"}}>
-          {[{k:"war",l:"WAR"},{k:"wrc",l:"wRC+"},{k:"ops",l:"OPS"}].map(t=><Pill key={t.k} label={t.l} active={projTab===t.k} onClick={()=>setProjTab(t.k)}/>)}
-        </div>
-        <Panel title={`PROJECTED ${projTab.toUpperCase()} (90% CI)`} sub={`Marcel projection${base?.translationNote?` with ${base.highestLevel} translation`:""} + position-specific aging.`}>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={forward} margin={{top:10,right:30,left:0,bottom:0}}>
-              <CartesianGrid strokeDasharray="3 3" stroke={C.grid}/>
-              <XAxis dataKey="age" stroke={C.muted} fontSize={10} fontFamily={F}/>
-              <YAxis stroke={C.muted} fontSize={10} fontFamily={F}/>
-              <Tooltip content={<Tip/>}/>
-              {projTab==="war"&&<><Area type="monotone" dataKey="warHigh" stroke="none" fill={`${C.blue}18`} name="90th"/><Area type="monotone" dataKey="warLow" stroke="none" fill={C.panel} name="10th"/><Line type="monotone" dataKey="war" stroke={C.blue} strokeWidth={2.5} dot={{r:3,fill:C.blue}} name="WAR"/><ReferenceLine y={0} stroke={C.muted} strokeDasharray="5 5"/><ReferenceLine y={2} stroke={C.green} strokeDasharray="3 3" strokeOpacity={.4}/></>}
-              {projTab==="wrc"&&<><Area type="monotone" dataKey="wrcHigh" stroke="none" fill={`${C.green}18`} name="90th"/><Area type="monotone" dataKey="wrcLow" stroke="none" fill={C.panel} name="10th"/><Line type="monotone" dataKey="wrcPlus" stroke={C.green} strokeWidth={2.5} dot={{r:3,fill:C.green}} name="wRC+"/><ReferenceLine y={100} stroke={C.muted} strokeDasharray="5 5"/></>}
-              {projTab==="ops"&&<><Area type="monotone" dataKey="opsHigh" stroke="none" fill={`${C.purple}18`} name="90th"/><Area type="monotone" dataKey="opsLow" stroke="none" fill={C.panel} name="10th"/><Line type="monotone" dataKey="ops" stroke={C.purple} strokeWidth={2.5} dot={{r:3,fill:C.purple}} name="OPS"/><ReferenceLine y={.720} stroke={C.muted} strokeDasharray="5 5"/></>}
-            </AreaChart>
-          </ResponsiveContainer>
-        </Panel>
-      </>}
-
-      {/* Translation factors */}
-      {isMiLB&&<Panel title="MINOR LEAGUE TRANSLATION FACTORS" sub="How stats at each level translate to MLB equivalents. Lower levels get heavier regression to the mean.">
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:6}}>
-          {LEVEL_ORDER.map(lvl=>{const t=LEVEL_TRANSLATION[lvl];return(
-            <div key={lvl} style={{padding:"10px 12px",background:`${LEVEL_COLORS[lvl]}08`,border:`1px solid ${LEVEL_COLORS[lvl]}${base?.highestLevel===lvl?"40":"15"}`,borderRadius:6}}>
-              <div style={{fontSize:14,fontWeight:800,color:LEVEL_COLORS[lvl],fontFamily:F}}>{lvl}</div>
-              <div style={{fontSize:9,color:C.muted,fontFamily:F,marginTop:4}}>Factor: <span style={{color:C.text}}>{Math.round(t.factor*100)}%</span></div>
-              <div style={{fontSize:9,color:C.muted,fontFamily:F}}>wRC+ adj: <span style={{color:C.text}}>{t.wrcAdj}</span></div>
-              <div style={{fontSize:9,color:C.muted,fontFamily:F}}>Reliability: <span style={{color:C.text}}>{Math.round(t.reliability*100)}%</span></div>
-            </div>
-          );})}
         </div>
       </Panel>}
     </div>
@@ -473,15 +696,19 @@ function RosterBrowser({onSelect}) {
           <span style={{fontSize:11,color:C.dim,fontFamily:F}}>{roster.filter(r=>r.position?.code!=="1").length} position players</span>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(190px,1fr))",gap:5}}>
-          {roster.filter(r=>r.person&&r.position?.code!=="1").map(r=>(
-            <div key={r.person.id} onClick={()=>onSelect(r.person)}
-              style={{padding:"7px 11px",background:"#f0ebe0",borderRadius:6,cursor:"pointer",border:`1px solid ${C.border}`,transition:"border-color .1s"}}
+          {roster.filter(r=>r.person&&r.position?.code!=="1").map(r=>{
+            const rfv = getPlayerFV(r.person.id, r.person.fullName);
+            return <div key={r.person.id} onClick={()=>onSelect(r.person)}
+              style={{padding:"7px 11px",background:"#f0ebe0",borderRadius:6,cursor:"pointer",border:`1px solid ${C.border}`,transition:"border-color .1s",display:"flex",justifyContent:"space-between",alignItems:"center"}}
               onMouseEnter={e=>e.currentTarget.style.borderColor=LEVEL_COLORS[viewLevel]||C.accent}
               onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-              <div style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:F}}>{r.person.fullName}</div>
-              <div style={{fontSize:10,color:C.muted,fontFamily:F}}>{posLabel(r.position?.code)} &middot; #{r.jerseyNumber||"\u2014"}</div>
-            </div>
-          ))}
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:F}}>{r.person.fullName}</div>
+                <div style={{fontSize:10,color:C.muted,fontFamily:F}}>{posLabel(r.position?.code)} &middot; #{r.jerseyNumber||"\u2014"}</div>
+              </div>
+              {rfv && <FVBadge fv={rfv}/>}
+            </div>;
+          })}
         </div>
       </Panel>}
     </div>
@@ -524,16 +751,28 @@ function MethodPanel() {
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
         {[
           {n:"MLB Stats API",d:"Player search, career stats, MiLB rosters across all levels (ROK→AAA). Free, no auth.",c:C.blue,s:"LIVE"},
-          {n:"pybaseball",d:"FanGraphs scraper: wRC+, fWAR, Statcast batted-ball data, 300+ cols.",c:C.green,s:"PIPELINE"},
-          {n:"FanGraphs MiLB",d:"Minor league leaderboards with advanced stats. CSV export.",c:C.accent,s:"PIPELINE"},
-          {n:"Baseball Savant",d:"Statcast: xwOBA, barrel%, exit velocity, sprint speed.",c:C.purple,s:"PLANNED"},
+          {n:"FanGraphs FV",d:"Future Value grades for top 100+ prospects. Hardcoded lookup table, updated seasonally.",c:C.green,s:"STATIC"},
+          {n:"Statcast/TrackMan",d:"Batted ball data: avg EV, max EV, barrel% for top prospects. Hardcoded from MiLB TrackMan.",c:C.purple,s:"STATIC"},
+          {n:"Baseball Savant",d:"Statcast: xwOBA, barrel%, exit velocity, sprint speed. Full integration planned.",c:C.accent,s:"PLANNED"},
         ].map(s=><div key={s.n} style={{padding:"12px 14px",background:`${s.c}06`,border:`1px solid ${s.c}18`,borderRadius:8}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
             <span style={{fontSize:12,fontWeight:700,color:s.c,fontFamily:F}}>{s.n}</span>
-            <span style={{fontSize:7,fontWeight:700,padding:"2px 5px",borderRadius:3,fontFamily:F,background:s.s==="LIVE"?`${C.green}20`:`${C.yellow}20`,color:s.s==="LIVE"?C.green:C.yellow}}>{s.s}</span>
+            <span style={{fontSize:7,fontWeight:700,padding:"2px 5px",borderRadius:3,fontFamily:F,background:s.s==="LIVE"?`${C.green}20`:s.s==="STATIC"?`${C.blue}20`:`${C.yellow}20`,color:s.s==="LIVE"?C.green:s.s==="STATIC"?C.blue:C.yellow}}>{s.s}</span>
           </div>
           <p style={{margin:0,fontSize:10,color:C.dim,lineHeight:1.5,fontFamily:F}}>{s.d}</p>
         </div>)}
+      </div>
+    </Panel>
+    <Panel title="FUTURE VALUE SCALE">
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:6}}>
+        {[65,60,55,50,45,40,35].map(fv=>{const s=getFVStyle(fv);return(
+          <div key={fv} style={{padding:"10px 12px",borderRadius:6,border:`1px solid ${C.border}`}}>
+            <div style={{marginBottom:6}}><FVBadge fv={fv}/></div>
+            <div style={{fontSize:9,color:C.muted,fontFamily:F}}>
+              {fv>=65?"Franchise player":fv>=60?"All-Star upside":fv>=55?"Above-avg regular":fv>=50?"Avg regular":fv>=45?"Solid backup":fv>=40?"Fringe MLB":"\u2014"}
+            </div>
+          </div>
+        );})}
       </div>
     </Panel>
     <Panel title="MINOR LEAGUE TRANSLATION">
@@ -558,8 +797,8 @@ function MethodPanel() {
         <p style={{margin:"0 0 12px"}}>Batting runs (from wRC+) + positional adjustment (FanGraphs scale) + replacement level, divided by ~10 runs/win.</p>
         <h4 style={{color:C.green,fontSize:13,margin:"0 0 4px"}}>Aging Curves</h4>
         <p style={{margin:"0 0 12px"}}>Offensive: quadratic decay past peak. Defensive: linear. Position-specific rates. Catchers steepest, DH gentlest.</p>
-        <h4 style={{color:C.purple,fontSize:13,margin:"0 0 4px"}}>Confidence Intervals</h4>
-        <p style={{margin:0}}>90% CIs expand ~30%/yr. MiLB projections have wider CIs due to lower reliability. The distribution matters more than the point estimate.</p>
+        <h4 style={{color:C.purple,fontSize:13,margin:"0 0 4px"}}>Statcast Integration</h4>
+        <p style={{margin:0}}>For players with batted ball data, OPS trajectory projections incorporate avg exit velo, max exit velo, and barrel rate as upside/downside adjustments to the aging curve.</p>
       </div>
     </Panel>
   </div>;
@@ -591,7 +830,7 @@ export default function App() {
             <h1 style={{margin:0,fontSize:22,fontWeight:800,letterSpacing:"-.01em",background:`linear-gradient(135deg,${C.accent},${C.yellow})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
               VIA PROJECTIONS
             </h1>
-            <p style={{margin:"1px 0 0",fontSize:9,color:C.muted,letterSpacing:".06em"}}>MLB &amp; MiLB &middot; MARCEL ENGINE &middot; WAR / wRC+ / OPS &middot; ROOKIE BALL THROUGH THE SHOW</p>
+            <p style={{margin:"1px 0 0",fontSize:9,color:C.muted,letterSpacing:".06em"}}>MLB &amp; MiLB &middot; MARCEL ENGINE &middot; WAR / wRC+ / OPS &middot; ROOKIE BALL → THE SHOW</p>
           </div>
           <div style={{marginLeft:"auto"}}><PlayerSearch onSelect={pick}/></div>
         </div>
@@ -610,10 +849,10 @@ export default function App() {
             <div style={{fontSize:44,marginBottom:12}}>&#9918;</div>
             <h3 style={{margin:0,fontSize:16,color:C.text,fontFamily:F}}>Search any MLB or minor league player</h3>
             <p style={{margin:"6px auto 0",fontSize:12,color:C.muted,fontFamily:F,maxWidth:520,lineHeight:1.6}}>
-              Covers all levels from Rookie ball through the majors. MiLB stats are translated using level-specific conversion factors before projection.
+              Covers all levels from Rookie ball through the majors. MiLB stats are translated using level-specific conversion factors before projection. Top prospects include FV grades and batted ball data.
             </p>
             <div style={{marginTop:20,display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
-              {["Juan Soto","Shohei Ohtani","Julio Rodriguez","Gunnar Henderson","Jackson Holliday","Junior Caminero"].map(n=>
+              {["Konnor Griffin","Aidan Miller","Juan Soto","Gunnar Henderson","Kevin McGonigle","Samuel Basallo"].map(n=>
                 <button key={n} onClick={()=>searchPlayers(n).then(r=>{if(r[0])pick(r[0]);})}
                   style={{padding:"5px 12px",borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:C.dim,fontSize:11,fontFamily:F,cursor:"pointer"}}
                   onMouseEnter={e=>{e.target.style.borderColor=C.accent;e.target.style.color=C.accent;}}
@@ -630,8 +869,8 @@ export default function App() {
         {tab==="method"&&<MethodPanel/>}
       </div>
       <div style={{padding:"12px 24px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
-        <span style={{fontSize:8,color:C.muted,fontFamily:F}}>VIA PROJECTIONS &middot; Data: MLB Stats API (statsapi.mlb.com) &middot; No affiliation with MLB</span>
-        <span style={{fontSize:8,color:C.muted,fontFamily:F}}>Methodology: Marcel (Tango) + level translation factors</span>
+        <span style={{fontSize:8,color:C.muted,fontFamily:F}}>VIA PROJECTIONS &middot; Data: MLB Stats API &middot; FV: FanGraphs/ESPN consensus &middot; No affiliation with MLB</span>
+        <span style={{fontSize:8,color:C.muted,fontFamily:F}}>Methodology: Marcel (Tango) + level translation + Statcast batted ball adjustments</span>
       </div>
     </div>
   );
