@@ -191,13 +191,13 @@ function projectForward(base, age, posCode, years = 10) {
 
 // ── STYLES ───────────────────────────────────────────────────────────────────
 const C = {
-  bg:"#0f1729", panel:"#1a2440", border:"#2a3a5c", hover:"#223050",
-  accent:"#fb923c", blue:"#60a5fa", green:"#4ade80", red:"#f87171",
-  yellow:"#facc15", purple:"#c084fc", cyan:"#22d3ee", pink:"#f472b6",
-  text:"#f8fafc", dim:"#cbd5e1", muted:"#7590b8", grid:"#2a3a5c",
+  bg:"#f5f0e8", panel:"#ffffff", border:"#e0d8c8", hover:"#f0ebe0",
+  accent:"#d95d1a", blue:"#2563eb", green:"#16a34a", red:"#dc2626",
+  yellow:"#ca8a04", purple:"#7c3aed", cyan:"#0891b2", pink:"#db2777",
+  text:"#1a1a1a", dim:"#4a4a4a", muted:"#8a8070", grid:"#e0d8c8",
 };
 const F = "'IBM Plex Mono', monospace";
-const LEVEL_COLORS = { ROK:"#b0b8c8", A:"#22d3ee", "A+":"#60a5fa", AA:"#c084fc", AAA:"#facc15", MLB:"#4ade80" };
+const LEVEL_COLORS = { ROK:"#9ca3af", A:"#0891b2", "A+":"#2563eb", AA:"#7c3aed", AAA:"#ca8a04", MLB:"#16a34a" };
 
 // ── COMPONENTS ───────────────────────────────────────────────────────────────
 const Panel = ({children,title,sub,style={}}) => (
@@ -217,7 +217,7 @@ const Stat = ({label,value,color=C.accent,sub}) => (
   </div>
 );
 const Pill = ({label,active,onClick,color=C.accent}) => (
-  <button onClick={onClick} style={{padding:"5px 14px",border:"none",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:active?700:500,fontFamily:F,background:active?color:"#152238",color:active?"#fff":C.muted}}>{label}</button>
+  <button onClick={onClick} style={{padding:"5px 14px",border:"none",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:active?700:500,fontFamily:F,background:active?color:"#f0ebe0",color:active?"#fff":C.muted}}>{label}</button>
 );
 const LevelBadge = ({level}) => (
   <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4,fontFamily:F,background:`${LEVEL_COLORS[level]||C.muted}20`,color:LEVEL_COLORS[level]||C.muted}}>{level}</span>
@@ -231,7 +231,7 @@ const Spinner = ({msg="Loading..."}) => (
 );
 const Tip = ({active,payload,label}) => {
   if(!active||!payload?.length) return null;
-  return <div style={{background:"#1e3050",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",boxShadow:"0 8px 24px rgba(0,0,0,.5)"}}>
+  return <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",boxShadow:"0 8px 24px rgba(0,0,0,.5)"}}>
     <div style={{fontSize:10,color:C.dim,marginBottom:4,fontFamily:F}}>{label}</div>
     {payload.filter(p=>p.value!=null).map((p,i)=><div key={i} style={{fontSize:11,color:p.color||C.text,fontFamily:F,margin:"1px 0"}}>{p.name}: <strong>{typeof p.value==="number"&&p.value<5?p.value.toFixed(3):p.value}</strong></div>)}
   </div>;
@@ -248,7 +248,7 @@ function PlayerSearch({onSelect}) {
         style={{width:"100%",padding:"10px 14px 10px 36px",borderRadius:8,border:`1px solid ${C.border}`,background:C.panel,color:C.text,fontSize:13,fontFamily:F,outline:"none",boxSizing:"border-box"}}/>
       <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:14,opacity:.4}}>&#9918;</span>
       {loading&&<span style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:10,color:C.accent,fontFamily:F}}>searching...</span>}
-      {open&&res.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:50,background:"#1e3050",border:`1px solid ${C.border}`,borderRadius:8,maxHeight:360,overflowY:"auto",marginTop:4,boxShadow:"0 12px 40px rgba(0,0,0,.5)"}}>
+      {open&&res.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:50,background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,maxHeight:360,overflowY:"auto",marginTop:4,boxShadow:"0 12px 40px rgba(0,0,0,.5)"}}>
         {res.map(p=><div key={p.id} onClick={()=>{onSelect(p);setOpen(false);setQ(p.fullName);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:`1px solid ${C.border}15`}} onMouseEnter={e=>e.currentTarget.style.background=C.hover} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:13,fontWeight:600,color:C.text,fontFamily:F}}>{p.fullName}</span>
@@ -332,7 +332,7 @@ function PlayerCard({player}) {
               )}
             </tr></thead>
             <tbody>{seasons.map((s,i)=>(
-              <tr key={i} style={{borderBottom:`1px solid ${C.border}20`,background:i%2===0?`${C.bg}80`:"transparent"}}>
+              <tr key={i} style={{borderBottom:`1px solid ${C.border}40`,background:i%2===0?"#f5f0e8":"transparent"}}>
                 <td style={{padding:"4px 7px",color:C.text,fontWeight:600}}>{s.season}</td>
                 <td style={{padding:"4px 7px",color:C.dim,textAlign:"right"}}>{s.age}</td>
                 <td style={{padding:"4px 7px",color:C.dim}}>{s.team}</td>
@@ -375,7 +375,7 @@ function PlayerCard({player}) {
 
       {/* Projections */}
       {forward.length>0&&<>
-        <div style={{display:"flex",gap:4,background:"#121e34",borderRadius:8,padding:3,width:"fit-content"}}>
+        <div style={{display:"flex",gap:4,background:"#f0ebe0",borderRadius:8,padding:3,width:"fit-content"}}>
           {[{k:"war",l:"WAR"},{k:"wrc",l:"wRC+"},{k:"ops",l:"OPS"}].map(t=><Pill key={t.k} label={t.l} active={projTab===t.k} onClick={()=>setProjTab(t.k)}/>)}
         </div>
         <Panel title={`PROJECTED ${projTab.toUpperCase()} (90% CI)`} sub={`Marcel projection${base?.translationNote?` with ${base.highestLevel} translation`:""} + position-specific aging.`}>
@@ -442,7 +442,7 @@ function RosterBrowser({onSelect}) {
         <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
           {teams.map(t=><button key={t.id} onClick={()=>pickTeam(t)} style={{
             padding:"4px 10px",fontSize:10,fontWeight:600,fontFamily:F,borderRadius:4,cursor:"pointer",border:"none",
-            background:selTeam?.id===t.id?C.accent:"#152238",color:selTeam?.id===t.id?"#000":C.muted,
+            background:selTeam?.id===t.id?C.accent:"#f0ebe0",color:selTeam?.id===t.id?"#000":C.muted,
           }}>{t.abbreviation}</button>)}
         </div>
       </Panel>
@@ -475,7 +475,7 @@ function RosterBrowser({onSelect}) {
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(190px,1fr))",gap:5}}>
           {roster.filter(r=>r.person&&r.position?.code!=="1").map(r=>(
             <div key={r.person.id} onClick={()=>onSelect(r.person)}
-              style={{padding:"7px 11px",background:"#121e34",borderRadius:6,cursor:"pointer",border:`1px solid ${C.border}`,transition:"border-color .1s"}}
+              style={{padding:"7px 11px",background:"#f0ebe0",borderRadius:6,cursor:"pointer",border:`1px solid ${C.border}`,transition:"border-color .1s"}}
               onMouseEnter={e=>e.currentTarget.style.borderColor=LEVEL_COLORS[viewLevel]||C.accent}
               onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
               <div style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:F}}>{r.person.fullName}</div>
