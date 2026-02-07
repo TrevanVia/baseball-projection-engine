@@ -820,17 +820,20 @@ export default function App() {
 
   const pick=useCallback(p=>{setSelPlayer(p);setLp(true);setTab("player");getPlayerStats(p.id).then(d=>{setDetail(d||p);setLp(false);});},[]);
 
+  const goHome = useCallback(()=>{setSelPlayer(null);setDetail(null);setLp(false);setTab("player");},[]);
+
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F}}>
-      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&family=Yellowtail&display=swap" rel="stylesheet"/>
       {/* Header */}
       <div style={{padding:"16px 24px 0",borderBottom:`1px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12,flexWrap:"wrap"}}>
-          <div>
-            <h1 style={{margin:0,fontSize:22,fontWeight:800,letterSpacing:"-.01em",background:`linear-gradient(135deg,${C.accent},${C.yellow})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
-              VIA PROJECTIONS
-            </h1>
-            <p style={{margin:"1px 0 0",fontSize:9,color:C.muted,letterSpacing:".06em"}}>MLB &amp; MiLB &middot; MARCEL ENGINE &middot; WAR / wRC+ / OPS &middot; ROOKIE BALL → THE SHOW</p>
+          <div onClick={goHome} style={{cursor:"pointer",userSelect:"none"}}>
+            <div style={{display:"flex",alignItems:"baseline",gap:4}}>
+              <span style={{fontFamily:"'Yellowtail', cursive",fontSize:36,fontWeight:400,color:C.accent,lineHeight:1,textShadow:`1px 1px 0 ${C.yellow}40, 2px 2px 0 ${C.accent}15`}}>VIAcast</span>
+            </div>
+            <p style={{margin:"0px 0 0 2px",fontSize:11,fontWeight:600,color:C.text,letterSpacing:".04em",fontFamily:F}}>Baseball Projection Engine</p>
+            <p style={{margin:"2px 0 0 2px",fontSize:9,color:C.muted,letterSpacing:".04em",fontFamily:F}}>Data-driven MLB &amp; MiLB forecasting</p>
           </div>
           <div style={{marginLeft:"auto"}}><PlayerSearch onSelect={pick}/></div>
         </div>
@@ -869,7 +872,7 @@ export default function App() {
         {tab==="method"&&<MethodPanel/>}
       </div>
       <div style={{padding:"12px 24px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
-        <span style={{fontSize:8,color:C.muted,fontFamily:F}}>VIA PROJECTIONS &middot; Data: MLB Stats API &middot; FV: FanGraphs/ESPN consensus &middot; No affiliation with MLB</span>
+        <span style={{fontSize:8,color:C.muted,fontFamily:F}}>VIAcast &middot; Data: MLB Stats API &middot; FV: FanGraphs/ESPN consensus &middot; No affiliation with MLB</span>
         <span style={{fontSize:8,color:C.muted,fontFamily:F}}>Methodology: Marcel (Tango) + level translation + Statcast batted ball adjustments</span>
       </div>
     </div>
