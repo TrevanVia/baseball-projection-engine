@@ -1,0 +1,3327 @@
+{
+  "Francisco Lindor": {
+    "xwoba": 0.345,
+    "xba": 0.26,
+    "xslg": 0.454
+  },
+  "Rafael Devers": {
+    "xwoba": 0.367,
+    "xba": 0.244,
+    "xslg": 0.487
+  },
+  "Shohei Ohtani": {
+    "xwoba": 0.425,
+    "xba": 0.274,
+    "xslg": 0.649
+  },
+  "Matt Olson": {
+    "xwoba": 0.36,
+    "xba": 0.249,
+    "xslg": 0.492
+  },
+  "Kyle Schwarber": {
+    "xwoba": 0.403,
+    "xba": 0.251,
+    "xslg": 0.584
+  },
+  "Geraldo Perdomo": {
+    "xwoba": 0.356,
+    "xba": 0.278,
+    "xslg": 0.424
+  },
+  "Juan Soto": {
+    "xwoba": 0.429,
+    "xba": 0.288,
+    "xslg": 0.608
+  },
+  "Julio Rodr\u00edguez": {
+    "xwoba": 0.348,
+    "xba": 0.274,
+    "xslg": 0.483
+  },
+  "Randy Arozarena": {
+    "xwoba": 0.327,
+    "xba": 0.227,
+    "xslg": 0.417
+  },
+  "Pete Alonso": {
+    "xwoba": 0.386,
+    "xba": 0.274,
+    "xslg": 0.572
+  },
+  "Cal Raleigh": {
+    "xwoba": 0.371,
+    "xba": 0.231,
+    "xslg": 0.547
+  },
+  "Brent Rooker": {
+    "xwoba": 0.351,
+    "xba": 0.261,
+    "xslg": 0.489
+  },
+  "Elly De La Cruz": {
+    "xwoba": 0.322,
+    "xba": 0.251,
+    "xslg": 0.424
+  },
+  "Jarren Duran": {
+    "xwoba": 0.326,
+    "xba": 0.248,
+    "xslg": 0.41
+  },
+  "Heliot Ramos": {
+    "xwoba": 0.32,
+    "xba": 0.242,
+    "xslg": 0.417
+  },
+  "Steven Kwan": {
+    "xwoba": 0.31,
+    "xba": 0.273,
+    "xslg": 0.366
+  },
+  "Fernando Tatis Jr.": {
+    "xwoba": 0.37,
+    "xba": 0.272,
+    "xslg": 0.488
+  },
+  "James Wood": {
+    "xwoba": 0.361,
+    "xba": 0.259,
+    "xslg": 0.493
+  },
+  "Bobby Witt Jr.": {
+    "xwoba": 0.365,
+    "xba": 0.285,
+    "xslg": 0.508
+  },
+  "Willy Adames": {
+    "xwoba": 0.327,
+    "xba": 0.224,
+    "xslg": 0.435
+  },
+  "TJ Friedl": {
+    "xwoba": 0.303,
+    "xba": 0.231,
+    "xslg": 0.321
+  },
+  "Vinnie Pasquantino": {
+    "xwoba": 0.334,
+    "xba": 0.259,
+    "xslg": 0.463
+  },
+  "Vladimir Guerrero Jr.": {
+    "xwoba": 0.384,
+    "xba": 0.3,
+    "xslg": 0.506
+  },
+  "Aaron Judge": {
+    "xwoba": 0.46,
+    "xba": 0.3,
+    "xslg": 0.708
+  },
+  "Manny Machado": {
+    "xwoba": 0.355,
+    "xba": 0.271,
+    "xslg": 0.495
+  },
+  "Luis Arraez": {
+    "xwoba": 0.303,
+    "xba": 0.287,
+    "xslg": 0.363
+  },
+  "Jos\u00e9 Ram\u00edrez": {
+    "xwoba": 0.342,
+    "xba": 0.284,
+    "xslg": 0.446
+  },
+  "Ozzie Albies": {
+    "xwoba": 0.299,
+    "xba": 0.243,
+    "xslg": 0.366
+  },
+  "Maikel Garcia": {
+    "xwoba": 0.335,
+    "xba": 0.276,
+    "xslg": 0.422
+  },
+  "Mookie Betts": {
+    "xwoba": 0.33,
+    "xba": 0.267,
+    "xslg": 0.422
+  },
+  "Ian Happ": {
+    "xwoba": 0.354,
+    "xba": 0.256,
+    "xslg": 0.457
+  },
+  "Taylor Ward": {
+    "xwoba": 0.333,
+    "xba": 0.231,
+    "xslg": 0.45
+  },
+  "Brice Turang": {
+    "xwoba": 0.335,
+    "xba": 0.262,
+    "xslg": 0.429
+  },
+  "William Contreras": {
+    "xwoba": 0.331,
+    "xba": 0.253,
+    "xslg": 0.398
+  },
+  "Eugenio Su\u00e1rez": {
+    "xwoba": 0.32,
+    "xba": 0.211,
+    "xslg": 0.463
+  },
+  "Cody Bellinger": {
+    "xwoba": 0.327,
+    "xba": 0.254,
+    "xslg": 0.43
+  },
+  "Riley Greene": {
+    "xwoba": 0.335,
+    "xba": 0.239,
+    "xslg": 0.494
+  },
+  "Jose Altuve": {
+    "xwoba": 0.3,
+    "xba": 0.237,
+    "xslg": 0.384
+  },
+  "Trevor Story": {
+    "xwoba": 0.311,
+    "xba": 0.249,
+    "xslg": 0.421
+  },
+  "Bryan Reynolds": {
+    "xwoba": 0.338,
+    "xba": 0.259,
+    "xslg": 0.447
+  },
+  "J.P. Crawford": {
+    "xwoba": 0.329,
+    "xba": 0.266,
+    "xslg": 0.386
+  },
+  "Junior Caminero": {
+    "xwoba": 0.346,
+    "xba": 0.255,
+    "xslg": 0.501
+  },
+  "Brandon Nimmo": {
+    "xwoba": 0.321,
+    "xba": 0.252,
+    "xslg": 0.419
+  },
+  "Yandy D\u00edaz": {
+    "xwoba": 0.353,
+    "xba": 0.285,
+    "xslg": 0.459
+  },
+  "Seiya Suzuki": {
+    "xwoba": 0.352,
+    "xba": 0.247,
+    "xslg": 0.493
+  },
+  "Gunnar Henderson": {
+    "xwoba": 0.341,
+    "xba": 0.276,
+    "xslg": 0.425
+  },
+  "Spencer Torkelson": {
+    "xwoba": 0.334,
+    "xba": 0.226,
+    "xslg": 0.456
+  },
+  "Nico Hoerner": {
+    "xwoba": 0.322,
+    "xba": 0.292,
+    "xslg": 0.391
+  },
+  "Jackson Holliday": {
+    "xwoba": 0.314,
+    "xba": 0.241,
+    "xslg": 0.404
+  },
+  "Pete Crow-Armstrong": {
+    "xwoba": 0.321,
+    "xba": 0.242,
+    "xslg": 0.475
+  },
+  "Dansby Swanson": {
+    "xwoba": 0.345,
+    "xba": 0.267,
+    "xslg": 0.477
+  },
+  "Christian Yelich": {
+    "xwoba": 0.33,
+    "xba": 0.245,
+    "xslg": 0.439
+  },
+  "Corbin Carroll": {
+    "xwoba": 0.372,
+    "xba": 0.262,
+    "xslg": 0.529
+  },
+  "Salvador Perez": {
+    "xwoba": 0.357,
+    "xba": 0.269,
+    "xslg": 0.534
+  },
+  "Michael Harris II": {
+    "xwoba": 0.315,
+    "xba": 0.268,
+    "xslg": 0.438
+  },
+  "Christian Walker": {
+    "xwoba": 0.314,
+    "xba": 0.233,
+    "xslg": 0.435
+  },
+  "Trea Turner": {
+    "xwoba": 0.321,
+    "xba": 0.27,
+    "xslg": 0.41
+  },
+  "CJ Abrams": {
+    "xwoba": 0.309,
+    "xba": 0.245,
+    "xslg": 0.401
+  },
+  "Lawrence Butler": {
+    "xwoba": 0.304,
+    "xba": 0.229,
+    "xslg": 0.393
+  },
+  "Gleyber Torres": {
+    "xwoba": 0.363,
+    "xba": 0.269,
+    "xslg": 0.462
+  },
+  "Bo Bichette": {
+    "xwoba": 0.353,
+    "xba": 0.295,
+    "xslg": 0.473
+  },
+  "Freddie Freeman": {
+    "xwoba": 0.35,
+    "xba": 0.268,
+    "xslg": 0.467
+  },
+  "Andy Pages": {
+    "xwoba": 0.316,
+    "xba": 0.258,
+    "xslg": 0.428
+  },
+  "Tyler Soderstrom": {
+    "xwoba": 0.341,
+    "xba": 0.261,
+    "xslg": 0.457
+  },
+  "Xavier Edwards": {
+    "xwoba": 0.295,
+    "xba": 0.262,
+    "xslg": 0.332
+  },
+  "Jung Hoo Lee": {
+    "xwoba": 0.321,
+    "xba": 0.277,
+    "xslg": 0.385
+  },
+  "Nathaniel Lowe": {
+    "xwoba": 0.303,
+    "xba": 0.229,
+    "xslg": 0.373
+  },
+  "Josh Naylor": {
+    "xwoba": 0.335,
+    "xba": 0.271,
+    "xslg": 0.436
+  },
+  "Kyle Tucker": {
+    "xwoba": 0.372,
+    "xba": 0.27,
+    "xslg": 0.483
+  },
+  "Anthony Volpe": {
+    "xwoba": 0.301,
+    "xba": 0.223,
+    "xslg": 0.405
+  },
+  "Sal Frelick": {
+    "xwoba": 0.299,
+    "xba": 0.255,
+    "xslg": 0.339
+  },
+  "Otto Lopez": {
+    "xwoba": 0.33,
+    "xba": 0.269,
+    "xslg": 0.434
+  },
+  "Marcell Ozuna": {
+    "xwoba": 0.354,
+    "xba": 0.239,
+    "xslg": 0.448
+  },
+  "Michael Busch": {
+    "xwoba": 0.378,
+    "xba": 0.262,
+    "xslg": 0.548
+  },
+  "Jackson Chourio": {
+    "xwoba": 0.307,
+    "xba": 0.247,
+    "xslg": 0.426
+  },
+  "Nick Castellanos": {
+    "xwoba": 0.302,
+    "xba": 0.242,
+    "xslg": 0.408
+  },
+  "Ernie Clement": {
+    "xwoba": 0.292,
+    "xba": 0.263,
+    "xslg": 0.364
+  },
+  "Jordan Beck": {
+    "xwoba": 0.301,
+    "xba": 0.231,
+    "xslg": 0.395
+  },
+  "Ceddanne Rafaela": {
+    "xwoba": 0.305,
+    "xba": 0.242,
+    "xslg": 0.416
+  },
+  "Ryan McMahon": {
+    "xwoba": 0.322,
+    "xba": 0.219,
+    "xslg": 0.419
+  },
+  "George Springer": {
+    "xwoba": 0.404,
+    "xba": 0.291,
+    "xslg": 0.571
+  },
+  "Agust\u00edn Ram\u00edrez": {
+    "xwoba": 0.332,
+    "xba": 0.259,
+    "xslg": 0.457
+  },
+  "Carlos Correa": {
+    "xwoba": 0.338,
+    "xba": 0.28,
+    "xslg": 0.439
+  },
+  "Lars Nootbaar": {
+    "xwoba": 0.317,
+    "xba": 0.231,
+    "xslg": 0.4
+  },
+  "Trent Grisham": {
+    "xwoba": 0.37,
+    "xba": 0.248,
+    "xslg": 0.498
+  },
+  "Bryce Harper": {
+    "xwoba": 0.368,
+    "xba": 0.268,
+    "xslg": 0.492
+  },
+  "Hunter Goodman": {
+    "xwoba": 0.324,
+    "xba": 0.244,
+    "xslg": 0.466
+  },
+  "Matt McLain": {
+    "xwoba": 0.29,
+    "xba": 0.212,
+    "xslg": 0.361
+  },
+  "Jo Adell": {
+    "xwoba": 0.365,
+    "xba": 0.26,
+    "xslg": 0.549
+  },
+  "Wyatt Langford": {
+    "xwoba": 0.346,
+    "xba": 0.239,
+    "xslg": 0.448
+  },
+  "Ke'Bryan Hayes": {
+    "xwoba": 0.282,
+    "xba": 0.238,
+    "xslg": 0.342
+  },
+  "Miguel Vargas": {
+    "xwoba": 0.319,
+    "xba": 0.237,
+    "xslg": 0.407
+  },
+  "Spencer Steer": {
+    "xwoba": 0.293,
+    "xba": 0.219,
+    "xslg": 0.361
+  },
+  "Jonathan India": {
+    "xwoba": 0.315,
+    "xba": 0.238,
+    "xslg": 0.378
+  },
+  "Yainer Diaz": {
+    "xwoba": 0.326,
+    "xba": 0.268,
+    "xslg": 0.465
+  },
+  "Trevor Larnach": {
+    "xwoba": 0.315,
+    "xba": 0.247,
+    "xslg": 0.399
+  },
+  "Nolan Schanuel": {
+    "xwoba": 0.327,
+    "xba": 0.262,
+    "xslg": 0.388
+  },
+  "Josh Smith": {
+    "xwoba": 0.31,
+    "xba": 0.247,
+    "xslg": 0.366
+  },
+  "Willson Contreras": {
+    "xwoba": 0.358,
+    "xba": 0.257,
+    "xslg": 0.488
+  },
+  "Bryson Stott": {
+    "xwoba": 0.313,
+    "xba": 0.247,
+    "xslg": 0.393
+  },
+  "Mike Yastrzemski": {
+    "xwoba": 0.329,
+    "xba": 0.237,
+    "xslg": 0.419
+  },
+  "Mike Trout": {
+    "xwoba": 0.358,
+    "xba": 0.236,
+    "xslg": 0.474
+  },
+  "Ketel Marte": {
+    "xwoba": 0.39,
+    "xba": 0.285,
+    "xslg": 0.534
+  },
+  "Zach Neto": {
+    "xwoba": 0.344,
+    "xba": 0.251,
+    "xslg": 0.495
+  },
+  "Brandon Lowe": {
+    "xwoba": 0.335,
+    "xba": 0.253,
+    "xslg": 0.478
+  },
+  "Xander Bogaerts": {
+    "xwoba": 0.327,
+    "xba": 0.267,
+    "xslg": 0.413
+  },
+  "Andrew McCutchen": {
+    "xwoba": 0.333,
+    "xba": 0.258,
+    "xslg": 0.415
+  },
+  "J.T. Realmuto": {
+    "xwoba": 0.316,
+    "xba": 0.253,
+    "xslg": 0.411
+  },
+  "Adolis Garc\u00eda": {
+    "xwoba": 0.304,
+    "xba": 0.232,
+    "xslg": 0.427
+  },
+  "Lourdes Gurriel Jr.": {
+    "xwoba": 0.315,
+    "xba": 0.256,
+    "xslg": 0.42
+  },
+  "Alec Burleson": {
+    "xwoba": 0.345,
+    "xba": 0.272,
+    "xslg": 0.471
+  },
+  "Teoscar Hern\u00e1ndez": {
+    "xwoba": 0.323,
+    "xba": 0.25,
+    "xslg": 0.455
+  },
+  "Gavin Sheets": {
+    "xwoba": 0.34,
+    "xba": 0.263,
+    "xslg": 0.453
+  },
+  "Lenyn Sosa": {
+    "xwoba": 0.326,
+    "xba": 0.263,
+    "xslg": 0.467
+  },
+  "Ryan O'Hearn": {
+    "xwoba": 0.343,
+    "xba": 0.269,
+    "xslg": 0.429
+  },
+  "Oneil Cruz": {
+    "xwoba": 0.324,
+    "xba": 0.218,
+    "xslg": 0.425
+  },
+  "Jeremy Pe\u00f1a": {
+    "xwoba": 0.334,
+    "xba": 0.27,
+    "xslg": 0.432
+  },
+  "Byron Buxton": {
+    "xwoba": 0.35,
+    "xba": 0.249,
+    "xslg": 0.514
+  },
+  "Luis Rengifo": {
+    "xwoba": 0.302,
+    "xba": 0.26,
+    "xslg": 0.375
+  },
+  "Brenton Doyle": {
+    "xwoba": 0.3,
+    "xba": 0.239,
+    "xslg": 0.415
+  },
+  "Masyn Winn": {
+    "xwoba": 0.286,
+    "xba": 0.24,
+    "xslg": 0.347
+  },
+  "Matt Chapman": {
+    "xwoba": 0.34,
+    "xba": 0.243,
+    "xslg": 0.417
+  },
+  "Marcus Semien": {
+    "xwoba": 0.318,
+    "xba": 0.243,
+    "xslg": 0.395
+  },
+  "Paul Goldschmidt": {
+    "xwoba": 0.329,
+    "xba": 0.266,
+    "xslg": 0.45
+  },
+  "Josh Bell": {
+    "xwoba": 0.359,
+    "xba": 0.256,
+    "xslg": 0.485
+  },
+  "Kyle Manzardo": {
+    "xwoba": 0.322,
+    "xba": 0.224,
+    "xslg": 0.443
+  },
+  "Jazz Chisholm Jr.": {
+    "xwoba": 0.346,
+    "xba": 0.234,
+    "xslg": 0.481
+  },
+  "Ben Rice": {
+    "xwoba": 0.394,
+    "xba": 0.283,
+    "xslg": 0.557
+  },
+  "Brooks Lee": {
+    "xwoba": 0.289,
+    "xba": 0.234,
+    "xslg": 0.374
+  },
+  "Luis Garc\u00eda Jr.": {
+    "xwoba": 0.339,
+    "xba": 0.281,
+    "xslg": 0.47
+  },
+  "Jorge Polanco": {
+    "xwoba": 0.343,
+    "xba": 0.266,
+    "xslg": 0.464
+  },
+  "Shea Langeliers": {
+    "xwoba": 0.328,
+    "xba": 0.251,
+    "xslg": 0.463
+  },
+  "Jacob Wilson": {
+    "xwoba": 0.304,
+    "xba": 0.277,
+    "xslg": 0.364
+  },
+  "Brendan Donovan": {
+    "xwoba": 0.346,
+    "xba": 0.28,
+    "xslg": 0.449
+  },
+  "Jake Cronenworth": {
+    "xwoba": 0.319,
+    "xba": 0.225,
+    "xslg": 0.353
+  },
+  "Eric Wagaman": {
+    "xwoba": 0.315,
+    "xba": 0.259,
+    "xslg": 0.421
+  },
+  "Josh Jung": {
+    "xwoba": 0.304,
+    "xba": 0.245,
+    "xslg": 0.414
+  },
+  "Zach McKinstry": {
+    "xwoba": 0.305,
+    "xba": 0.247,
+    "xslg": 0.358
+  },
+  "Caleb Durbin": {
+    "xwoba": 0.312,
+    "xba": 0.255,
+    "xslg": 0.362
+  },
+  "Alejandro Kirk": {
+    "xwoba": 0.359,
+    "xba": 0.278,
+    "xslg": 0.48
+  },
+  "Joey Ortiz": {
+    "xwoba": 0.275,
+    "xba": 0.245,
+    "xslg": 0.327
+  },
+  "Chase Meidroth": {
+    "xwoba": 0.3,
+    "xba": 0.254,
+    "xslg": 0.333
+  },
+  "Alec Bohm": {
+    "xwoba": 0.324,
+    "xba": 0.275,
+    "xslg": 0.413
+  },
+  "Gavin Lux": {
+    "xwoba": 0.299,
+    "xba": 0.243,
+    "xslg": 0.336
+  },
+  "Addison Barger": {
+    "xwoba": 0.331,
+    "xba": 0.255,
+    "xslg": 0.462
+  },
+  "Harrison Bader": {
+    "xwoba": 0.297,
+    "xba": 0.22,
+    "xslg": 0.374
+  },
+  "Cedric Mullins": {
+    "xwoba": 0.284,
+    "xba": 0.207,
+    "xslg": 0.34
+  },
+  "Jes\u00fas S\u00e1nchez": {
+    "xwoba": 0.323,
+    "xba": 0.242,
+    "xslg": 0.441
+  },
+  "Alex Bregman": {
+    "xwoba": 0.337,
+    "xba": 0.254,
+    "xslg": 0.427
+  },
+  "Cam Smith": {
+    "xwoba": 0.304,
+    "xba": 0.235,
+    "xslg": 0.376
+  },
+  "Ty France": {
+    "xwoba": 0.328,
+    "xba": 0.259,
+    "xslg": 0.425
+  },
+  "Nick Kurtz": {
+    "xwoba": 0.372,
+    "xba": 0.245,
+    "xslg": 0.537
+  },
+  "Ram\u00f3n Laureano": {
+    "xwoba": 0.362,
+    "xba": 0.27,
+    "xslg": 0.518
+  },
+  "Michael Conforto": {
+    "xwoba": 0.33,
+    "xba": 0.233,
+    "xslg": 0.41
+  },
+  "Angel Mart\u00ednez": {
+    "xwoba": 0.255,
+    "xba": 0.215,
+    "xslg": 0.313
+  },
+  "Jackson Merrill": {
+    "xwoba": 0.347,
+    "xba": 0.263,
+    "xslg": 0.49
+  },
+  "Carlos Santana": {
+    "xwoba": 0.29,
+    "xba": 0.216,
+    "xslg": 0.346
+  },
+  "Max Kepler": {
+    "xwoba": 0.332,
+    "xba": 0.243,
+    "xslg": 0.443
+  },
+  "Gabriel Arias": {
+    "xwoba": 0.286,
+    "xba": 0.214,
+    "xslg": 0.385
+  },
+  "Andrew Benintendi": {
+    "xwoba": 0.32,
+    "xba": 0.234,
+    "xslg": 0.43
+  },
+  "Dillon Dingler": {
+    "xwoba": 0.351,
+    "xba": 0.29,
+    "xslg": 0.475
+  },
+  "Alek Thomas": {
+    "xwoba": 0.289,
+    "xba": 0.242,
+    "xslg": 0.372
+  },
+  "Colt Keith": {
+    "xwoba": 0.341,
+    "xba": 0.257,
+    "xslg": 0.444
+  },
+  "Ryan Jeffers": {
+    "xwoba": 0.325,
+    "xba": 0.243,
+    "xslg": 0.4
+  },
+  "Kerry Carpenter": {
+    "xwoba": 0.335,
+    "xba": 0.252,
+    "xslg": 0.493
+  },
+  "Mark Vientos": {
+    "xwoba": 0.32,
+    "xba": 0.246,
+    "xslg": 0.432
+  },
+  "Wilmer Flores": {
+    "xwoba": 0.281,
+    "xba": 0.225,
+    "xslg": 0.334
+  },
+  "Victor Scott II": {
+    "xwoba": 0.287,
+    "xba": 0.225,
+    "xslg": 0.313
+  },
+  "Jeff McNeil": {
+    "xwoba": 0.33,
+    "xba": 0.266,
+    "xslg": 0.395
+  },
+  "Mickey Moniak": {
+    "xwoba": 0.337,
+    "xba": 0.262,
+    "xslg": 0.497
+  },
+  "Isiah Kiner-Falefa": {
+    "xwoba": 0.262,
+    "xba": 0.245,
+    "xslg": 0.304
+  },
+  "Adam Frazier": {
+    "xwoba": 0.279,
+    "xba": 0.244,
+    "xslg": 0.333
+  },
+  "Kyle Stowers": {
+    "xwoba": 0.375,
+    "xba": 0.265,
+    "xslg": 0.537
+  },
+  "Willi Castro": {
+    "xwoba": 0.306,
+    "xba": 0.234,
+    "xslg": 0.368
+  },
+  "Iv\u00e1n Herrera": {
+    "xwoba": 0.371,
+    "xba": 0.275,
+    "xslg": 0.491
+  },
+  "Patrick Bailey": {
+    "xwoba": 0.264,
+    "xba": 0.21,
+    "xslg": 0.333
+  },
+  "Logan O'Hoppe": {
+    "xwoba": 0.301,
+    "xba": 0.228,
+    "xslg": 0.425
+  },
+  "Tommy Pham": {
+    "xwoba": 0.318,
+    "xba": 0.246,
+    "xslg": 0.396
+  },
+  "Austin Wells": {
+    "xwoba": 0.294,
+    "xba": 0.214,
+    "xslg": 0.399
+  },
+  "Austin Riley": {
+    "xwoba": 0.33,
+    "xba": 0.246,
+    "xslg": 0.472
+  },
+  "Andrew Vaughn": {
+    "xwoba": 0.349,
+    "xba": 0.273,
+    "xslg": 0.479
+  },
+  "Carlos Narv\u00e1ez": {
+    "xwoba": 0.293,
+    "xba": 0.22,
+    "xslg": 0.381
+  },
+  "Drake Baldwin": {
+    "xwoba": 0.353,
+    "xba": 0.272,
+    "xslg": 0.48
+  },
+  "Corey Seager": {
+    "xwoba": 0.4,
+    "xba": 0.285,
+    "xslg": 0.569
+  },
+  "Chandler Simpson": {
+    "xwoba": 0.297,
+    "xba": 0.295,
+    "xslg": 0.336
+  },
+  "Isaac Collins": {
+    "xwoba": 0.322,
+    "xba": 0.246,
+    "xslg": 0.359
+  },
+  "Isaac Paredes": {
+    "xwoba": 0.32,
+    "xba": 0.235,
+    "xslg": 0.38
+  },
+  "Nathan Lukes": {
+    "xwoba": 0.315,
+    "xba": 0.259,
+    "xslg": 0.392
+  },
+  "Matt Shaw": {
+    "xwoba": 0.302,
+    "xba": 0.237,
+    "xslg": 0.375
+  },
+  "Javier B\u00e1ez": {
+    "xwoba": 0.27,
+    "xba": 0.23,
+    "xslg": 0.358
+  },
+  "Nolan Arenado": {
+    "xwoba": 0.289,
+    "xba": 0.245,
+    "xslg": 0.366
+  },
+  "Will Smith": {
+    "xwoba": 0.378,
+    "xba": 0.269,
+    "xslg": 0.496
+  },
+  "Josh Lowe": {
+    "xwoba": 0.298,
+    "xba": 0.24,
+    "xslg": 0.37
+  },
+  "Jonah Heim": {
+    "xwoba": 0.276,
+    "xba": 0.219,
+    "xslg": 0.346
+  },
+  "Brett Baty": {
+    "xwoba": 0.334,
+    "xba": 0.252,
+    "xslg": 0.457
+  },
+  "Luis Robert Jr.": {
+    "xwoba": 0.321,
+    "xba": 0.246,
+    "xslg": 0.426
+  },
+  "Jasson Dom\u00ednguez": {
+    "xwoba": 0.306,
+    "xba": 0.237,
+    "xslg": 0.37
+  },
+  "Jake Mangum": {
+    "xwoba": 0.276,
+    "xba": 0.251,
+    "xslg": 0.336
+  },
+  "Tyler Freeman": {
+    "xwoba": 0.325,
+    "xba": 0.278,
+    "xslg": 0.367
+  },
+  "Brandon Marsh": {
+    "xwoba": 0.33,
+    "xba": 0.263,
+    "xslg": 0.432
+  },
+  "Jonathan Aranda": {
+    "xwoba": 0.382,
+    "xba": 0.291,
+    "xslg": 0.515
+  },
+  "Daniel Schneemann": {
+    "xwoba": 0.297,
+    "xba": 0.215,
+    "xslg": 0.387
+  },
+  "Carson Kelly": {
+    "xwoba": 0.321,
+    "xba": 0.236,
+    "xslg": 0.411
+  },
+  "Wilyer Abreu": {
+    "xwoba": 0.335,
+    "xba": 0.243,
+    "xslg": 0.475
+  },
+  "Nick Allen": {
+    "xwoba": 0.252,
+    "xba": 0.22,
+    "xslg": 0.267
+  },
+  "Austin Hays": {
+    "xwoba": 0.3,
+    "xba": 0.234,
+    "xslg": 0.403
+  },
+  "Bo Naylor": {
+    "xwoba": 0.292,
+    "xba": 0.201,
+    "xslg": 0.371
+  },
+  "Ronald Acu\u00f1a Jr.": {
+    "xwoba": 0.397,
+    "xba": 0.263,
+    "xslg": 0.535
+  },
+  "Spencer Horwitz": {
+    "xwoba": 0.326,
+    "xba": 0.251,
+    "xslg": 0.407
+  },
+  "Kyle Isbel": {
+    "xwoba": 0.251,
+    "xba": 0.22,
+    "xslg": 0.29
+  },
+  "Nick Gonzales": {
+    "xwoba": 0.291,
+    "xba": 0.254,
+    "xslg": 0.368
+  },
+  "Nolan Jones": {
+    "xwoba": 0.301,
+    "xba": 0.224,
+    "xslg": 0.373
+  },
+  "Royce Lewis": {
+    "xwoba": 0.297,
+    "xba": 0.24,
+    "xslg": 0.4
+  },
+  "Edgar Quero": {
+    "xwoba": 0.29,
+    "xba": 0.236,
+    "xslg": 0.346
+  },
+  "Nolan Gorman": {
+    "xwoba": 0.296,
+    "xba": 0.196,
+    "xslg": 0.386
+  },
+  "Mauricio Dub\u00f3n": {
+    "xwoba": 0.278,
+    "xba": 0.247,
+    "xslg": 0.331
+  },
+  "Jordan Walker": {
+    "xwoba": 0.278,
+    "xba": 0.207,
+    "xslg": 0.363
+  },
+  "Matt Wallner": {
+    "xwoba": 0.327,
+    "xba": 0.205,
+    "xslg": 0.437
+  },
+  "Ram\u00f3n Ur\u00edas": {
+    "xwoba": 0.289,
+    "xba": 0.227,
+    "xslg": 0.375
+  },
+  "Liam Hicks": {
+    "xwoba": 0.315,
+    "xba": 0.244,
+    "xslg": 0.35
+  },
+  "Ezequiel Tovar": {
+    "xwoba": 0.319,
+    "xba": 0.261,
+    "xslg": 0.441
+  },
+  "Pedro Pag\u00e9s": {
+    "xwoba": 0.259,
+    "xba": 0.208,
+    "xslg": 0.34
+  },
+  "Max Muncy": {
+    "xwoba": 0.267,
+    "xba": 0.203,
+    "xslg": 0.353
+  },
+  "Kody Clemens": {
+    "xwoba": 0.331,
+    "xba": 0.243,
+    "xslg": 0.465
+  },
+  "Victor Caratini": {
+    "xwoba": 0.329,
+    "xba": 0.255,
+    "xslg": 0.425
+  },
+  "Mike Tauchman": {
+    "xwoba": 0.321,
+    "xba": 0.244,
+    "xslg": 0.382
+  },
+  "Wenceel P\u00e9rez": {
+    "xwoba": 0.31,
+    "xba": 0.242,
+    "xslg": 0.393
+  },
+  "Brayan Rocchio": {
+    "xwoba": 0.295,
+    "xba": 0.246,
+    "xslg": 0.358
+  },
+  "Jake Meyers": {
+    "xwoba": 0.325,
+    "xba": 0.269,
+    "xslg": 0.403
+  },
+  "Tommy Edman": {
+    "xwoba": 0.321,
+    "xba": 0.274,
+    "xslg": 0.411
+  },
+  "Jared Triolo": {
+    "xwoba": 0.31,
+    "xba": 0.239,
+    "xslg": 0.383
+  },
+  "Jake Burger": {
+    "xwoba": 0.324,
+    "xba": 0.246,
+    "xslg": 0.478
+  },
+  "Jurickson Profar": {
+    "xwoba": 0.325,
+    "xba": 0.23,
+    "xslg": 0.39
+  },
+  "Jos\u00e9 Caballero": {
+    "xwoba": 0.299,
+    "xba": 0.218,
+    "xslg": 0.332
+  },
+  "Andr\u00e9s Gim\u00e9nez": {
+    "xwoba": 0.308,
+    "xba": 0.252,
+    "xslg": 0.361
+  },
+  "Adley Rutschman": {
+    "xwoba": 0.325,
+    "xba": 0.241,
+    "xslg": 0.41
+  },
+  "Jacob Young": {
+    "xwoba": 0.297,
+    "xba": 0.262,
+    "xslg": 0.336
+  },
+  "Colton Cowser": {
+    "xwoba": 0.293,
+    "xba": 0.2,
+    "xslg": 0.404
+  },
+  "Noelvi Marte": {
+    "xwoba": 0.304,
+    "xba": 0.245,
+    "xslg": 0.418
+  },
+  "Ryan Mountcastle": {
+    "xwoba": 0.313,
+    "xba": 0.253,
+    "xslg": 0.428
+  },
+  "Jordan Westburg": {
+    "xwoba": 0.327,
+    "xba": 0.253,
+    "xslg": 0.46
+  },
+  "Daylen Lile": {
+    "xwoba": 0.348,
+    "xba": 0.302,
+    "xslg": 0.449
+  },
+  "Casey Schmitt": {
+    "xwoba": 0.328,
+    "xba": 0.256,
+    "xslg": 0.436
+  },
+  "Freddy Fermin": {
+    "xwoba": 0.271,
+    "xba": 0.233,
+    "xslg": 0.336
+  },
+  "JJ Bleday": {
+    "xwoba": 0.276,
+    "xba": 0.197,
+    "xslg": 0.345
+  },
+  "Jose Iglesias": {
+    "xwoba": 0.281,
+    "xba": 0.24,
+    "xslg": 0.313
+  },
+  "Javier Sanoja": {
+    "xwoba": 0.282,
+    "xba": 0.251,
+    "xslg": 0.342
+  },
+  "Tyler Stephenson": {
+    "xwoba": 0.313,
+    "xba": 0.216,
+    "xslg": 0.413
+  },
+  "Romy Gonzalez": {
+    "xwoba": 0.344,
+    "xba": 0.276,
+    "xslg": 0.48
+  },
+  "Tyrone Taylor": {
+    "xwoba": 0.298,
+    "xba": 0.257,
+    "xslg": 0.364
+  },
+  "Miguel Andujar": {
+    "xwoba": 0.298,
+    "xba": 0.259,
+    "xslg": 0.383
+  },
+  "Michael Toglia": {
+    "xwoba": 0.271,
+    "xba": 0.199,
+    "xslg": 0.351
+  },
+  "Sean Murphy": {
+    "xwoba": 0.314,
+    "xba": 0.201,
+    "xslg": 0.408
+  },
+  "Connor Norby": {
+    "xwoba": 0.307,
+    "xba": 0.241,
+    "xslg": 0.417
+  },
+  "Danny Jansen": {
+    "xwoba": 0.299,
+    "xba": 0.199,
+    "xslg": 0.356
+  },
+  "Dane Myers": {
+    "xwoba": 0.308,
+    "xba": 0.251,
+    "xslg": 0.398
+  },
+  "Joey Bart": {
+    "xwoba": 0.318,
+    "xba": 0.222,
+    "xslg": 0.38
+  },
+  "Luis Ur\u00edas": {
+    "xwoba": 0.3,
+    "xba": 0.234,
+    "xslg": 0.346
+  },
+  "Starling Marte": {
+    "xwoba": 0.319,
+    "xba": 0.248,
+    "xslg": 0.397
+  },
+  "Rhys Hoskins": {
+    "xwoba": 0.314,
+    "xba": 0.22,
+    "xslg": 0.389
+  },
+  "Brooks Baldwin": {
+    "xwoba": 0.307,
+    "xba": 0.235,
+    "xslg": 0.416
+  },
+  "Santiago Espinal": {
+    "xwoba": 0.254,
+    "xba": 0.229,
+    "xslg": 0.287
+  },
+  "Kyle Higashioka": {
+    "xwoba": 0.295,
+    "xba": 0.233,
+    "xslg": 0.394
+  },
+  "Trey Sweeney": {
+    "xwoba": 0.245,
+    "xba": 0.191,
+    "xslg": 0.295
+  },
+  "Michael A. Taylor": {
+    "xwoba": 0.271,
+    "xba": 0.186,
+    "xslg": 0.38
+  },
+  "Dylan Crews": {
+    "xwoba": 0.307,
+    "xba": 0.235,
+    "xslg": 0.393
+  },
+  "Alex Call": {
+    "xwoba": 0.321,
+    "xba": 0.243,
+    "xslg": 0.369
+  },
+  "Miguel Rojas": {
+    "xwoba": 0.293,
+    "xba": 0.249,
+    "xslg": 0.358
+  },
+  "Taylor Walls": {
+    "xwoba": 0.261,
+    "xba": 0.21,
+    "xslg": 0.309
+  },
+  "Jorge Soler": {
+    "xwoba": 0.294,
+    "xba": 0.204,
+    "xslg": 0.387
+  },
+  "Rowdy Tellez": {
+    "xwoba": 0.328,
+    "xba": 0.234,
+    "xslg": 0.479
+  },
+  "Gabriel Moreno": {
+    "xwoba": 0.346,
+    "xba": 0.279,
+    "xslg": 0.453
+  },
+  "Joc Pederson": {
+    "xwoba": 0.315,
+    "xba": 0.219,
+    "xslg": 0.393
+  },
+  "Christopher Morel": {
+    "xwoba": 0.304,
+    "xba": 0.213,
+    "xslg": 0.42
+  },
+  "Roman Anthony": {
+    "xwoba": 0.372,
+    "xba": 0.258,
+    "xslg": 0.484
+  },
+  "Jose Trevino": {
+    "xwoba": 0.278,
+    "xba": 0.242,
+    "xslg": 0.355
+  },
+  "Kyle Farmer": {
+    "xwoba": 0.285,
+    "xba": 0.228,
+    "xslg": 0.353
+  },
+  "Myles Straw": {
+    "xwoba": 0.295,
+    "xba": 0.252,
+    "xslg": 0.365
+  },
+  "Kyle Teel": {
+    "xwoba": 0.337,
+    "xba": 0.237,
+    "xslg": 0.416
+  },
+  "Ben Williamson": {
+    "xwoba": 0.269,
+    "xba": 0.241,
+    "xslg": 0.322
+  },
+  "Thomas Saggese": {
+    "xwoba": 0.28,
+    "xba": 0.239,
+    "xslg": 0.35
+  },
+  "Heriberto Hern\u00e1ndez": {
+    "xwoba": 0.334,
+    "xba": 0.245,
+    "xslg": 0.435
+  },
+  "Coby Mayo": {
+    "xwoba": 0.289,
+    "xba": 0.202,
+    "xslg": 0.363
+  },
+  "Randal Grichuk": {
+    "xwoba": 0.326,
+    "xba": 0.259,
+    "xslg": 0.457
+  },
+  "Mitch Garver": {
+    "xwoba": 0.298,
+    "xba": 0.209,
+    "xslg": 0.371
+  },
+  "Yo\u00e1n Moncada": {
+    "xwoba": 0.324,
+    "xba": 0.217,
+    "xslg": 0.421
+  },
+  "Pavin Smith": {
+    "xwoba": 0.319,
+    "xba": 0.215,
+    "xslg": 0.398
+  },
+  "Riley Adams": {
+    "xwoba": 0.275,
+    "xba": 0.208,
+    "xslg": 0.35
+  },
+  "Abraham Toro": {
+    "xwoba": 0.302,
+    "xba": 0.253,
+    "xslg": 0.376
+  },
+  "Colson Montgomery": {
+    "xwoba": 0.341,
+    "xba": 0.23,
+    "xslg": 0.501
+  },
+  "Henry Davis": {
+    "xwoba": 0.293,
+    "xba": 0.213,
+    "xslg": 0.389
+  },
+  "Elias D\u00edaz": {
+    "xwoba": 0.267,
+    "xba": 0.202,
+    "xslg": 0.333
+  },
+  "Luis Torrens": {
+    "xwoba": 0.338,
+    "xba": 0.274,
+    "xslg": 0.454
+  },
+  "Giancarlo Stanton": {
+    "xwoba": 0.354,
+    "xba": 0.235,
+    "xslg": 0.52
+  },
+  "Francisco Alvarez": {
+    "xwoba": 0.326,
+    "xba": 0.229,
+    "xslg": 0.437
+  },
+  "Michael Massey": {
+    "xwoba": 0.265,
+    "xba": 0.238,
+    "xslg": 0.346
+  },
+  "Brady House": {
+    "xwoba": 0.284,
+    "xba": 0.256,
+    "xslg": 0.37
+  },
+  "Eli White": {
+    "xwoba": 0.31,
+    "xba": 0.251,
+    "xslg": 0.435
+  },
+  "Daulton Varsho": {
+    "xwoba": 0.327,
+    "xba": 0.226,
+    "xslg": 0.494
+  },
+  "Dominic Canzone": {
+    "xwoba": 0.376,
+    "xba": 0.29,
+    "xslg": 0.533
+  },
+  "Keibert Ruiz": {
+    "xwoba": 0.287,
+    "xba": 0.271,
+    "xslg": 0.351
+  },
+  "Blaze Alexander": {
+    "xwoba": 0.305,
+    "xba": 0.211,
+    "xslg": 0.374
+  },
+  "Oswald Peraza": {
+    "xwoba": 0.248,
+    "xba": 0.194,
+    "xslg": 0.306
+  },
+  "Curtis Mead": {
+    "xwoba": 0.289,
+    "xba": 0.232,
+    "xslg": 0.35
+  },
+  "Kristian Campbell": {
+    "xwoba": 0.296,
+    "xba": 0.221,
+    "xslg": 0.338
+  },
+  "Edmundo Sosa": {
+    "xwoba": 0.29,
+    "xba": 0.245,
+    "xslg": 0.391
+  },
+  "Cole Young": {
+    "xwoba": 0.297,
+    "xba": 0.224,
+    "xslg": 0.355
+  },
+  "Enrique Hern\u00e1ndez": {
+    "xwoba": 0.287,
+    "xba": 0.221,
+    "xslg": 0.394
+  },
+  "Will Benson": {
+    "xwoba": 0.342,
+    "xba": 0.257,
+    "xslg": 0.496
+  },
+  "Tyler Fitzgerald": {
+    "xwoba": 0.242,
+    "xba": 0.192,
+    "xslg": 0.281
+  },
+  "Dylan Moore": {
+    "xwoba": 0.262,
+    "xba": 0.191,
+    "xslg": 0.326
+  },
+  "LaMonte Wade Jr.": {
+    "xwoba": 0.281,
+    "xba": 0.205,
+    "xslg": 0.321
+  },
+  "Nick Fortes": {
+    "xwoba": 0.27,
+    "xba": 0.215,
+    "xslg": 0.322
+  },
+  "Dylan Carlson": {
+    "xwoba": 0.285,
+    "xba": 0.214,
+    "xslg": 0.357
+  },
+  "Alexander Canario": {
+    "xwoba": 0.295,
+    "xba": 0.219,
+    "xslg": 0.407
+  },
+  "Jakob Marsee": {
+    "xwoba": 0.347,
+    "xba": 0.275,
+    "xslg": 0.442
+  },
+  "Jac Caglianone": {
+    "xwoba": 0.321,
+    "xba": 0.237,
+    "xslg": 0.431
+  },
+  "Travis d'Arnaud": {
+    "xwoba": 0.271,
+    "xba": 0.194,
+    "xslg": 0.362
+  },
+  "Davis Schneider": {
+    "xwoba": 0.323,
+    "xba": 0.188,
+    "xslg": 0.409
+  },
+  "Dominic Smith": {
+    "xwoba": 0.306,
+    "xba": 0.252,
+    "xslg": 0.398
+  },
+  "Tim Tawa": {
+    "xwoba": 0.29,
+    "xba": 0.206,
+    "xslg": 0.368
+  },
+  "Jake McCarthy": {
+    "xwoba": 0.286,
+    "xba": 0.239,
+    "xslg": 0.374
+  },
+  "Anthony Santander": {
+    "xwoba": 0.265,
+    "xba": 0.188,
+    "xslg": 0.301
+  },
+  "Evan Carter": {
+    "xwoba": 0.312,
+    "xba": 0.246,
+    "xslg": 0.365
+  },
+  "Ezequiel Duran": {
+    "xwoba": 0.247,
+    "xba": 0.214,
+    "xslg": 0.295
+  },
+  "Drew Waters": {
+    "xwoba": 0.265,
+    "xba": 0.232,
+    "xslg": 0.318
+  },
+  "Luke Raley": {
+    "xwoba": 0.312,
+    "xba": 0.209,
+    "xslg": 0.358
+  },
+  "Jake Bauers": {
+    "xwoba": 0.356,
+    "xba": 0.237,
+    "xslg": 0.46
+  },
+  "Otto Kemp": {
+    "xwoba": 0.31,
+    "xba": 0.231,
+    "xslg": 0.418
+  },
+  "Jake Fraley": {
+    "xwoba": 0.315,
+    "xba": 0.248,
+    "xslg": 0.369
+  },
+  "Kameron Misner": {
+    "xwoba": 0.247,
+    "xba": 0.191,
+    "xslg": 0.299
+  },
+  "Christian V\u00e1zquez": {
+    "xwoba": 0.271,
+    "xba": 0.21,
+    "xslg": 0.307
+  },
+  "Orlando Arcia": {
+    "xwoba": 0.24,
+    "xba": 0.212,
+    "xslg": 0.295
+  },
+  "Max Schuemann": {
+    "xwoba": 0.297,
+    "xba": 0.23,
+    "xslg": 0.334
+  },
+  "Alex Verdugo": {
+    "xwoba": 0.306,
+    "xba": 0.266,
+    "xslg": 0.369
+  },
+  "Parker Meadows": {
+    "xwoba": 0.291,
+    "xba": 0.225,
+    "xslg": 0.346
+  },
+  "Josh Rojas": {
+    "xwoba": 0.263,
+    "xba": 0.209,
+    "xslg": 0.305
+  },
+  "Tyler O'Neill": {
+    "xwoba": 0.36,
+    "xba": 0.243,
+    "xslg": 0.523
+  },
+  "Rob Refsnyder": {
+    "xwoba": 0.338,
+    "xba": 0.243,
+    "xslg": 0.457
+  },
+  "Edouard Julien": {
+    "xwoba": 0.329,
+    "xba": 0.242,
+    "xslg": 0.424
+  },
+  "Paul DeJong": {
+    "xwoba": 0.259,
+    "xba": 0.194,
+    "xslg": 0.351
+  },
+  "Nacho Alvarez Jr.": {
+    "xwoba": 0.27,
+    "xba": 0.228,
+    "xslg": 0.308
+  },
+  "Luke Keaschall": {
+    "xwoba": 0.324,
+    "xba": 0.263,
+    "xslg": 0.378
+  },
+  "Ryan Ritter": {
+    "xwoba": 0.248,
+    "xba": 0.211,
+    "xslg": 0.276
+  },
+  "Robert Hassell III": {
+    "xwoba": 0.273,
+    "xba": 0.226,
+    "xslg": 0.369
+  },
+  "Masataka Yoshida": {
+    "xwoba": 0.314,
+    "xba": 0.27,
+    "xslg": 0.384
+  },
+  "Jose Herrera": {
+    "xwoba": 0.237,
+    "xba": 0.169,
+    "xslg": 0.225
+  },
+  "Yordan Alvarez": {
+    "xwoba": 0.393,
+    "xba": 0.284,
+    "xslg": 0.549
+  },
+  "Gio Urshela": {
+    "xwoba": 0.286,
+    "xba": 0.251,
+    "xslg": 0.349
+  },
+  "Darell Hernaiz": {
+    "xwoba": 0.305,
+    "xba": 0.255,
+    "xslg": 0.351
+  },
+  "David Hamilton": {
+    "xwoba": 0.26,
+    "xba": 0.209,
+    "xslg": 0.319
+  },
+  "Andy Ib\u00e1\u00f1ez": {
+    "xwoba": 0.304,
+    "xba": 0.254,
+    "xslg": 0.371
+  },
+  "Luisangel Acu\u00f1a": {
+    "xwoba": 0.271,
+    "xba": 0.235,
+    "xslg": 0.299
+  },
+  "Amed Rosario": {
+    "xwoba": 0.331,
+    "xba": 0.288,
+    "xslg": 0.439
+  },
+  "Christian Koss": {
+    "xwoba": 0.311,
+    "xba": 0.263,
+    "xslg": 0.402
+  },
+  "Ha-Seong Kim": {
+    "xwoba": 0.297,
+    "xba": 0.242,
+    "xslg": 0.356
+  },
+  "Justin Turner": {
+    "xwoba": 0.297,
+    "xba": 0.237,
+    "xslg": 0.36
+  },
+  "Matt Thaiss": {
+    "xwoba": 0.294,
+    "xba": 0.197,
+    "xslg": 0.299
+  },
+  "Nick Loftin": {
+    "xwoba": 0.294,
+    "xba": 0.232,
+    "xslg": 0.366
+  },
+  "Connor Wong": {
+    "xwoba": 0.266,
+    "xba": 0.221,
+    "xslg": 0.295
+  },
+  "Christian Moore": {
+    "xwoba": 0.282,
+    "xba": 0.203,
+    "xslg": 0.345
+  },
+  "Luis Matos": {
+    "xwoba": 0.274,
+    "xba": 0.219,
+    "xslg": 0.368
+  },
+  "Graham Pauley": {
+    "xwoba": 0.299,
+    "xba": 0.223,
+    "xslg": 0.343
+  },
+  "Ronny Mauricio": {
+    "xwoba": 0.286,
+    "xba": 0.218,
+    "xslg": 0.366
+  },
+  "Jeremiah Jackson": {
+    "xwoba": 0.295,
+    "xba": 0.226,
+    "xslg": 0.398
+  },
+  "Sam Haggerty": {
+    "xwoba": 0.304,
+    "xba": 0.249,
+    "xslg": 0.362
+  },
+  "Austin Martin": {
+    "xwoba": 0.345,
+    "xba": 0.279,
+    "xslg": 0.403
+  },
+  "Leody Taveras": {
+    "xwoba": 0.232,
+    "xba": 0.198,
+    "xslg": 0.316
+  },
+  "Austin Hedges": {
+    "xwoba": 0.249,
+    "xba": 0.177,
+    "xslg": 0.284
+  },
+  "Donovan Solano": {
+    "xwoba": 0.259,
+    "xba": 0.223,
+    "xslg": 0.32
+  },
+  "Jack Suwinski": {
+    "xwoba": 0.31,
+    "xba": 0.195,
+    "xslg": 0.376
+  },
+  "Alejandro Osuna": {
+    "xwoba": 0.338,
+    "xba": 0.271,
+    "xslg": 0.39
+  },
+  "John Rave": {
+    "xwoba": 0.302,
+    "xba": 0.228,
+    "xslg": 0.349
+  },
+  "Miles Mastrobuoni": {
+    "xwoba": 0.322,
+    "xba": 0.28,
+    "xslg": 0.373
+  },
+  "Tyler Heineman": {
+    "xwoba": 0.273,
+    "xba": 0.215,
+    "xslg": 0.293
+  },
+  "Johan Rojas": {
+    "xwoba": 0.265,
+    "xba": 0.227,
+    "xslg": 0.298
+  },
+  "Blake Perkins": {
+    "xwoba": 0.279,
+    "xba": 0.223,
+    "xslg": 0.326
+  },
+  "Hyeseong Kim": {
+    "xwoba": 0.251,
+    "xba": 0.221,
+    "xslg": 0.309
+  },
+  "Jos\u00e9 Tena": {
+    "xwoba": 0.302,
+    "xba": 0.243,
+    "xslg": 0.364
+  },
+  "Yohel Pozo": {
+    "xwoba": 0.276,
+    "xba": 0.246,
+    "xslg": 0.357
+  },
+  "Heston Kjerstad": {
+    "xwoba": 0.29,
+    "xba": 0.231,
+    "xslg": 0.391
+  },
+  "Thairo Estrada": {
+    "xwoba": 0.264,
+    "xba": 0.233,
+    "xslg": 0.322
+  },
+  "Mart\u00edn Maldonado": {
+    "xwoba": 0.251,
+    "xba": 0.192,
+    "xslg": 0.344
+  },
+  "Austin Slater": {
+    "xwoba": 0.332,
+    "xba": 0.247,
+    "xslg": 0.476
+  },
+  "Denzel Clarke": {
+    "xwoba": 0.254,
+    "xba": 0.204,
+    "xslg": 0.326
+  },
+  "David Fry": {
+    "xwoba": 0.204,
+    "xba": 0.137,
+    "xslg": 0.259
+  },
+  "Kyle Karros": {
+    "xwoba": 0.261,
+    "xba": 0.21,
+    "xslg": 0.266
+  },
+  "Dalton Rushing": {
+    "xwoba": 0.283,
+    "xba": 0.203,
+    "xslg": 0.379
+  },
+  "Jhonkensy Noel": {
+    "xwoba": 0.202,
+    "xba": 0.161,
+    "xslg": 0.287
+  },
+  "Alan Roden": {
+    "xwoba": 0.227,
+    "xba": 0.176,
+    "xslg": 0.242
+  },
+  "Jahmai Jones": {
+    "xwoba": 0.399,
+    "xba": 0.291,
+    "xslg": 0.547
+  },
+  "Bryce Teodosio": {
+    "xwoba": 0.222,
+    "xba": 0.185,
+    "xslg": 0.259
+  },
+  "Will Wagner": {
+    "xwoba": 0.318,
+    "xba": 0.266,
+    "xslg": 0.34
+  },
+  "Derek Hill": {
+    "xwoba": 0.309,
+    "xba": 0.232,
+    "xslg": 0.416
+  },
+  "Brandon Lockridge": {
+    "xwoba": 0.267,
+    "xba": 0.233,
+    "xslg": 0.314
+  },
+  "James Outman": {
+    "xwoba": 0.265,
+    "xba": 0.158,
+    "xslg": 0.372
+  },
+  "Yanquiel Fern\u00e1ndez": {
+    "xwoba": 0.243,
+    "xba": 0.19,
+    "xslg": 0.309
+  },
+  "Warming Bernabel": {
+    "xwoba": 0.273,
+    "xba": 0.247,
+    "xslg": 0.337
+  },
+  "Joshua Palacios": {
+    "xwoba": 0.299,
+    "xba": 0.222,
+    "xslg": 0.359
+  },
+  "DJ LeMahieu": {
+    "xwoba": 0.295,
+    "xba": 0.245,
+    "xslg": 0.338
+  },
+  "Lane Thomas": {
+    "xwoba": 0.243,
+    "xba": 0.168,
+    "xslg": 0.272
+  },
+  "Jake Rogers": {
+    "xwoba": 0.274,
+    "xba": 0.194,
+    "xslg": 0.321
+  },
+  "Reese McGuire": {
+    "xwoba": 0.254,
+    "xba": 0.208,
+    "xslg": 0.359
+  },
+  "Kyren Paris": {
+    "xwoba": 0.265,
+    "xba": 0.173,
+    "xslg": 0.348
+  },
+  "CJ Kayfus": {
+    "xwoba": 0.322,
+    "xba": 0.242,
+    "xslg": 0.427
+  },
+  "Christian Encarnacion-Strand": {
+    "xwoba": 0.275,
+    "xba": 0.207,
+    "xslg": 0.408
+  },
+  "Dylan Beavers": {
+    "xwoba": 0.344,
+    "xba": 0.213,
+    "xslg": 0.408
+  },
+  "James McCann": {
+    "xwoba": 0.313,
+    "xba": 0.239,
+    "xslg": 0.408
+  },
+  "Marcelo Mayer": {
+    "xwoba": 0.263,
+    "xba": 0.21,
+    "xslg": 0.348
+  },
+  "Taylor Trammell": {
+    "xwoba": 0.271,
+    "xba": 0.187,
+    "xslg": 0.307
+  },
+  "Andruw Monasterio": {
+    "xwoba": 0.28,
+    "xba": 0.224,
+    "xslg": 0.363
+  },
+  "Matt Mervis": {
+    "xwoba": 0.223,
+    "xba": 0.145,
+    "xslg": 0.266
+  },
+  "Colby Thomas": {
+    "xwoba": 0.281,
+    "xba": 0.206,
+    "xslg": 0.383
+  },
+  "Adrian Del Castillo": {
+    "xwoba": 0.269,
+    "xba": 0.206,
+    "xslg": 0.35
+  },
+  "Jacob Stallings": {
+    "xwoba": 0.211,
+    "xba": 0.17,
+    "xslg": 0.234
+  },
+  "Brendan Rodgers": {
+    "xwoba": 0.296,
+    "xba": 0.213,
+    "xslg": 0.391
+  },
+  "Ben Rortvedt": {
+    "xwoba": 0.24,
+    "xba": 0.185,
+    "xslg": 0.246
+  },
+  "Adael Amador": {
+    "xwoba": 0.269,
+    "xba": 0.218,
+    "xslg": 0.299
+  },
+  "Tyler Wade": {
+    "xwoba": 0.247,
+    "xba": 0.185,
+    "xslg": 0.226
+  },
+  "Emmanuel Rivera": {
+    "xwoba": 0.267,
+    "xba": 0.246,
+    "xslg": 0.312
+  },
+  "Justyn-Henry Malloy": {
+    "xwoba": 0.295,
+    "xba": 0.201,
+    "xslg": 0.316
+  },
+  "Jonah Bride": {
+    "xwoba": 0.223,
+    "xba": 0.176,
+    "xslg": 0.236
+  },
+  "Weston Wilson": {
+    "xwoba": 0.33,
+    "xba": 0.251,
+    "xslg": 0.427
+  },
+  "Mark Canha": {
+    "xwoba": 0.268,
+    "xba": 0.214,
+    "xslg": 0.303
+  },
+  "Chris Taylor": {
+    "xwoba": 0.27,
+    "xba": 0.205,
+    "xslg": 0.324
+  },
+  "Oswaldo Cabrera": {
+    "xwoba": 0.284,
+    "xba": 0.244,
+    "xslg": 0.297
+  },
+  "Ildemaro Vargas": {
+    "xwoba": 0.287,
+    "xba": 0.262,
+    "xslg": 0.376
+  },
+  "Cody Freeman": {
+    "xwoba": 0.269,
+    "xba": 0.244,
+    "xslg": 0.332
+  },
+  "Troy Johnston": {
+    "xwoba": 0.341,
+    "xba": 0.274,
+    "xslg": 0.461
+  },
+  "Braxton Fulford": {
+    "xwoba": 0.262,
+    "xba": 0.198,
+    "xslg": 0.327
+  },
+  "Samuel Basallo": {
+    "xwoba": 0.286,
+    "xba": 0.216,
+    "xslg": 0.378
+  },
+  "Rafael March\u00e1n": {
+    "xwoba": 0.261,
+    "xba": 0.213,
+    "xslg": 0.293
+  },
+  "Chas McCormick": {
+    "xwoba": 0.299,
+    "xba": 0.228,
+    "xslg": 0.372
+  },
+  "Kevin Newman": {
+    "xwoba": 0.218,
+    "xba": 0.211,
+    "xslg": 0.283
+  },
+  "Tyler Locklear": {
+    "xwoba": 0.252,
+    "xba": 0.172,
+    "xslg": 0.287
+  },
+  "Victor Robles": {
+    "xwoba": 0.237,
+    "xba": 0.203,
+    "xslg": 0.292
+  },
+  "Jonatan Clase": {
+    "xwoba": 0.284,
+    "xba": 0.217,
+    "xslg": 0.341
+  },
+  "Triston Casas": {
+    "xwoba": 0.304,
+    "xba": 0.212,
+    "xslg": 0.409
+  },
+  "Willie MacIver": {
+    "xwoba": 0.256,
+    "xba": 0.2,
+    "xslg": 0.308
+  },
+  "Nick Martini": {
+    "xwoba": 0.253,
+    "xba": 0.215,
+    "xslg": 0.292
+  },
+  "Leo Rivas": {
+    "xwoba": 0.288,
+    "xba": 0.183,
+    "xslg": 0.266
+  },
+  "Austin Wynns": {
+    "xwoba": 0.295,
+    "xba": 0.233,
+    "xslg": 0.427
+  },
+  "Mickey Gasper": {
+    "xwoba": 0.236,
+    "xba": 0.167,
+    "xslg": 0.241
+  },
+  "Michael Helman": {
+    "xwoba": 0.25,
+    "xba": 0.179,
+    "xslg": 0.323
+  },
+  "Zach Dezenzo": {
+    "xwoba": 0.316,
+    "xba": 0.225,
+    "xslg": 0.426
+  },
+  "Drew Gilbert": {
+    "xwoba": 0.27,
+    "xba": 0.214,
+    "xslg": 0.336
+  },
+  "Hunter Renfroe": {
+    "xwoba": 0.257,
+    "xba": 0.193,
+    "xslg": 0.319
+  },
+  "Jon Berti": {
+    "xwoba": 0.28,
+    "xba": 0.253,
+    "xslg": 0.323
+  },
+  "Carson Williams": {
+    "xwoba": 0.233,
+    "xba": 0.169,
+    "xslg": 0.313
+  },
+  "Cooper Hummel": {
+    "xwoba": 0.313,
+    "xba": 0.196,
+    "xslg": 0.383
+  },
+  "Hunter Feduccia": {
+    "xwoba": 0.275,
+    "xba": 0.188,
+    "xslg": 0.281
+  },
+  "Vinny Capra": {
+    "xwoba": 0.211,
+    "xba": 0.178,
+    "xslg": 0.256
+  },
+  "Nick Sogard": {
+    "xwoba": 0.302,
+    "xba": 0.251,
+    "xslg": 0.375
+  },
+  "Joey Loperfido": {
+    "xwoba": 0.316,
+    "xba": 0.266,
+    "xslg": 0.407
+  },
+  "Miguel Amaya": {
+    "xwoba": 0.295,
+    "xba": 0.244,
+    "xslg": 0.393
+  },
+  "Enmanuel Valdez": {
+    "xwoba": 0.327,
+    "xba": 0.254,
+    "xslg": 0.411
+  },
+  "Zack Gelof": {
+    "xwoba": 0.219,
+    "xba": 0.143,
+    "xslg": 0.299
+  },
+  "Gary S\u00e1nchez": {
+    "xwoba": 0.315,
+    "xba": 0.24,
+    "xslg": 0.421
+  },
+  "Matt Vierling": {
+    "xwoba": 0.338,
+    "xba": 0.25,
+    "xslg": 0.436
+  },
+  "Alex Jackson": {
+    "xwoba": 0.27,
+    "xba": 0.178,
+    "xslg": 0.362
+  },
+  "Carlos Cortes": {
+    "xwoba": 0.316,
+    "xba": 0.27,
+    "xslg": 0.446
+  },
+  "J.C. Escarra": {
+    "xwoba": 0.3,
+    "xba": 0.233,
+    "xslg": 0.349
+  },
+  "Alex Freeland": {
+    "xwoba": 0.258,
+    "xba": 0.168,
+    "xslg": 0.296
+  },
+  "Jason Heyward": {
+    "xwoba": 0.245,
+    "xba": 0.201,
+    "xslg": 0.291
+  },
+  "Vidal Bruj\u00e1n": {
+    "xwoba": 0.266,
+    "xba": 0.224,
+    "xslg": 0.32
+  },
+  "Nasim Nu\u00f1ez": {
+    "xwoba": 0.296,
+    "xba": 0.239,
+    "xslg": 0.367
+  },
+  "Jeimer Candelario": {
+    "xwoba": 0.213,
+    "xba": 0.126,
+    "xslg": 0.247
+  },
+  "Will Wilson": {
+    "xwoba": 0.219,
+    "xba": 0.154,
+    "xslg": 0.242
+  },
+  "Garrett Hampson": {
+    "xwoba": 0.217,
+    "xba": 0.15,
+    "xslg": 0.194
+  },
+  "Tim Anderson": {
+    "xwoba": 0.219,
+    "xba": 0.183,
+    "xslg": 0.243
+  },
+  "Nate Eaton": {
+    "xwoba": 0.293,
+    "xba": 0.243,
+    "xslg": 0.365
+  },
+  "Liover Peguero": {
+    "xwoba": 0.246,
+    "xba": 0.177,
+    "xslg": 0.295
+  },
+  "DaShawn Keirsey Jr.": {
+    "xwoba": 0.173,
+    "xba": 0.144,
+    "xslg": 0.216
+  },
+  "Ronny Simon": {
+    "xwoba": 0.295,
+    "xba": 0.24,
+    "xslg": 0.35
+  },
+  "Andrew Knizner": {
+    "xwoba": 0.278,
+    "xba": 0.226,
+    "xslg": 0.309
+  },
+  "Griffin Conine": {
+    "xwoba": 0.299,
+    "xba": 0.232,
+    "xslg": 0.387
+  },
+  "Tristan Gray": {
+    "xwoba": 0.349,
+    "xba": 0.257,
+    "xslg": 0.473
+  },
+  "Bryce Johnson": {
+    "xwoba": 0.328,
+    "xba": 0.298,
+    "xslg": 0.406
+  },
+  "Brett Harris": {
+    "xwoba": 0.288,
+    "xba": 0.235,
+    "xslg": 0.306
+  },
+  "Bob Seymour": {
+    "xwoba": 0.236,
+    "xba": 0.2,
+    "xslg": 0.279
+  },
+  "Cavan Biggio": {
+    "xwoba": 0.303,
+    "xba": 0.211,
+    "xslg": 0.342
+  },
+  "Jorge Mateo": {
+    "xwoba": 0.206,
+    "xba": 0.167,
+    "xslg": 0.255
+  },
+  "Jesse Winker": {
+    "xwoba": 0.277,
+    "xba": 0.204,
+    "xslg": 0.35
+  },
+  "Connor Joe": {
+    "xwoba": 0.276,
+    "xba": 0.216,
+    "xslg": 0.328
+  },
+  "Hayden Senger": {
+    "xwoba": 0.259,
+    "xba": 0.215,
+    "xslg": 0.321
+  },
+  "Garrett Mitchell": {
+    "xwoba": 0.288,
+    "xba": 0.229,
+    "xslg": 0.341
+  },
+  "Jhonny Pereda": {
+    "xwoba": 0.254,
+    "xba": 0.194,
+    "xslg": 0.28
+  },
+  "Jacob Melton": {
+    "xwoba": 0.24,
+    "xba": 0.177,
+    "xslg": 0.275
+  },
+  "Johnathan Rodr\u00edguez": {
+    "xwoba": 0.282,
+    "xba": 0.225,
+    "xslg": 0.356
+  },
+  "Eric Haase": {
+    "xwoba": 0.273,
+    "xba": 0.206,
+    "xslg": 0.347
+  },
+  "Jorge Barrosa": {
+    "xwoba": 0.193,
+    "xba": 0.165,
+    "xslg": 0.243
+  },
+  "Seth Brown": {
+    "xwoba": 0.295,
+    "xba": 0.193,
+    "xslg": 0.344
+  },
+  "Blake Dunn": {
+    "xwoba": 0.304,
+    "xba": 0.188,
+    "xslg": 0.287
+  },
+  "Will Robertson": {
+    "xwoba": 0.188,
+    "xba": 0.145,
+    "xslg": 0.218
+  },
+  "Jordan Lawlar": {
+    "xwoba": 0.253,
+    "xba": 0.19,
+    "xslg": 0.294
+  },
+  "Blaine Crim": {
+    "xwoba": 0.322,
+    "xba": 0.215,
+    "xslg": 0.457
+  },
+  "Everson Pereira": {
+    "xwoba": 0.242,
+    "xba": 0.16,
+    "xslg": 0.304
+  },
+  "Anthony Seigler": {
+    "xwoba": 0.305,
+    "xba": 0.24,
+    "xslg": 0.342
+  },
+  "Jacob Amaya": {
+    "xwoba": 0.197,
+    "xba": 0.174,
+    "xslg": 0.227
+  },
+  "Sean Bouchard": {
+    "xwoba": 0.227,
+    "xba": 0.179,
+    "xslg": 0.232
+  },
+  "Andr\u00e9s Chaparro": {
+    "xwoba": 0.254,
+    "xba": 0.182,
+    "xslg": 0.315
+  },
+  "Tim Elko": {
+    "xwoba": 0.243,
+    "xba": 0.162,
+    "xslg": 0.335
+  },
+  "Nick Yorke": {
+    "xwoba": 0.257,
+    "xba": 0.234,
+    "xslg": 0.315
+  },
+  "Jos\u00e9 Ferm\u00edn": {
+    "xwoba": 0.332,
+    "xba": 0.275,
+    "xslg": 0.367
+  },
+  "Matthew Lugo": {
+    "xwoba": 0.26,
+    "xba": 0.217,
+    "xslg": 0.379
+  },
+  "Carter Jensen": {
+    "xwoba": 0.447,
+    "xba": 0.336,
+    "xslg": 0.633
+  },
+  "Gustavo Campero": {
+    "xwoba": 0.325,
+    "xba": 0.239,
+    "xslg": 0.399
+  },
+  "Mois\u00e9s Ballesteros": {
+    "xwoba": 0.339,
+    "xba": 0.267,
+    "xslg": 0.413
+  },
+  "Jorbit Vivas": {
+    "xwoba": 0.304,
+    "xba": 0.245,
+    "xslg": 0.327
+  },
+  "Nathan Church": {
+    "xwoba": 0.247,
+    "xba": 0.193,
+    "xslg": 0.279
+  },
+  "Jarred Kelenic": {
+    "xwoba": 0.272,
+    "xba": 0.182,
+    "xslg": 0.384
+  },
+  "MJ Melendez": {
+    "xwoba": 0.208,
+    "xba": 0.137,
+    "xslg": 0.261
+  },
+  "Brett Wisely": {
+    "xwoba": 0.284,
+    "xba": 0.2,
+    "xslg": 0.347
+  },
+  "Nick Maton": {
+    "xwoba": 0.236,
+    "xba": 0.133,
+    "xslg": 0.25
+  },
+  "Oscar Gonzalez": {
+    "xwoba": 0.298,
+    "xba": 0.266,
+    "xslg": 0.398
+  },
+  "Maximo Acosta": {
+    "xwoba": 0.349,
+    "xba": 0.248,
+    "xslg": 0.473
+  },
+  "Sam Hilliard": {
+    "xwoba": 0.301,
+    "xba": 0.166,
+    "xslg": 0.372
+  },
+  "Joey Wiemer": {
+    "xwoba": 0.305,
+    "xba": 0.241,
+    "xslg": 0.458
+  },
+  "Ryan Noda": {
+    "xwoba": 0.245,
+    "xba": 0.131,
+    "xslg": 0.247
+  },
+  "Jonny DeLuca": {
+    "xwoba": 0.267,
+    "xba": 0.252,
+    "xslg": 0.329
+  },
+  "Sal Stewart": {
+    "xwoba": 0.398,
+    "xba": 0.289,
+    "xslg": 0.626
+  },
+  "Sam Huff": {
+    "xwoba": 0.253,
+    "xba": 0.189,
+    "xslg": 0.306
+  },
+  "Daniel Johnson": {
+    "xwoba": 0.305,
+    "xba": 0.237,
+    "xslg": 0.414
+  },
+  "Tyler Tolbert": {
+    "xwoba": 0.313,
+    "xba": 0.26,
+    "xslg": 0.343
+  },
+  "Endy Rodr\u00edguez": {
+    "xwoba": 0.249,
+    "xba": 0.192,
+    "xslg": 0.29
+  },
+  "Jerar Encarnacion": {
+    "xwoba": 0.297,
+    "xba": 0.256,
+    "xslg": 0.428
+  },
+  "Zack Short": {
+    "xwoba": 0.241,
+    "xba": 0.175,
+    "xslg": 0.281
+  },
+  "Jace Jung": {
+    "xwoba": 0.241,
+    "xba": 0.162,
+    "xslg": 0.217
+  },
+  "Drew Millas": {
+    "xwoba": 0.305,
+    "xba": 0.279,
+    "xslg": 0.352
+  },
+  "Stuart Fairchild": {
+    "xwoba": 0.264,
+    "xba": 0.194,
+    "xslg": 0.354
+  },
+  "Luke Maile": {
+    "xwoba": 0.342,
+    "xba": 0.261,
+    "xslg": 0.408
+  },
+  "Ryan Fitzgerald": {
+    "xwoba": 0.343,
+    "xba": 0.224,
+    "xslg": 0.464
+  },
+  "Luis V\u00e1zquez": {
+    "xwoba": 0.279,
+    "xba": 0.22,
+    "xslg": 0.378
+  },
+  "Zach Cole": {
+    "xwoba": 0.305,
+    "xba": 0.198,
+    "xslg": 0.431
+  },
+  "Bryan De La Cruz": {
+    "xwoba": 0.245,
+    "xba": 0.201,
+    "xslg": 0.308
+  },
+  "Travis Jankowski": {
+    "xwoba": 0.248,
+    "xba": 0.236,
+    "xslg": 0.267
+  },
+  "George Valera": {
+    "xwoba": 0.272,
+    "xba": 0.187,
+    "xslg": 0.278
+  },
+  "Richie Palacios": {
+    "xwoba": 0.36,
+    "xba": 0.315,
+    "xslg": 0.443
+  },
+  "Jared Young": {
+    "xwoba": 0.296,
+    "xba": 0.201,
+    "xslg": 0.456
+  },
+  "Logan Davidson": {
+    "xwoba": 0.198,
+    "xba": 0.138,
+    "xslg": 0.246
+  },
+  "Brice Matthews": {
+    "xwoba": 0.294,
+    "xba": 0.178,
+    "xslg": 0.462
+  },
+  "Maverick Handley": {
+    "xwoba": 0.177,
+    "xba": 0.127,
+    "xslg": 0.194
+  },
+  "Jimmy Crooks": {
+    "xwoba": 0.223,
+    "xba": 0.185,
+    "xslg": 0.319
+  },
+  "Ryan Kreidler": {
+    "xwoba": 0.236,
+    "xba": 0.182,
+    "xslg": 0.255
+  },
+  "Rece Hinds": {
+    "xwoba": 0.25,
+    "xba": 0.177,
+    "xslg": 0.399
+  },
+  "Austin Barnes": {
+    "xwoba": 0.24,
+    "xba": 0.227,
+    "xslg": 0.303
+  },
+  "Alan Trejo": {
+    "xwoba": 0.244,
+    "xba": 0.206,
+    "xslg": 0.351
+  },
+  "Denzer Guzman": {
+    "xwoba": 0.212,
+    "xba": 0.167,
+    "xslg": 0.307
+  },
+  "Trenton Brooks": {
+    "xwoba": 0.255,
+    "xba": 0.214,
+    "xslg": 0.338
+  },
+  "Dustin Harris": {
+    "xwoba": 0.231,
+    "xba": 0.186,
+    "xslg": 0.275
+  },
+  "Kevin Pillar": {
+    "xwoba": 0.216,
+    "xba": 0.209,
+    "xslg": 0.295
+  },
+  "Matt Gorski": {
+    "xwoba": 0.253,
+    "xba": 0.194,
+    "xslg": 0.379
+  },
+  "Daz Cameron": {
+    "xwoba": 0.263,
+    "xba": 0.22,
+    "xslg": 0.376
+  },
+  "Oliver Dunn": {
+    "xwoba": 0.235,
+    "xba": 0.221,
+    "xslg": 0.261
+  },
+  "Kris Bryant": {
+    "xwoba": 0.217,
+    "xba": 0.159,
+    "xslg": 0.301
+  },
+  "Luken Baker": {
+    "xwoba": 0.328,
+    "xba": 0.217,
+    "xslg": 0.376
+  },
+  "Austin Nola": {
+    "xwoba": 0.275,
+    "xba": 0.26,
+    "xslg": 0.32
+  },
+  "Korey Lee": {
+    "xwoba": 0.25,
+    "xba": 0.185,
+    "xslg": 0.284
+  },
+  "Yuli Gurriel": {
+    "xwoba": 0.19,
+    "xba": 0.133,
+    "xslg": 0.174
+  },
+  "Jorge Alfaro": {
+    "xwoba": 0.247,
+    "xba": 0.241,
+    "xslg": 0.33
+  },
+  "Ryan Bliss": {
+    "xwoba": 0.297,
+    "xba": 0.205,
+    "xslg": 0.391
+  },
+  "Victor Mesa Jr.": {
+    "xwoba": 0.331,
+    "xba": 0.229,
+    "xslg": 0.418
+  },
+  "Cam Devanney": {
+    "xwoba": 0.188,
+    "xba": 0.137,
+    "xslg": 0.241
+  },
+  "Zac Veen": {
+    "xwoba": 0.188,
+    "xba": 0.123,
+    "xslg": 0.214
+  },
+  "Bryce Eldridge": {
+    "xwoba": 0.362,
+    "xba": 0.175,
+    "xslg": 0.506
+  },
+  "Tom\u00e1s Nido": {
+    "xwoba": 0.278,
+    "xba": 0.272,
+    "xslg": 0.339
+  },
+  "Jose Miranda": {
+    "xwoba": 0.205,
+    "xba": 0.203,
+    "xslg": 0.268
+  },
+  "Jose Siri": {
+    "xwoba": 0.205,
+    "xba": 0.094,
+    "xslg": 0.257
+  },
+  "Dominic Fletcher": {
+    "xwoba": 0.289,
+    "xba": 0.248,
+    "xslg": 0.37
+  },
+  "Luke Williams": {
+    "xwoba": 0.23,
+    "xba": 0.185,
+    "xslg": 0.228
+  },
+  "Sebasti\u00e1n Rivero": {
+    "xwoba": 0.204,
+    "xba": 0.168,
+    "xslg": 0.278
+  },
+  "Pablo Reyes": {
+    "xwoba": 0.236,
+    "xba": 0.197,
+    "xslg": 0.276
+  },
+  "Aaron Schunk": {
+    "xwoba": 0.229,
+    "xba": 0.224,
+    "xslg": 0.306
+  },
+  "Leo Jim\u00e9nez": {
+    "xwoba": 0.24,
+    "xba": 0.186,
+    "xslg": 0.307
+  },
+  "Shay Whitcomb": {
+    "xwoba": 0.198,
+    "xba": 0.178,
+    "xslg": 0.288
+  },
+  "Buddy Kennedy": {
+    "xwoba": 0.202,
+    "xba": 0.136,
+    "xslg": 0.221
+  },
+  "Jos\u00e9 Barrero": {
+    "xwoba": 0.18,
+    "xba": 0.125,
+    "xslg": 0.214
+  },
+  "Carson McCusker": {
+    "xwoba": 0.218,
+    "xba": 0.179,
+    "xslg": 0.289
+  },
+  "Scott Kingery": {
+    "xwoba": 0.196,
+    "xba": 0.155,
+    "xslg": 0.206
+  },
+  "Nicky Lopez": {
+    "xwoba": 0.24,
+    "xba": 0.176,
+    "xslg": 0.199
+  },
+  "Luis Campusano": {
+    "xwoba": 0.208,
+    "xba": 0.076,
+    "xslg": 0.089
+  },
+  "Owen Caissie": {
+    "xwoba": 0.232,
+    "xba": 0.189,
+    "xslg": 0.311
+  },
+  "Grant McCray": {
+    "xwoba": 0.223,
+    "xba": 0.142,
+    "xslg": 0.311
+  },
+  "Mason McCoy": {
+    "xwoba": 0.287,
+    "xba": 0.162,
+    "xslg": 0.347
+  },
+  "Michael Stefanic": {
+    "xwoba": 0.283,
+    "xba": 0.216,
+    "xslg": 0.312
+  },
+  "David Villar": {
+    "xwoba": 0.337,
+    "xba": 0.22,
+    "xslg": 0.356
+  },
+  "Ji Hwan Bae": {
+    "xwoba": 0.268,
+    "xba": 0.115,
+    "xslg": 0.278
+  },
+  "Niko Kavadas": {
+    "xwoba": 0.218,
+    "xba": 0.14,
+    "xslg": 0.199
+  },
+  "Esteury Ruiz": {
+    "xwoba": 0.249,
+    "xba": 0.162,
+    "xslg": 0.33
+  },
+  "Tristin English": {
+    "xwoba": 0.131,
+    "xba": 0.098,
+    "xslg": 0.144
+  },
+  "Ali S\u00e1nchez": {
+    "xwoba": 0.255,
+    "xba": 0.214,
+    "xslg": 0.389
+  },
+  "Chadwick Tromp": {
+    "xwoba": 0.213,
+    "xba": 0.169,
+    "xslg": 0.277
+  },
+  "Keston Hiura": {
+    "xwoba": 0.242,
+    "xba": 0.161,
+    "xslg": 0.209
+  },
+  "Billy McKinney": {
+    "xwoba": 0.346,
+    "xba": 0.311,
+    "xslg": 0.455
+  },
+  "Luis Guillorme": {
+    "xwoba": 0.25,
+    "xba": 0.244,
+    "xslg": 0.272
+  },
+  "Bobby Dalbec": {
+    "xwoba": 0.245,
+    "xba": 0.168,
+    "xslg": 0.214
+  },
+  "Jos\u00e9 Azocar": {
+    "xwoba": 0.343,
+    "xba": 0.321,
+    "xslg": 0.381
+  },
+  "Manuel Margot": {
+    "xwoba": 0.301,
+    "xba": 0.317,
+    "xslg": 0.355
+  },
+  "Michael Siani": {
+    "xwoba": 0.312,
+    "xba": 0.28,
+    "xslg": 0.312
+  },
+  "Connor Kaiser": {
+    "xwoba": 0.239,
+    "xba": 0.184,
+    "xslg": 0.317
+  },
+  "Akil Baddoo": {
+    "xwoba": 0.277,
+    "xba": 0.258,
+    "xslg": 0.317
+  },
+  "Drew Avans": {
+    "xwoba": 0.153,
+    "xba": 0.15,
+    "xslg": 0.166
+  },
+  "Blake Sabol": {
+    "xwoba": 0.208,
+    "xba": 0.151,
+    "xslg": 0.175
+  },
+  "CJ Alexander": {
+    "xwoba": 0.181,
+    "xba": 0.188,
+    "xslg": 0.218
+  },
+  "Gage Workman": {
+    "xwoba": 0.312,
+    "xba": 0.248,
+    "xslg": 0.431
+  },
+  "Owen Miller": {
+    "xwoba": 0.264,
+    "xba": 0.176,
+    "xslg": 0.187
+  },
+  "Rafael Flores Jr.": {
+    "xwoba": 0.361,
+    "xba": 0.258,
+    "xslg": 0.494
+  },
+  "Jack Winkler": {
+    "xwoba": 0.201,
+    "xba": 0.171,
+    "xslg": 0.306
+  },
+  "C\u00e9sar Salazar": {
+    "xwoba": 0.298,
+    "xba": 0.213,
+    "xslg": 0.253
+  },
+  "Tirso Ornelas": {
+    "xwoba": 0.285,
+    "xba": 0.17,
+    "xslg": 0.369
+  },
+  "Ryan Vilade": {
+    "xwoba": 0.295,
+    "xba": 0.21,
+    "xslg": 0.334
+  },
+  "Jacob Hurtubise": {
+    "xwoba": 0.262,
+    "xba": 0.158,
+    "xslg": 0.181
+  },
+  "Tucker Barnhart": {
+    "xwoba": 0.22,
+    "xba": 0.15,
+    "xslg": 0.19
+  },
+  "Brian Navarreto": {
+    "xwoba": 0.33,
+    "xba": 0.247,
+    "xslg": 0.486
+  },
+  "Greg Allen": {
+    "xwoba": 0.142,
+    "xba": 0.146,
+    "xslg": 0.177
+  },
+  "Chad Stevens": {
+    "xwoba": 0.169,
+    "xba": 0.184,
+    "xslg": 0.197
+  },
+  "Tyler Black": {
+    "xwoba": 0.428,
+    "xba": 0.25,
+    "xslg": 0.354
+  },
+  "Will Brennan": {
+    "xwoba": 0.199,
+    "xba": 0.097,
+    "xslg": 0.151
+  },
+  "Corey Julks": {
+    "xwoba": 0.162,
+    "xba": 0.103,
+    "xslg": 0.211
+  },
+  "Vimael Mach\u00edn": {
+    "xwoba": 0.286,
+    "xba": 0.2,
+    "xslg": 0.388
+  },
+  "Sandy Le\u00f3n": {
+    "xwoba": 0.159,
+    "xba": 0.09,
+    "xslg": 0.302
+  },
+  "Tristan Peters": {
+    "xwoba": 0.146,
+    "xba": 0.149,
+    "xslg": 0.183
+  },
+  "Kevin Alc\u00e1ntara": {
+    "xwoba": 0.443,
+    "xba": 0.447,
+    "xslg": 0.505
+  },
+  "Bryan Ramos": {
+    "xwoba": 0.242,
+    "xba": 0.209,
+    "xslg": 0.357
+  },
+  "Nick Solak": {
+    "xwoba": 0.141,
+    "xba": 0.151,
+    "xslg": 0.165
+  },
+  "Will Banfield": {
+    "xwoba": 0.151,
+    "xba": 0.164,
+    "xslg": 0.176
+  },
+  "Omar Narv\u00e1ez": {
+    "xwoba": 0.295,
+    "xba": 0.219,
+    "xslg": 0.254
+  },
+  "Coco Montes": {
+    "xwoba": 0.259,
+    "xba": 0.273,
+    "xslg": 0.312
+  },
+  "Jonathan Ornelas": {
+    "xwoba": 0.143,
+    "xba": 0.088,
+    "xslg": 0.093
+  },
+  "Nick Ahmed": {
+    "xwoba": 0.201,
+    "xba": 0.157,
+    "xslg": 0.177
+  },
+  "Rhylan Thomas": {
+    "xwoba": 0.179,
+    "xba": 0.144,
+    "xslg": 0.162
+  },
+  "Jhostynxon Garcia": {
+    "xwoba": 0.309,
+    "xba": 0.216,
+    "xslg": 0.243
+  },
+  "Justin Foscue": {
+    "xwoba": 0.189,
+    "xba": 0.161,
+    "xslg": 0.279
+  },
+  "Brett Sullivan": {
+    "xwoba": 0.371,
+    "xba": 0.137,
+    "xslg": 0.363
+  },
+  "Samad Taylor": {
+    "xwoba": 0.183,
+    "xba": 0.187,
+    "xslg": 0.237
+  },
+  "Donovan Walton": {
+    "xwoba": 0.274,
+    "xba": 0.29,
+    "xslg": 0.338
+  },
+  "Jon Singleton": {
+    "xwoba": 0.279,
+    "xba": 0.253,
+    "xslg": 0.397
+  },
+  "J.D. Davis": {
+    "xwoba": 0.117,
+    "xba": 0.117,
+    "xslg": 0.158
+  },
+  "Logan Porter": {
+    "xwoba": 0.198,
+    "xba": 0.056,
+    "xslg": 0.069
+  },
+  "Petey Halpin": {
+    "xwoba": 0.279,
+    "xba": 0.154,
+    "xslg": 0.168
+  },
+  "Cal Stevenson": {
+    "xwoba": 0.152,
+    "xba": 0.148,
+    "xslg": 0.214
+  },
+  "Carter Kieboom": {
+    "xwoba": 0.243,
+    "xba": 0.244,
+    "xslg": 0.302
+  },
+  "Harry Ford": {
+    "xwoba": 0.281,
+    "xba": 0.186,
+    "xslg": 0.429
+  },
+  "Eddie Rosario": {
+    "xwoba": 0.329,
+    "xba": 0.236,
+    "xslg": 0.545
+  },
+  "Dairon Blanco": {
+    "xwoba": 0.175,
+    "xba": 0.185,
+    "xslg": 0.213
+  },
+  "Tsung-Che Cheng": {
+    "xwoba": 0.165,
+    "xba": 0.167,
+    "xslg": 0.218
+  },
+  "Dom Nu\u00f1ez": {
+    "xwoba": 0.043,
+    "xba": 0.047,
+    "xslg": 0.052
+  },
+  "Rob Brantly": {
+    "xwoba": 0.217,
+    "xba": 0.23,
+    "xslg": 0.262
+  },
+  "Tyler Callihan": {
+    "xwoba": 0.194,
+    "xba": 0.199,
+    "xslg": 0.245
+  },
+  "Steward Berroa": {
+    "xwoba": 0.16,
+    "xba": 0.057,
+    "xslg": 0.066
+  },
+  "Billy Cook": {
+    "xwoba": 0.382,
+    "xba": 0.396,
+    "xslg": 0.459
+  },
+  "Jordyn Adams": {
+    "xwoba": 0.224,
+    "xba": 0.197,
+    "xslg": 0.335
+  },
+  "Kenedy Corona": {
+    "xwoba": 0.362,
+    "xba": 0.035,
+    "xslg": 0.035
+  },
+  "Sergio Alc\u00e1ntara": {
+    "xwoba": 0.046,
+    "xba": 0.044,
+    "xslg": 0.062
+  },
+  "Trey Lipscomb": {
+    "xwoba": 0.127,
+    "xba": 0.138,
+    "xslg": 0.149
+  },
+  "Aramis Garcia": {
+    "xwoba": 0.051,
+    "xba": 0.041,
+    "xslg": 0.076
+  },
+  "Brewer Hicklen": {
+    "xwoba": 0.349,
+    "xba": 0.167,
+    "xslg": 0.402
+  },
+  "C.J. Stubbs": {
+    "xwoba": 0.098,
+    "xba": 0.104,
+    "xslg": 0.117
+  },
+  "David Ba\u00f1uelos": {
+    "xwoba": 0.361,
+    "xba": 0,
+    "xslg": 0
+  },
+  "Justin Dean": {
+    "xwoba": 0.029,
+    "xba": 0.032,
+    "xslg": 0.032
+  },
+  "Chuckie Robinson": {
+    "xwoba": 0.186,
+    "xba": 0.202,
+    "xslg": 0.202
+  },
+  "Terrin Vavra": {
+    "xwoba": 0.6,
+    "xba": 0.658,
+    "xslg": 0.729
+  },
+  "Tyler Alexander": {
+    "xwoba": 0.055,
+    "xba": 0.053,
+    "xslg": 0.066
+  },
+  "Ryne Nelson": {
+    "xwoba": 0.118,
+    "xba": 0.124,
+    "xslg": 0.141
+  },
+  "Garrett Stubbs": {
+    "xwoba": 0.044,
+    "xba": 0.045,
+    "xslg": 0.046
+  }
+}

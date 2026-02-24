@@ -272,7 +272,7 @@ async function getMiLBAffiliate(mlbTeamId) {
 
 // ── PROJECTION ENGINE ────────────────────────────────────────────────────────
 const AGING_PARAMS = {
-  C:  { peak: 28, dr: 0.032, pa: -2.5, dd: 0.05 },
+  C:  { peak: 28, dr: 0.032, pa: -5.0, dd: 0.05 },
   "1B":{ peak: 28, dr: 0.032, pa: -12.5, dd: 0.02 },
   "2B":{ peak: 27, dr: 0.038, pa: 2.5,   dd: 0.05 },
   "3B":{ peak: 27, dr: 0.035, pa: 2.5,   dd: 0.04 },
@@ -371,7 +371,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   const avgAge = AVG_AGE_AT_LEVEL[highestLevel] || 23;
   const ageAdvantage = avgAge - youngestAgeAtHighest; // positive = young for level
   // Each year younger than avg → ~8% boost to translated stats
-  const ageBoost = 1 + Math.max(highestLevel === "MLB" ? 0 : -0.10, Math.min(0.25, ageAdvantage * 0.08));
+  const ageBoost = 1 + Math.max(-0.10, Math.min(0.25, ageAdvantage * 0.08));
 
   // ── PERFORMANCE TIER SCALING ──
   // Elite performers at their level deserve less regression to mean
@@ -575,7 +575,7 @@ function projectPitcherForward(base, age, years = 10) {
     if (d <= 0) {
       const yearsToGo = Math.abs(d);
       f = 1 + Math.min(0.20, yearsToGo * 0.03);
-      // // f *= (1 - yearsToGo * 0.008); // Removed - was causing pre-peak players to decline // Removed - was causing pre-peak players to decline
+      f *= (1 - yearsToGo * 0.008);
       f = Math.max(0.90, Math.min(1.20, f));
     } else {
       f = Math.pow(1 - ap.dr, d);
@@ -598,9 +598,9 @@ function projectForward(base, age, posCode, years = 10) {
       const yearsToGo = Math.abs(d);
       // Young players improve significantly as they approach peak
       // ~4% per year improvement, compounding slightly
-      f = 1 + Math.min(0.15, yearsToGo * 0.045);
+      f = 1 + Math.min(0.25, yearsToGo * 0.035);
       // Small discount for development risk further out
-      // // f *= (1 - yearsToGo * 0.008); // Removed - was causing pre-peak players to decline // Removed - was causing pre-peak players to decline
+      f *= (1 - yearsToGo * 0.008);
       f = Math.max(0.88, Math.min(1.25, f));
     } else {
       f = Math.max(0.25, 1 - ap.dr * d);

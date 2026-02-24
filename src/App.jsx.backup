@@ -160,40 +160,6 @@ function getStatcast(playerName) {
   return STATCAST_DATA[playerName] || null;
 }
 
-function getXwoba(playerName) {
-  return XWOBA_DATA[playerName] || null;
-}
-
-// ── DEFENSIVE LOOKUP (OAA 2023-2025 avg, DRS directional) ──────────────────
-const DEFENSIVE_DATA = {
-  "Bobby Witt Jr.":      { oaa: 8,  drs: 1 },
-  "Gunnar Henderson":    { oaa: 6,  drs: 1 },
-  "Francisco Lindor":    { oaa: 10, drs: 1 },
-  "Fernando Tatis Jr.":  { oaa: 1,  drs: 0 },
-  "Mookie Betts":        { oaa: 5,  drs: 1 },
-  "Ronald Acuna Jr.":    { oaa: 3,  drs: 1 },
-  "Elly De La Cruz":     { oaa: 2,  drs: 0 },
-  "Masyn Winn":          { oaa: 7,  drs: 1 },
-  "CJ Abrams":           { oaa: 3,  drs: 1 },
-};
-
-// ── SPRINT SPEED LOOKUP (ft/sec, Baseball Savant 2024) ──────────────────────
-const SPRINT_SPEED = {
-  "Elly De La Cruz":     30.2,
-  "Bobby Witt Jr.":      29.8,
-  "Trea Turner":         30.4,
-  "Fernando Tatis Jr.":  28.3,
-  "Ronald Acuna Jr.":    29.6,
-  "Julio Rodriguez":     28.9,
-  "Gunnar Henderson":    27.5,
-  "CJ Abrams":           29.7,
-  "Masyn Winn":          29.2,
-};
-
-function getDefense(playerName) { return DEFENSIVE_DATA[playerName] || null; }
-function getSprintSpeed(playerName) { return SPRINT_SPEED[playerName] || null; }
-
-
 // ── API FUNCTIONS ───────────────────────────────────────────────────────────
 async function searchPlayers(query) {
   try {
@@ -318,28 +284,7 @@ function projectFromSeasons(splits, age, posCode) {
   const wRCPlus = Math.round((regOPS / lgOPS) * 100) + (trans.wrcAdj * (1 - paRel));
   const ap = getAP(posCode);
   const estPA = highestLevel === "MLB" ? Math.min(680, rawPA * 0.95) : Math.min(600, rawPA * 0.85);
-
-  const def = getDefense(playerName);
-  const spd = getSprintSpeed(playerName);
-
-  // Defensive runs: OAA * 1.75 (primary) blended with DRS direction (secondary)
-  const defPeak = posCode === "6" || posCode === "8" ? 26 : 28;
-  const defAge = Math.max(0, 1 - Math.max(0, age - defPeak) * 0.06);
-  let defRuns = 0;
-  if (def) {
-    const oaaRuns = def.oaa * 1.75;
-    const drsAdj = def.drs * 1.5;
-    defRuns = (oaaRuns * 0.70 + drsAdj * 0.30) * defAge * (estPA / 600);
-  }
-
-  // Baserunning runs: sprint speed tiers
-  let bsrRuns = 0;
-  if (spd !== null) {
-    const speedTier = spd >= 29.5 ? 6.0 : spd >= 28.5 ? 4.0 : spd >= 28.0 ? 3.0 : spd >= 27.0 ? 1.5 : spd >= 26.0 ? 0 : -2.0;
-    bsrRuns = speedTier * (estPA / 600);
-  }
-
-  const batRuns = ((finalWRC - 100) / 100) * estPA * 0.115;
+  const batRuns = ((wRCPlus - 100) / 100) * estPA * 0.12;
   const posAdj = ap.pa * (estPA / 600);
   const repl = 20 * (estPA / 600);
   const baseWAR = (batRuns + posAdj + repl) / 10;
