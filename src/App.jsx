@@ -1709,6 +1709,12 @@ function AgingPanel() {
 
 // ── METHODOLOGY ──────────────────────────────────────────────────────────────
 function VpDPanel() {
+  const [loading, setLoading] = useState(true);
+  const [players, setPlayers] = useState([]);
+  const [sort, setSort] = useState({ key: "warPerM", dir: -1 });
+  const [contractData, setContractData] = useState({});
+
+
   function getVpdGrade(warPerM) {
     if (warPerM >= 2.00) return { grade: "A+", color: "#10b981", label: "Elite" };
     if (warPerM >= 1.00) return { grade: "A", color: "#22c55e", label: "Excellent" };
@@ -1722,31 +1728,6 @@ function VpDPanel() {
     return { grade: "F", color: "#dc2626", label: "Overpaid" };
   }
 
-  const [loading, setLoading] = useState(true);
-  const [players, setPlayers] = useState([]);
-  const [sort, setSort] = useState({ key: "warPerM", dir: -1 });
-  const [contractData, setContractData] = useState({});
-
-
-;
-    if (warPerM >= 0.20) return { grade: "A", color: "#22c55e", label: "Excellent" };
-    if (warPerM >= 0.15) return { grade: "B", color: "#eab308", label: "Good" };
-    if (warPerM >= 0.12) return { grade: "C+", color: "#f59e0b", label: "Above Avg" };
-    if (warPerM >= 0.10) return { grade: "C", color: "#64748b", label: "Fair" };
-    if (warPerM >= 0.075) return { grade: "D", color: "#ef4444", label: "Below Avg" };
-    return { grade: "F", color: "#dc2626", label: "Overpaid" };
-;
-    if (warPerM >= 1.00) return { grade: "A", color: "#22c55e", label: "Excellent" };
-    if (warPerM >= 0.60) return { grade: "A-", color: "#84cc16", label: "Great" };
-    if (warPerM >= 0.40) return { grade: "B+", color: "#eab308", label: "Very Good" };
-    if (warPerM >= 0.25) return { grade: "B", color: "#f59e0b", label: "Good" };
-    if (warPerM >= 0.18) return { grade: "B-", color: "#fb923c", label: "Above Avg" };
-    if (warPerM >= 0.13) return { grade: "C+", color: "#fbbf24", label: "Fair" };
-    if (warPerM >= 0.10) return { grade: "C", color: "#94a3b8", label: "Below Avg" };
-    if (warPerM >= 0.07) return { grade: "D", color: "#ef4444", label: "Poor Value" };
-    return { grade: "F", color: "#dc2626", label: "Overpaid" };
-  }
-  }
 
   useEffect(() => {
     async function loadData() {
@@ -2159,7 +2140,7 @@ function MethodPanel() {
     <Panel title="PROJECTION METHODOLOGY">
       <div style={{fontSize:12,color:C.dim,lineHeight:1.8,fontFamily:F}}>
         <h4 style={{color:C.accent,fontSize:13,margin:"0 0 4px"}}>PA-Weighted Marcel</h4>
-        <p style={{margin:"0 0 12px"}}>3 most recent seasons weighted 5/4/3 with PA scaling and recency multiplier (2025 > 2024 > 2023). MiLB stats translated to MLB equivalents before weighting. Regression to league mean scales with sample size.</p>
+        <p style={{margin:"0 0 12px"}}>3 most recent seasons weighted 5/4/3 with PA scaling and recency multiplier (2025 &gt; 2024 &gt; 2023). MiLB stats translated to MLB equivalents before weighting. Regression to league mean scales with sample size.</p>
         
         <h4 style={{color:C.blue,fontSize:13,margin:"0 0 4px"}}>Expected Stats (xwOBA)</h4>
         <p style={{margin:"0 0 12px"}}>For MLB players with Statcast data, expected wOBA (xwOBA) from Baseball Savant is used to identify unlucky BABIP seasons. Players whose xwOBA significantly exceeds actual performance get a positive adjustment (up to +15%).</p>
@@ -2179,8 +2160,8 @@ function MethodPanel() {
         <h4 style={{color:C.text,fontSize:13,margin:"0 0 4px"}}>Age-for-Level & Aging Curves</h4>
         <p style={{margin:"0 0 12px"}}>Young-for-level players get exponential boosts (4yr young = +35%). Post-peak aging is quadratic for offense, linear for defense. Position-specific peaks: SS 26, CF 27, corners 28, DH 29. Catchers age fastest.</p>
         
-        <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Value per Dollar (VpD)</h4>
-        <p style={{margin:0}}>Cost efficiency on 1-100 scale: (Projected WAR / Salary in millions) × 10. Score of 50 = 0.5 WAR/$1M (average). Elite rookie contracts reach 80-99, overpaid veterans score 1-5. Identifies market inefficiencies.</p>
+        <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Value per Dollar (VpD) Grades</h4>
+        <p style={{margin:0}}>Cost efficiency graded A+ to F based on WAR per million dollars. A+ (2.0+ WAR/$1M) = elite bargains like pre-arb stars. A (1.0+) = excellent value. B (0.25-0.40) = solid contracts. C (0.10-0.13) = average efficiency. D/F = overpaid. Identifies market inefficiencies and roster-building opportunities.</p>
       </div>
 
     </Panel>
