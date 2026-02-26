@@ -1709,22 +1709,33 @@ function AgingPanel() {
 
 // ── METHODOLOGY ──────────────────────────────────────────────────────────────
 function VpDPanel() {
+  function getVpdGrade(warPerM) {
+    if (warPerM >= 2.00) return { grade: "A+", color: "#10b981", label: "Elite" };
+    if (warPerM >= 1.00) return { grade: "A", color: "#22c55e", label: "Excellent" };
+    if (warPerM >= 0.60) return { grade: "A-", color: "#84cc16", label: "Great" };
+    if (warPerM >= 0.40) return { grade: "B+", color: "#eab308", label: "Very Good" };
+    if (warPerM >= 0.25) return { grade: "B", color: "#f59e0b", label: "Good" };
+    if (warPerM >= 0.18) return { grade: "B-", color: "#fb923c", label: "Above Avg" };
+    if (warPerM >= 0.13) return { grade: "C+", color: "#fbbf24", label: "Fair" };
+    if (warPerM >= 0.10) return { grade: "C", color: "#94a3b8", label: "Below Avg" };
+    if (warPerM >= 0.07) return { grade: "D", color: "#ef4444", label: "Poor Value" };
+    return { grade: "F", color: "#dc2626", label: "Overpaid" };
+  }
+
   const [loading, setLoading] = useState(true);
   const [players, setPlayers] = useState([]);
   const [sort, setSort] = useState({ key: "warPerM", dir: -1 });
   const [contractData, setContractData] = useState({});
 
 
-  function getVpdGrade(warPerM) {
-    if (warPerM >= 0.25) return { grade: "A+", color: "#10b981", label: "Elite Value" };
+;
     if (warPerM >= 0.20) return { grade: "A", color: "#22c55e", label: "Excellent" };
     if (warPerM >= 0.15) return { grade: "B", color: "#eab308", label: "Good" };
     if (warPerM >= 0.12) return { grade: "C+", color: "#f59e0b", label: "Above Avg" };
     if (warPerM >= 0.10) return { grade: "C", color: "#64748b", label: "Fair" };
     if (warPerM >= 0.075) return { grade: "D", color: "#ef4444", label: "Below Avg" };
     return { grade: "F", color: "#dc2626", label: "Overpaid" };
-  function getVpdGrade(warPerM) {
-    if (warPerM >= 2.00) return { grade: "A+", color: "#10b981", label: "Elite" };
+;
     if (warPerM >= 1.00) return { grade: "A", color: "#22c55e", label: "Excellent" };
     if (warPerM >= 0.60) return { grade: "A-", color: "#84cc16", label: "Great" };
     if (warPerM >= 0.40) return { grade: "B+", color: "#eab308", label: "Very Good" };
