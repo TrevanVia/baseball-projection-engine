@@ -940,17 +940,15 @@ const Spinner = ({msg="Loading..."}) => (
     {msg}
     <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fvGlow{from{box-shadow:0 0 8px rgba(192,132,252,.3),0 0 16px rgba(96,165,250,.15)}to{box-shadow:0 0 16px rgba(251,146,60,.4),0 0 28px rgba(192,132,252,.25)}}
 @media(max-width:768px){
-  .via-header{padding:12px 16px 0!important;text-align:center!important}
-  .via-header-inner{flex-direction:column!important;align-items:center!important;gap:8px!important}
+  .via-header{padding:12px 16px 0!important}
+  .via-header-inner{flex-direction:row!important;align-items:center!important;gap:8px!important;flex-wrap:nowrap!important}
   .via-search{display:none!important}
   .via-content{padding:8px 12px 20px!important}
-  .via-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap!important;gap:0!important;justify-content:flex-start!important;width:100%!important;scrollbar-width:none!important}
-  .via-tabs::-webkit-scrollbar{display:none}
-  .via-tabs button{white-space:nowrap;padding:8px 12px!important;font-size:11px!important;flex-shrink:0}
+  .via-tabs{display:none!important}
   .via-search{width:100%!important;margin:8px auto 0!important;box-sizing:border-box!important;max-width:400px!important;display:block!important}
-  .via-title{font-size:28px!important;text-align:center!important}
-  .via-subtitle{font-size:8px!important;letter-spacing:.14em!important;text-align:center!important}
-  .via-tagline{font-size:7px!important;text-align:center!important}
+  .via-title{font-size:28px!important}
+  .via-subtitle{font-size:8px!important;letter-spacing:.14em!important}
+  .via-tagline{font-size:7px!important}
   .via-stat-row{gap:4px!important;flex-wrap:wrap!important;justify-content:center!important}
   .via-stat-box{min-width:58px!important;padding:6px 8px!important}
   .via-stat-box .via-stat-val{font-size:14px!important}
@@ -971,7 +969,6 @@ const Spinner = ({msg="Loading..."}) => (
 }
 @media(max-width:480px){
   .via-title{font-size:24px!important}
-  .via-tabs button{padding:7px 10px!important;font-size:10px!important}
   .via-stat-box{min-width:50px!important;padding:5px 6px!important}
   .via-stat-box .via-stat-val{font-size:12px!important}
   .via-table-wrap th,.via-table-wrap td{padding:3px 4px!important;font-size:9px!important}
@@ -2296,14 +2293,13 @@ function PlayerOfTheDay({onSelect}) {
 
 // ── MAIN APP ─────────────────────────────────────────────────────────────────
 const TABS=[
-  {k:"player",l:"Player Projections"},
-  {k:"leaders",l:"Leaderboard"},
-  {k:"roster",l:"MLB & MiLB Rosters"},
-  
-  {k:"compare",l:"Player Comparison"},
-  {k:"cost",l:"Value per Dollar"},
-  {k:"cards",l:"Card Marketplace"},
-  {k:"method",l:"Methodology"},
+  {k:"player",l:"Projections",icon:"⚾"},
+  {k:"leaders",l:"Leaderboard",icon:"🏆"},
+  {k:"roster",l:"Rosters",icon:"📋"},
+  {k:"compare",l:"Compare",icon:"⚖️"},
+  {k:"cost",l:"Value/Dollar",icon:"💲"},
+  {k:"cards",l:"Cards",icon:"🃏"},
+  {k:"method",l:"Methodology",icon:"📊"},
 ];
 
 function ComparePanel({ onSelect }) {
@@ -2521,10 +2517,13 @@ export default function App() {
   const [selPlayer,setSelPlayer]=useState(null);
   const [detail,setDetail]=useState(null);
   const [lp,setLp]=useState(false);
+  const [menuOpen,setMenuOpen]=useState(false);
 
   const pick=useCallback(p=>{setSelPlayer(p);setLp(true);setTab("player");getPlayerStats(p.id).then(d=>{setDetail(d||p);setLp(false);});},[]);
 
   const goHome = useCallback(()=>{setSelPlayer(null);setDetail(null);setLp(false);setTab("player");},[]);
+
+  const switchTab = useCallback((k) => { setTab(k); setMenuOpen(false); }, []);
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F}}>
@@ -2534,23 +2533,72 @@ export default function App() {
         <div className="via-header-inner" style={{display:"flex",alignItems:"center",gap:14,marginBottom:12,flexWrap:"wrap"}}>
           <div onClick={goHome} style={{cursor:"pointer",userSelect:"none"}}>
             <div style={{display:"flex",alignItems:"baseline",gap:6}}>
-              <span className="via-title" style={{fontFamily:"'Changa One', cursive",fontSize:38,className:undefined,fontWeight:400,color:C.navy,lineHeight:1,letterSpacing:"-0.02em",textShadow:`2px 2px 0 ${C.accent}30`}}>VIAcast</span>
+              <span className="via-title" style={{fontFamily:"'Changa One', cursive",fontSize:38,fontWeight:400,color:C.navy,lineHeight:1,letterSpacing:"-0.02em",textShadow:`2px 2px 0 ${C.accent}30`}}>VIAcast</span>
               <span style={{width:8,height:8,borderRadius:"50%",background:C.accent,display:"inline-block",marginBottom:4}}/>
             </div>
             <p style={{margin:"1px 0 0 2px",fontSize:11,fontWeight:700,color:C.navy,letterSpacing:".06em",fontFamily:F,textTransform:"uppercase"}}>Baseball Projection Engine</p>
             <p style={{margin:"2px 0 0 2px",fontSize:9,color:C.muted,letterSpacing:".04em",fontFamily:F}}>Data-driven MLB &amp; MiLB forecasting</p>
           </div>
           {!isMobile&&<div className="via-search" style={{marginLeft:"auto"}}><PlayerSearch onSelect={pick}/></div>}
+          {isMobile&&(
+            <button onClick={()=>setMenuOpen(!menuOpen)} style={{
+              marginLeft:"auto",background:"none",border:`1.5px solid ${C.navy}`,borderRadius:6,
+              padding:"6px 10px",cursor:"pointer",display:"flex",flexDirection:"column",gap:3,alignItems:"center",justifyContent:"center",
+            }} aria-label="Menu">
+              <span style={{width:18,height:2,background:C.navy,borderRadius:1,transition:"all 0.2s",transform:menuOpen?"rotate(45deg) translate(3.5px,3.5px)":"none"}}/>
+              <span style={{width:18,height:2,background:C.navy,borderRadius:1,transition:"all 0.2s",opacity:menuOpen?0:1}}/>
+              <span style={{width:18,height:2,background:C.navy,borderRadius:1,transition:"all 0.2s",transform:menuOpen?"rotate(-45deg) translate(3.5px,-3.5px)":"none"}}/>
+            </button>
+          )}
         </div>
-        <div className="via-tabs" style={{display:"flex",gap:isMobile?0:2,flexWrap:"nowrap",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-          {TABS.map(t=><button key={t.k} onClick={()=>setTab(t.k)} style={{
-            padding:"7px 16px",border:"none",cursor:"pointer",fontSize:11,fontWeight:tab===t.k?700:500,fontFamily:F,
-            background:tab===t.k?C.panel:"transparent",color:tab===t.k?C.navy:C.muted,
-            borderRadius:"6px 6px 0 0",borderBottom:tab===t.k?`2px solid ${C.accent}`:"2px solid transparent",
-          }}>{t.l}</button>)}
-        </div>
+        {/* Desktop: compact horizontal tabs */}
+        {!isMobile&&(
+          <div className="via-tabs" style={{display:"flex",gap:2,flexWrap:"nowrap"}}>
+            {TABS.map(t=><button key={t.k} onClick={()=>switchTab(t.k)} style={{
+              padding:"7px 14px",border:"none",cursor:"pointer",fontSize:10,fontWeight:tab===t.k?700:500,fontFamily:F,
+              background:tab===t.k?C.panel:"transparent",color:tab===t.k?C.navy:C.muted,
+              borderRadius:"6px 6px 0 0",borderBottom:tab===t.k?`2px solid ${C.accent}`:"2px solid transparent",
+              whiteSpace:"nowrap",transition:"all 0.15s ease",
+            }}
+            onMouseEnter={e=>{if(tab!==t.k){e.target.style.color=C.navy;e.target.style.background=C.hover;}}}
+            onMouseLeave={e=>{if(tab!==t.k){e.target.style.color=C.muted;e.target.style.background="transparent";}}}
+            >{t.l}</button>)}
+          </div>
+        )}
       {isMobile&&<div style={{display:"flex",justifyContent:"center",padding:"10px 16px",background:"#f9f5ed"}}><div style={{width:"100%",maxWidth:400}}><PlayerSearch onSelect={pick}/></div></div>}
       </div>
+      {/* Mobile: slide-down menu */}
+      {isMobile&&menuOpen&&(
+        <div style={{
+          background:C.panel,borderBottom:`2px solid ${C.border}`,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.1)",
+          animation:"slideDown 0.2s ease-out",
+        }}>
+          <style>{`@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}`}</style>
+          {TABS.map(t=>(
+            <button key={t.k} onClick={()=>switchTab(t.k)} style={{
+              display:"flex",alignItems:"center",gap:10,width:"100%",padding:"14px 24px",
+              border:"none",cursor:"pointer",fontFamily:F,fontSize:13,fontWeight:tab===t.k?700:500,
+              background:tab===t.k?`${C.accent}08`:"transparent",
+              color:tab===t.k?C.navy:C.dim,
+              borderLeft:tab===t.k?`3px solid ${C.accent}`:"3px solid transparent",
+              transition:"all 0.15s ease",
+            }}
+            onMouseEnter={e=>{if(tab!==t.k)e.target.style.background=C.hover;}}
+            onMouseLeave={e=>{if(tab!==t.k)e.target.style.background="transparent";}}
+            >
+              <span style={{fontSize:16}}>{t.icon}</span>
+              {t.l}
+            </button>
+          ))}
+        </div>
+      )}
+      {/* Click-away overlay for mobile menu */}
+      {isMobile&&menuOpen&&(
+        <div onClick={()=>setMenuOpen(false)} style={{
+          position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:-1,
+        }}/>
+      )}
       {/* Content */}
       <div className="via-content" style={{padding:"16px 24px 40px"}}>
         {tab==="player"&&<div>
