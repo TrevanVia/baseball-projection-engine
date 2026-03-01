@@ -223,15 +223,15 @@ function getFVStyle(fv) {
 
 // __ VpD GRADE + BADGE (module-level) _________________________________________
 function getVpdGradeGlobal(warPerM) {
-  if (warPerM >= 2.00) return { grade: "A+", color: "#10b981" };
-  if (warPerM >= 1.00) return { grade: "A", color: "#22c55e" };
-  if (warPerM >= 0.60) return { grade: "A-", color: "#84cc16" };
-  if (warPerM >= 0.40) return { grade: "B+", color: "#eab308" };
-  if (warPerM >= 0.25) return { grade: "B", color: "#f59e0b" };
-  if (warPerM >= 0.18) return { grade: "B-", color: "#fb923c" };
-  if (warPerM >= 0.13) return { grade: "C+", color: "#fbbf24" };
-  if (warPerM >= 0.10) return { grade: "C", color: "#94a3b8" };
-  if (warPerM >= 0.07) return { grade: "D", color: "#ef4444" };
+  if (warPerM >= 4.00) return { grade: "A+", color: "#10b981" };
+  if (warPerM >= 2.00) return { grade: "A", color: "#22c55e" };
+  if (warPerM >= 1.00) return { grade: "A-", color: "#84cc16" };
+  if (warPerM >= 0.60) return { grade: "B+", color: "#eab308" };
+  if (warPerM >= 0.40) return { grade: "B", color: "#f59e0b" };
+  if (warPerM >= 0.25) return { grade: "B-", color: "#fb923c" };
+  if (warPerM >= 0.18) return { grade: "C+", color: "#fbbf24" };
+  if (warPerM >= 0.13) return { grade: "C", color: "#94a3b8" };
+  if (warPerM >= 0.08) return { grade: "D", color: "#ef4444" };
   return { grade: "F", color: "#dc2626" };
 }
 const VPD_BG={"A+":"linear-gradient(135deg,#10b981,#059669)","A":"linear-gradient(135deg,#22c55e,#16a34a)","A-":"linear-gradient(135deg,#84cc16,#65a30d)","B+":"linear-gradient(135deg,#eab308,#ca8a04)","B":"linear-gradient(135deg,#f59e0b,#d97706)","B-":"linear-gradient(135deg,#fb923c,#ea580c)","C+":"linear-gradient(135deg,#fbbf24,#d97706)","C":"linear-gradient(135deg,#94a3b8,#64748b)","D":"linear-gradient(135deg,#ef4444,#dc2626)","F":"linear-gradient(135deg,#dc2626,#991b1b)"};
@@ -1743,15 +1743,15 @@ function VpDPanel() {
 
 
   function getVpdGrade(warPerM) {
-    if (warPerM >= 2.00) return { grade: "A+", color: "#10b981", label: "Elite" };
-    if (warPerM >= 1.00) return { grade: "A", color: "#22c55e", label: "Excellent" };
-    if (warPerM >= 0.60) return { grade: "A-", color: "#84cc16", label: "Great" };
-    if (warPerM >= 0.40) return { grade: "B+", color: "#eab308", label: "Very Good" };
-    if (warPerM >= 0.25) return { grade: "B", color: "#f59e0b", label: "Good" };
-    if (warPerM >= 0.18) return { grade: "B-", color: "#fb923c", label: "Above Avg" };
-    if (warPerM >= 0.13) return { grade: "C+", color: "#fbbf24", label: "Fair" };
-    if (warPerM >= 0.10) return { grade: "C", color: "#94a3b8", label: "Below Avg" };
-    if (warPerM >= 0.07) return { grade: "D", color: "#ef4444", label: "Poor Value" };
+    if (warPerM >= 4.00) return { grade: "A+", color: "#10b981", label: "Elite" };
+    if (warPerM >= 2.00) return { grade: "A", color: "#22c55e", label: "Excellent" };
+    if (warPerM >= 1.00) return { grade: "A-", color: "#84cc16", label: "Great" };
+    if (warPerM >= 0.60) return { grade: "B+", color: "#eab308", label: "Very Good" };
+    if (warPerM >= 0.40) return { grade: "B", color: "#f59e0b", label: "Good" };
+    if (warPerM >= 0.25) return { grade: "B-", color: "#fb923c", label: "Above Avg" };
+    if (warPerM >= 0.18) return { grade: "C+", color: "#fbbf24", label: "Fair" };
+    if (warPerM >= 0.13) return { grade: "C", color: "#94a3b8", label: "Below Avg" };
+    if (warPerM >= 0.08) return { grade: "D", color: "#ef4444", label: "Poor Value" };
     return { grade: "F", color: "#dc2626", label: "Overpaid" };
   }
 
