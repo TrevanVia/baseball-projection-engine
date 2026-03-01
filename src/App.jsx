@@ -130,7 +130,7 @@ const FV_BY_NAME = {
   "Carter Jensen": 55, "Caleb Bonemer": 55,
   "Sal Stewart": 55, "Ryan Waldschmidt": 55,
   "Noah Schultz": 55, "Brandon Sproat": 55,
-  "Connelly Early": 55, "Dylan Beavers": 55,
+  "Connelly Early": 55, 
   "Edward Florentino": 55, "Aidan Miller": 55,
   "Kade Anderson": 55, "Jonah Tong": 55,
   "Robby Snelling": 55, "Gage Jump": 55,
