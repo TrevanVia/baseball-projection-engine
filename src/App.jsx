@@ -221,6 +221,32 @@ function getFVStyle(fv) {
   return FV_STYLES[40];
 }
 
+// __ VpD GRADE + BADGE (module-level) _________________________________________
+function getVpdGradeGlobal(warPerM) {
+  if (warPerM >= 2.00) return { grade: "A+", color: "#10b981" };
+  if (warPerM >= 1.00) return { grade: "A", color: "#22c55e" };
+  if (warPerM >= 0.60) return { grade: "A-", color: "#84cc16" };
+  if (warPerM >= 0.40) return { grade: "B+", color: "#eab308" };
+  if (warPerM >= 0.25) return { grade: "B", color: "#f59e0b" };
+  if (warPerM >= 0.18) return { grade: "B-", color: "#fb923c" };
+  if (warPerM >= 0.13) return { grade: "C+", color: "#fbbf24" };
+  if (warPerM >= 0.10) return { grade: "C", color: "#94a3b8" };
+  if (warPerM >= 0.07) return { grade: "D", color: "#ef4444" };
+  return { grade: "F", color: "#dc2626" };
+}
+const VPD_BG={"A+":"linear-gradient(135deg,#10b981,#059669)","A":"linear-gradient(135deg,#22c55e,#16a34a)","A-":"linear-gradient(135deg,#84cc16,#65a30d)","B+":"linear-gradient(135deg,#eab308,#ca8a04)","B":"linear-gradient(135deg,#f59e0b,#d97706)","B-":"linear-gradient(135deg,#fb923c,#ea580c)","C+":"linear-gradient(135deg,#fbbf24,#d97706)","C":"linear-gradient(135deg,#94a3b8,#64748b)","D":"linear-gradient(135deg,#ef4444,#dc2626)","F":"linear-gradient(135deg,#dc2626,#991b1b)"};
+const VpDBadge = ({war, salary}) => {
+  if (!war || !salary || salary <= 0) return null;
+  const g = getVpdGradeGlobal(war / (salary / 1000000));
+  return (<span style={{fontSize:10,fontWeight:800,padding:"3px 10px",borderRadius:5,fontFamily:F,background:VPD_BG[g.grade]||VPD_BG["C"],color:g.grade==="C+"?"#78350f":"#fff",display:"inline-block",letterSpacing:".04em"}}>{g.grade} VpD</span>);
+};
+let _contractCache = null;
+async function getContractData() {
+  if (_contractCache) return _contractCache;
+  try { const m = await import("./contract_data.json"); _contractCache = m.default||m; return _contractCache; } catch { return {}; }
+}
+function getPlayerSalary(name) { return _contractCache ? (_contractCache[name]||null) : null; }
+
 // ── STATCAST LOOKUP (batted ball data for top prospects) ────────────────────
 // avgEV (mph), maxEV (mph), barrelPct (%)
 const STATCAST_DATA = {
@@ -1032,6 +1058,8 @@ function PlayerCard({player}) {
 
   const fv = getPlayerFV(player.id, player.fullName);
   const sc = getStatcast(player.fullName);
+  const [salary, setSalary] = useState(null);
+  useEffect(() => { getContractData().then(() => setSalary(getPlayerSalary(player.fullName))); }, [player.fullName]);
 
   const seasons = useMemo(()=>career.filter(s=>s.stat?.plateAppearances>0).map(s=>{
     const lvl = detectLevel(s);
@@ -1074,10 +1102,11 @@ function PlayerCard({player}) {
       <Panel>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
           <div>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
               <h2 style={{margin:0,fontSize:22,fontWeight:800,color:C.text,fontFamily:F}}>{player.fullName}</h2>
               {fv && <FVBadge fv={fv}/>}
               {!fv && isMiLB && <LevelBadge level={base?.highestLevel||"MiLB"}/>}
+              {salary && base?.baseWAR && <VpDBadge war={base.baseWAR} salary={salary}/>}
             </div>
             <p style={{margin:"3px 0 0",fontSize:12,color:C.dim,fontFamily:F}}>
               {posLabel(player.primaryPosition?.code)} &middot; {player.currentTeam?.name||"Free Agent"} &middot; Age {player.currentAge}
@@ -1710,6 +1739,7 @@ function VpDPanel() {
   const [players, setPlayers] = useState([]);
   const [sort, setSort] = useState({ key: "warPerM", dir: -1 });
   const [contractData, setContractData] = useState({});
+  const [vpdSearch, setVpdSearch] = useState("");
 
 
   function getVpdGrade(warPerM) {
@@ -1730,7 +1760,9 @@ function VpDPanel() {
     async function loadData() {
       try {
         const contracts = await import("./contract_data.json");
-        setContractData(contracts.default || contracts);
+        const cMap = contracts.default || contracts;
+        setContractData(cMap);
+        _contractCache = cMap;
         
         const playerPromises = Object.keys(contracts.default || contracts).filter(name => (contracts.default || contracts)[name] > 0).map(async (name) => {
           try {
@@ -1779,17 +1811,20 @@ function VpDPanel() {
   }, []);
 
   const sorted = useMemo(() => {
-    return [...players].sort((a, b) => {
+    let filtered = [...players];
+    if (vpdSearch.trim()) { const q = vpdSearch.toLowerCase(); filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || (p.team||"").toLowerCase().includes(q)); }
+    return filtered.sort((a, b) => {
       const aVal = a[sort.key];
       const bVal = b[sort.key];
       if (typeof aVal === "string") return aVal.localeCompare(bVal) * sort.dir;
       return (aVal - bVal) * sort.dir;
     });
-  }, [players, sort]);
+  }, [players, sort, vpdSearch]);
 
   return (
     <div>
       <Panel title="VALUE PER DOLLAR (VpD)" sub="Most cost-efficient players based on projected WAR vs. 2026 salary">
+        <div style={{marginBottom:12}}><input type="text" placeholder="Search players or teams..." value={vpdSearch} onChange={e=>setVpdSearch(e.target.value)} style={{width:"100%",maxWidth:360,padding:"8px 12px",borderRadius:6,border:`1px solid ${C.border}`,background:C.panel,color:C.text,fontSize:12,fontFamily:F,outline:"none",boxSizing:"border-box"}} onFocus={e=>e.target.style.borderColor=C.accent} onBlur={e=>e.target.style.borderColor=C.border}/>{!loading&&<span style={{marginLeft:10,fontSize:10,color:C.muted,fontFamily:F}}>{sorted.length} players</span>}</div>
         {loading && <Spinner msg="Loading contract data and projections..."/>}
         {!loading && players.length === 0 && <p style={{color:C.muted,fontSize:11,fontFamily:F}}>No data available</p>}
         {!loading && players.length > 0 && (
