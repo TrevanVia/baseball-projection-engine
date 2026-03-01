@@ -2134,6 +2134,7 @@ function MethodPanel() {
           {n:"FanGraphs FV",d:"Future Value grades for top 100+ prospects. Hardcoded lookup table, updated seasonally.",c:C.green,s:"STATIC"},
           {n:"Statcast/TrackMan",d:"Batted ball data: avg EV, max EV, barrel% for top prospects. Hardcoded from MiLB TrackMan.",c:C.purple,s:"STATIC"},
           {n:"Baseball Savant",d:"Statcast: xwOBA, barrel%, exit velocity, sprint speed. Full integration planned.",c:C.accent,s:"PLANNED"},
+          {n:"Contract Data",d:"2026 salary data for 190+ MLB players. Sources: Spotrac, MLB Trade Rumors, Cot's Baseball Contracts.",c:C.orange,s:"STATIC"},
         ].map(s=><div key={s.n} style={{padding:"12px 14px",background:`${s.c}06`,border:`1px solid ${s.c}18`,borderRadius:8}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
             <span style={{fontSize:12,fontWeight:700,color:s.c,fontFamily:F}}>{s.n}</span>
@@ -2149,7 +2150,7 @@ function MethodPanel() {
           <div key={fv} style={{padding:"10px 12px",borderRadius:6,border:`1px solid ${C.border}`}}>
             <div style={{marginBottom:6}}><FVBadge fv={fv}/></div>
             <div style={{fontSize:9,color:C.muted,fontFamily:F}}>
-              {fv>=65?"Perennial All-Star":fv>=60?"All-Star upside":fv>=55?"Above-avg regular":fv>=50?"Avg regular":fv>=45?"Solid backup":fv>=40?"Fringe MLB":"—"}
+              {fv>=70?"Franchise Player":fv>=65?"Perennial All-Star":fv>=60?"All-Star upside":fv>=55?"Above-avg regular":fv>=50?"Avg regular":fv>=45?"Solid backup":fv>=40?"Fringe MLB":"—"}
             </div>
           </div>
         );})}
@@ -2193,7 +2194,7 @@ function MethodPanel() {
         <p style={{margin:"0 0 12px"}}>Young-for-level players get exponential boosts (4yr young = +35%). Post-peak aging is quadratic for offense, linear for defense. Position-specific peaks: SS 26, CF 27, corners 28, DH 29. Catchers age fastest.</p>
         
         <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Value per Dollar (VpD) Grades</h4>
-        <p style={{margin:0}}>Cost efficiency graded A+ to F based on WAR per million dollars. A+ (2.0+ WAR/$1M) = elite bargains like pre-arb stars. A (1.0+) = excellent value. B (0.25-0.40) = solid contracts. C (0.10-0.13) = average efficiency. D/F = overpaid. Identifies market inefficiencies and roster-building opportunities.</p>
+        <p style={{margin:0}}>Cost efficiency graded A+ to F based on projected WAR per million dollars of 2026 salary. A+ (4.0+ WAR/$1M) = elite pre-arb superstars producing far above their cost. A (2.0+) = excellent value. A- (1.0+) = great bargains. B+/B (0.40-0.60) = solid, team-friendly deals. C+/C (0.13-0.18) = average efficiency. D/F = significantly overpaid relative to production. Salary data sourced from Spotrac and MLB Trade Rumors.</p>
       </div>
 
     </Panel>
