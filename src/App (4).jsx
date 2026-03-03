@@ -10,9 +10,7 @@ import _ from "lodash";
 let WAR_DATA = {};
 import warDataJson from "./war_data.json";
 import xwobaDataJson from "./xwoba_data.json";
-import savantDataJson from "./savant_data.json";
 const XWOBA_DATA = xwobaDataJson.default || xwobaDataJson;
-const SAVANT_DATA = savantDataJson.default || savantDataJson;
 
 import { inject } from "@vercel/analytics";
 inject(); WAR_DATA = warDataJson;
@@ -223,31 +221,61 @@ function getFVStyle(fv) {
   return FV_STYLES[40];
 }
 
-// __ VpD GRADE + BADGE (module-level) _________________________________________
-function getVpdGradeGlobal(warPerM) {
-  if (warPerM >= 4.00) return { grade: "A+", color: "#10b981" };
-  if (warPerM >= 2.00) return { grade: "A", color: "#22c55e" };
-  if (warPerM >= 1.00) return { grade: "A-", color: "#84cc16" };
-  if (warPerM >= 0.60) return { grade: "B+", color: "#eab308" };
-  if (warPerM >= 0.40) return { grade: "B", color: "#f59e0b" };
-  if (warPerM >= 0.25) return { grade: "B-", color: "#fb923c" };
-  if (warPerM >= 0.18) return { grade: "C+", color: "#fbbf24" };
-  if (warPerM >= 0.13) return { grade: "C", color: "#94a3b8" };
-  if (warPerM >= 0.08) return { grade: "D", color: "#ef4444" };
-  return { grade: "F", color: "#dc2626" };
+// ── VpD GRADE SYSTEM ─────────────────────────────────────────────────────────
+function getVpdGrade(warPerM) {
+  if (warPerM >= 2.00) return { grade: "A+", color: "#10b981", label: "Elite" };
+  if (warPerM >= 1.00) return { grade: "A", color: "#22c55e", label: "Excellent" };
+  if (warPerM >= 0.60) return { grade: "A-", color: "#84cc16", label: "Great" };
+  if (warPerM >= 0.40) return { grade: "B+", color: "#eab308", label: "Very Good" };
+  if (warPerM >= 0.25) return { grade: "B", color: "#f59e0b", label: "Good" };
+  if (warPerM >= 0.18) return { grade: "B-", color: "#fb923c", label: "Above Avg" };
+  if (warPerM >= 0.13) return { grade: "C+", color: "#fbbf24", label: "Fair" };
+  if (warPerM >= 0.10) return { grade: "C", color: "#94a3b8", label: "Below Avg" };
+  if (warPerM >= 0.07) return { grade: "D", color: "#ef4444", label: "Poor Value" };
+  return { grade: "F", color: "#dc2626", label: "Overpaid" };
 }
-const VPD_BG={"A+":"linear-gradient(135deg,#10b981,#059669)","A":"linear-gradient(135deg,#22c55e,#16a34a)","A-":"linear-gradient(135deg,#84cc16,#65a30d)","B+":"linear-gradient(135deg,#eab308,#ca8a04)","B":"linear-gradient(135deg,#f59e0b,#d97706)","B-":"linear-gradient(135deg,#fb923c,#ea580c)","C+":"linear-gradient(135deg,#fbbf24,#d97706)","C":"linear-gradient(135deg,#94a3b8,#64748b)","D":"linear-gradient(135deg,#ef4444,#dc2626)","F":"linear-gradient(135deg,#dc2626,#991b1b)"};
+
+const VPD_STYLES = {
+  "A+": { bg: "linear-gradient(135deg, #10b981, #059669)", color: "#fff" },
+  "A":  { bg: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff" },
+  "A-": { bg: "linear-gradient(135deg, #84cc16, #65a30d)", color: "#fff" },
+  "B+": { bg: "linear-gradient(135deg, #eab308, #ca8a04)", color: "#fff" },
+  "B":  { bg: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff" },
+  "B-": { bg: "linear-gradient(135deg, #fb923c, #ea580c)", color: "#fff" },
+  "C+": { bg: "linear-gradient(135deg, #fbbf24, #d97706)", color: "#78350f" },
+  "C":  { bg: "linear-gradient(135deg, #94a3b8, #64748b)", color: "#fff" },
+  "D":  { bg: "linear-gradient(135deg, #ef4444, #dc2626)", color: "#fff" },
+  "F":  { bg: "linear-gradient(135deg, #dc2626, #991b1b)", color: "#fff" },
+};
+
 const VpDBadge = ({war, salary}) => {
   if (!war || !salary || salary <= 0) return null;
-  const g = getVpdGradeGlobal(war / (salary / 1000000));
-  return (<span style={{fontSize:10,fontWeight:800,padding:"3px 10px",borderRadius:5,fontFamily:F,background:VPD_BG[g.grade]||VPD_BG["C"],color:g.grade==="C+"?"#78350f":"#fff",display:"inline-block",letterSpacing:".04em"}}>{g.grade} VpD</span>);
+  const warPerM = war / (salary / 1000000);
+  const g = getVpdGrade(warPerM);
+  const s = VPD_STYLES[g.grade] || VPD_STYLES["C"];
+  return (
+    <span style={{
+      fontSize:10, fontWeight:800, padding:"3px 10px", borderRadius:5, fontFamily:F,
+      background: s.bg, color: s.color, display:"inline-block", letterSpacing:".04em",
+    }}>{g.grade} VpD</span>
+  );
 };
+
+// Cache for contract data so it loads once
 let _contractCache = null;
 async function getContractData() {
   if (_contractCache) return _contractCache;
-  try { const m = await import("./contract_data.json"); _contractCache = m.default||m; return _contractCache; } catch { return {}; }
+  try {
+    const mod = await import("./contract_data.json");
+    _contractCache = mod.default || mod;
+    return _contractCache;
+  } catch { return {}; }
 }
-function getPlayerSalary(name) { return _contractCache ? (_contractCache[name]||null) : null; }
+
+function getPlayerSalary(name) {
+  if (!_contractCache) return null;
+  return _contractCache[name] || null;
+}
 
 // ── STATCAST LOOKUP (batted ball data for top prospects) ────────────────────
 // avgEV (mph), maxEV (mph), barrelPct (%)
@@ -271,18 +299,6 @@ const STATCAST_DATA = {
   "Carson Williams":  { avgEV: 87.2, maxEV: 104.8, barrelPct: 8.2 },
 };
 
-
-
-function getSavantPlayer(playerId, playerName) {
-  const byId = SAVANT_DATA[String(playerId)];
-  if (byId && byId.seasons) return byId;
-  if (playerName) {
-    const norm = normalizeN(playerName);
-    const match = Object.values(SAVANT_DATA).find(p => normalizeN(p.name) === norm);
-    if (match && match.seasons) return match;
-  }
-  return null;
-}
 
 function getStatcast(playerName) {
   return STATCAST_DATA[playerName] || null;
@@ -517,87 +533,6 @@ const FV_BENCHMARKS = {
 };
 
 const AVG_AGE_AT_LEVEL = { ROK: 18.5, A: 20.5, "A+": 22, AA: 23, AAA: 24.5, MLB: 27 };
-
-
-// VIAcast Statcast Projection Engine
-function projectFromStatcast(sP, age, posCode, playerName, playerId) {
-  const S = sP.seasons || {}, yrs = Object.keys(S).sort().reverse();
-  if (!yrs.length) return null;
-  const W=[.55,.30,.15], lat=S[yrs[0]]||{}, pa0=lat.pa||0;
-  let wxw=0,wev=0,wbr=0,tw1=0;
-  yrs.forEach((yr,i)=>{const s=S[yr],w=W[i]||.05,pw=w*Math.min(1,(s.pa||0)/400);
-    if(s.xwoba!=null){wxw+=s.xwoba*pw;tw1+=pw}if(s.avg_ev!=null)wev+=s.avg_ev*pw;
-    if(s.barrel_pct!=null)wbr+=s.barrel_pct*pw});
-  const pXw=tw1>0?wxw/tw1:.310, pEV=tw1>0?wev/tw1:87, pBrl=tw1>0?wbr/tw1:6;
-  const ev5T=yrs.length>=2&&S[yrs[0]]?.ev50&&S[yrs[1]]?.ev50?S[yrs[0]].ev50-S[yrs[1]].ev50:0;
-  let wbb=0,wk=0,wos=0,wzs=0,tw2=0;
-  yrs.forEach((yr,i)=>{const s=S[yr],w=W[i]||.05,pw=w*Math.min(1,(s.pa||0)/200);
-    if(s.bb_pct!=null){wbb+=s.bb_pct*pw;tw2+=pw}if(s.k_pct!=null)wk+=s.k_pct*pw;
-    if(s.o_swing_pct!=null)wos+=s.o_swing_pct*pw;if(s.z_swing_pct!=null)wzs+=s.z_swing_pct*pw});
-  const pBB=tw2>0?wbb/tw2:.08, pK=tw2>0?wk/tw2:.22;
-  const pOs=tw2>0?wos/tw2:null, pZs=tw2>0?wzs/tw2:null;
-  const selI=(pOs&&pZs&&pOs>0)?pZs/pOs:null;
-  const chT=yrs.length>=2&&S[yrs[0]]?.o_swing_pct!=null&&S[yrs[1]]?.o_swing_pct!=null?S[yrs[1]].o_swing_pct-S[yrs[0]].o_swing_pct:0;
-  const bsT=yrs.length>=2&&S[yrs[0]]?.bat_speed&&S[yrs[1]]?.bat_speed?S[yrs[0]].bat_speed-S[yrs[1]].bat_speed:0;
-  const spd=sP.sprint_speed||null; let bsr=0;
-  if(spd){let a2=spd;if(age>28)a2-=(age-28)*.15;bsr=a2>=30?5:a2>=29?3.5:a2>=28?2:a2>=27?0:a2>=25.5?-2:-4}
-  const oaa=sP.oaa!=null?sP.oaa:null;
-  const dPk=(posCode==="6"||posCode==="8")?26:(posCode==="4"||posCode==="5")?27:28;
-  const dAg=Math.max(.3,1-Math.max(0,age-dPk)*.06);
-  let dR=0; if(oaa!==null)dR=oaa*.6*1.5*dAg;
-  const ap=getAP(posCode), pk=ap.peak; let af=1;
-  if(age<pk)af=Math.pow(1.02,pk-age);
-  else if(age<=32)af=Math.pow(.985,age-pk);
-  else af=Math.pow(.985,32-pk)*Math.pow(.97,age-32);
-  let tb=0;
-  if(yrs.length>=2){const x0=S[yrs[0]]?.xwoba,x1=S[yrs[1]]?.xwoba;
-    const x2=yrs.length>=3?S[yrs[2]]?.xwoba:null;
-    if(x0!=null&&x1!=null){const d1=x0-x1,d2=x2!=null?x1-x2:null;
-      if(d2!=null&&Math.sign(d1)===Math.sign(d2)&&d1>0)tb+=d1*.3;else tb+=d1*.15}}
-  if(chT>.02)tb+=chT*.15; if(ev5T>1.5)tb+=.005; if(bsT<-1.5)tb-=.008;
-  const axw=Math.max(.2,Math.min(.5,pXw+tb))*af;
-  let db=0;
-  if(selI!=null){if(selI>3.5)db=Math.min(5,(selI-3.5)*3);else if(selI<2)db=Math.max(-4,(selI-2)*3)}
-  if(pK<.15)db+=3;else if(pK>.30)db-=2; if(pBB>.12)db+=2;
-  const wrc=Math.max(60,Math.min(190,Math.round(((axw-.315)/.01)*3.2+100+db)));
-  const ops=Math.max(.52,Math.min(1.15,wrc*.0072+.002));
-  const avg=lat.xba!=null?Math.max(.18,Math.min(.34,lat.xba*af)):Math.max(.2,Math.min(.32,(ops-.1)/2.5));
-  const obp=Math.max(.26,Math.min(.45,avg+pBB*.85+.02));
-  const slg=Math.max(.3,Math.min(.7,ops-obp+avg));
-  const ePA=Math.min(700,Math.max(200,pa0*.97));
-  const hr=Math.round(Math.max(0,pBrl/100*(ePA*.75)*.24*af));
-  const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
-  const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
-  const fv=getPlayerFV(playerId,playerName);let fW=rW;
-  if(fv){const b=FV_BENCHMARKS[Math.min(70,Math.max(40,fv))]||FV_BENCHMARKS[50];
-    fW=Math.max(b.war*.3,Math.min(b.war*1.8,rW))}
-  fW=Math.round(fW*10)/10;
-  const tPA=yrs.reduce((s,yr)=>s+(S[yr]?.pa||0),0);
-  return{ops:Math.round(ops*1e3)/1e3,obp:Math.round(obp*1e3)/1e3,
-    slg:Math.round(slg*1e3)/1e3,avg:Math.round(avg*1e3)/1e3,
-    wRCPlus:wrc,baseWAR:fW,estPA:Math.round(ePA),hr:hr,
-    paReliability:Math.min(95,Math.round((tPA/1200)*95)),
-    highestLevel:"MLB",peakAge:pk,ageForLevel:0,translationNote:null,
-    _statcast:{xwoba:Math.round(axw*1e3)/1e3,projEV:Math.round(pEV*10)/10,
-      projBarrel:Math.round(pBrl*10)/10,
-      projK:pK!=null?Math.round(pK*1e3)/10:null,
-      projBB:pBB!=null?Math.round(pBB*1e3)/10:null,
-      sprintSpeed:spd,oaa:oaa,
-      trendBoost:Math.round(tb*1e3)/1e3,
-      selectivityIndex:selI?Math.round(selI*100)/100:null}};
-}
-
-function projectPlayer(splits, age, posCode, name, id) {
-  const savP = getSavantPlayer(id, name);
-  if (savP && Object.keys(savP.seasons || {}).length > 0) {
-    const sc = projectFromStatcast(savP, age, posCode, name, id);
-    if (sc) return sc;
-  }
-  return splits && splits.length
-    ? projectFromSeasons(splits, age, posCode, name, id)
-    : null;
-}
-
 
 function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   const valid = splits
@@ -935,7 +870,7 @@ function projectPitcherForward(base, age, years = 10) {
     } else {
       f = Math.pow(1 - ap.dr, d);
     }
-    out.push({ age: a, season: String(2026 + (out.length)), war: Math.max(-0.5, base.baseWAR * f) });
+    out.push({ age: a, war: Math.max(-0.5, base.baseWAR * f) });
   }
   return out;
 }
@@ -958,7 +893,7 @@ function projectForward(base, age, posCode, years = 10) {
     const wrc = Math.max(60, Math.round(100 + (base.wRCPlus - 100) * f));
     const ops = Math.max(0.500, base.ops * (0.5 + 0.5 * f));
     return {
-      age: a, year: 2026 + yr, season: String(2026 + yr),
+      age: a, year: 2026 + yr,
       war: Math.round(war*10)/10,
       wrcPlus: wrc,
       ops: Math.round(ops*1000)/1000,
@@ -1172,11 +1107,6 @@ function PlayerCard({player}) {
   const base = useMemo(() => {
     if (isPitcher) {
       return pitchCareer.length ? projectPitcherFromSeasons(pitchCareer, player.currentAge, player.fullName, player.id) : null;
-    }
-    const savP = getSavantPlayer(player.id, player.fullName);
-    if (savP && Object.keys(savP.seasons || {}).length > 0) {
-      const scProj = projectFromStatcast(savP, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
-      if (scProj) return scProj;
     }
     return career.length ? projectFromSeasons(career, player.currentAge, player.primaryPosition?.code, player.fullName, player.id) : null;
   }, [career, pitchCareer, player, isPitcher]);
@@ -1578,7 +1508,7 @@ function Leaderboard({ onSelect }) {
           const splits = await fetchPlayerSeasonStats(p.id);
           if (!splits.length) return null;
 
-          const base = projectPlayer(splits, p.currentAge, p.primaryPosition?.code, p.fullName, p.id);
+          const base = projectFromSeasons(splits, p.currentAge, p.primaryPosition?.code, p.fullName, p.id);
           if (!base) return null;
 
           const forward = projectForward(base, p.currentAge, p.primaryPosition?.code);
@@ -1842,65 +1772,63 @@ function VpDPanel() {
   const [vpdSearch, setVpdSearch] = useState("");
 
 
-  function getVpdGrade(warPerM) {
-    if (warPerM >= 4.00) return { grade: "A+", color: "#10b981", label: "Elite" };
-    if (warPerM >= 2.00) return { grade: "A", color: "#22c55e", label: "Excellent" };
-    if (warPerM >= 1.00) return { grade: "A-", color: "#84cc16", label: "Great" };
-    if (warPerM >= 0.60) return { grade: "B+", color: "#eab308", label: "Very Good" };
-    if (warPerM >= 0.40) return { grade: "B", color: "#f59e0b", label: "Good" };
-    if (warPerM >= 0.25) return { grade: "B-", color: "#fb923c", label: "Above Avg" };
-    if (warPerM >= 0.18) return { grade: "C+", color: "#fbbf24", label: "Fair" };
-    if (warPerM >= 0.13) return { grade: "C", color: "#94a3b8", label: "Below Avg" };
-    if (warPerM >= 0.08) return { grade: "D", color: "#ef4444", label: "Poor Value" };
-    return { grade: "F", color: "#dc2626", label: "Overpaid" };
-  }
-
-
   useEffect(() => {
     async function loadData() {
       try {
         const contracts = await import("./contract_data.json");
-        const cMap = contracts.default || contracts;
-        setContractData(cMap);
-        _contractCache = cMap;
+        const contractMap = contracts.default || contracts;
+        setContractData(contractMap);
+        _contractCache = contractMap;
         
-        const playerPromises = Object.keys(contracts.default || contracts).filter(name => (contracts.default || contracts)[name] > 0).map(async (name) => {
-          try {
-            const results = await searchPlayers(name);
-            if (results && results[0]) {
-              const player = await getPlayerStats(results[0].id);
-              if (!player) return null;
-              const isPitcher = player.primaryPosition?.code === "1";
-              const career = await getPlayerCareer(player.id, isPitcher ? "pitching" : "hitting");
-              let base;
-              if (isPitcher) {
-                base = projectPitcherFromSeasons(career.filter(s => parseFloat(s.stat?.inningsPitched || 0) > 0), player.currentAge, player.fullName, player.id);
-              } else {
-                const splits = career.filter(s => s.stat?.plateAppearances > 0);
-                base = projectPlayer(splits, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
+        const names = Object.keys(contractMap).filter(name => contractMap[name] > 0);
+        const allResults = [];
+        
+        // Process in batches of 8 to avoid rate limiting
+        const BATCH_SIZE = 8;
+        for (let i = 0; i < names.length; i += BATCH_SIZE) {
+          const batch = names.slice(i, i + BATCH_SIZE);
+          const batchResults = await Promise.all(batch.map(async (name) => {
+            try {
+              const results = await searchPlayers(name);
+              if (results && results[0]) {
+                const player = await getPlayerStats(results[0].id);
+                if (!player) return null;
+                const isPitcher = player.primaryPosition?.code === "1";
+                const career = await getPlayerCareer(player.id, isPitcher ? "pitching" : "hitting");
+                let base;
+                if (isPitcher) {
+                  base = projectPitcherFromSeasons(career.filter(s => parseFloat(s.stat?.inningsPitched || 0) > 0), player.currentAge, player.fullName, player.id);
+                } else {
+                  const splits = career.filter(s => s.stat?.plateAppearances > 0);
+                  base = projectFromSeasons(splits, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
+                }
+                
+                if (base && base.baseWAR) {
+                  const salary = contractMap[name];
+                  return {
+                    name: player.fullName,
+                    salary: salary,
+                    war: base.baseWAR,
+                    warPerM: base.baseWAR / (salary / 1000000),
+                    pos: player.primaryPosition?.code,
+                    team: player.currentTeam?.abbreviation || player.currentTeam?.name || "FA"
+                  };
+                }
               }
-              
-              if (base && base.baseWAR) {
-                const salary = (contracts.default || contracts)[name];
-                return {
-                  name: player.fullName,
-                  salary: salary,
-                  war: base.baseWAR,
-                  warPerM: base.baseWAR / (salary / 1000000),
-                  pos: player.primaryPosition?.code,
-                  team: player.currentTeam?.abbreviation || player.currentTeam?.name || "FA"
-                };
-              }
+            } catch (e) {
+              console.error(`Failed to load ${name}:`, e);
             }
-          } catch (e) {
-            console.error(`Failed to load ${name}:`, e);
-          }
-          return null;
-        });
-        const results = await Promise.all(playerPromises);
-        const validResults = results.filter(Boolean);
-        const top100 = validResults.sort((a, b) => b.warPerM - a.warPerM);
-        setPlayers(top100);
+            return null;
+          }));
+          allResults.push(...batchResults);
+          // Update UI progressively every batch
+          const validSoFar = allResults.filter(Boolean);
+          setPlayers(validSoFar.sort((a, b) => b.warPerM - a.warPerM));
+          if (i === 0) setLoading(false); // Show results after first batch
+        }
+        // Final sort
+        const validResults = allResults.filter(Boolean);
+        setPlayers(validResults.sort((a, b) => b.warPerM - a.warPerM));
         setLoading(false);
       } catch (e) {
         console.error("Failed to load contract data:", e);
@@ -1912,7 +1840,10 @@ function VpDPanel() {
 
   const sorted = useMemo(() => {
     let filtered = [...players];
-    if (vpdSearch.trim()) { const q = vpdSearch.toLowerCase(); filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || (p.team||"").toLowerCase().includes(q)); }
+    if (vpdSearch.trim()) {
+      const q = vpdSearch.toLowerCase();
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || (p.team||"").toLowerCase().includes(q));
+    }
     return filtered.sort((a, b) => {
       const aVal = a[sort.key];
       const bVal = b[sort.key];
@@ -1924,7 +1855,22 @@ function VpDPanel() {
   return (
     <div>
       <Panel title="VALUE PER DOLLAR (VpD)" sub="Most cost-efficient players based on projected WAR vs. 2026 salary">
-        <div style={{marginBottom:12}}><input type="text" placeholder="Search players or teams..." value={vpdSearch} onChange={e=>setVpdSearch(e.target.value)} style={{width:"100%",maxWidth:360,padding:"8px 12px",borderRadius:6,border:`1px solid ${C.border}`,background:C.panel,color:C.text,fontSize:12,fontFamily:F,outline:"none",boxSizing:"border-box"}} onFocus={e=>e.target.style.borderColor=C.accent} onBlur={e=>e.target.style.borderColor=C.border}/>{!loading&&<span style={{marginLeft:10,fontSize:10,color:C.muted,fontFamily:F}}>{sorted.length} players</span>}</div>
+        <div style={{marginBottom:12}}>
+          <input
+            type="text"
+            placeholder="Search players or teams..."
+            value={vpdSearch}
+            onChange={e => setVpdSearch(e.target.value)}
+            style={{
+              width:"100%",maxWidth:360,padding:"8px 12px",borderRadius:6,
+              border:`1px solid ${C.border}`,background:C.panel,color:C.text,
+              fontSize:12,fontFamily:F,outline:"none",boxSizing:"border-box",
+            }}
+            onFocus={e => e.target.style.borderColor = C.accent}
+            onBlur={e => e.target.style.borderColor = C.border}
+          />
+          {!loading && <span style={{marginLeft:10,fontSize:10,color:C.muted,fontFamily:F}}>{sorted.length} players loaded</span>}
+        </div>
         {loading && <Spinner msg="Loading contract data and projections..."/>}
         {!loading && players.length === 0 && <p style={{color:C.muted,fontSize:11,fontFamily:F}}>No data available</p>}
         {!loading && players.length > 0 && (
@@ -2029,7 +1975,7 @@ function CardMarketplace({ onSelect }) {
         forward = base ? projectPitcherForward(base, player.currentAge) : [];
       } else {
         const splits = career.filter(s => s.stat?.plateAppearances > 0);
-        base = projectPlayer(splits, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
+        base = projectFromSeasons(splits, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
         forward = base ? projectForward(base, player.currentAge, player.primaryPosition?.code) : [];
       }
       const fv = getPlayerFV(player.id, player.fullName);
@@ -2234,7 +2180,6 @@ function MethodPanel() {
           {n:"FanGraphs FV",d:"Future Value grades for top 100+ prospects. Hardcoded lookup table, updated seasonally.",c:C.green,s:"STATIC"},
           {n:"Statcast/TrackMan",d:"Batted ball data: avg EV, max EV, barrel% for top prospects. Hardcoded from MiLB TrackMan.",c:C.purple,s:"STATIC"},
           {n:"Baseball Savant",d:"Statcast: xwOBA, barrel%, exit velocity, sprint speed. Full integration planned.",c:C.accent,s:"PLANNED"},
-          {n:"Contract Data",d:"2026 salary data for 190+ MLB players. Sources: Spotrac, MLB Trade Rumors, Cot's Baseball Contracts.",c:C.orange,s:"STATIC"},
         ].map(s=><div key={s.n} style={{padding:"12px 14px",background:`${s.c}06`,border:`1px solid ${s.c}18`,borderRadius:8}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
             <span style={{fontSize:12,fontWeight:700,color:s.c,fontFamily:F}}>{s.n}</span>
@@ -2250,7 +2195,7 @@ function MethodPanel() {
           <div key={fv} style={{padding:"10px 12px",borderRadius:6,border:`1px solid ${C.border}`}}>
             <div style={{marginBottom:6}}><FVBadge fv={fv}/></div>
             <div style={{fontSize:9,color:C.muted,fontFamily:F}}>
-              {fv>=70?"Franchise Player":fv>=65?"Perennial All-Star":fv>=60?"All-Star upside":fv>=55?"Above-avg regular":fv>=50?"Avg regular":fv>=45?"Solid backup":fv>=40?"Fringe MLB":"—"}
+              {fv>=65?"Perennial All-Star":fv>=60?"All-Star upside":fv>=55?"Above-avg regular":fv>=50?"Avg regular":fv>=45?"Solid backup":fv>=40?"Fringe MLB":"—"}
             </div>
           </div>
         );})}
@@ -2294,7 +2239,7 @@ function MethodPanel() {
         <p style={{margin:"0 0 12px"}}>Young-for-level players get exponential boosts (4yr young = +35%). Post-peak aging is quadratic for offense, linear for defense. Position-specific peaks: SS 26, CF 27, corners 28, DH 29. Catchers age fastest.</p>
         
         <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Value per Dollar (VpD) Grades</h4>
-        <p style={{margin:0}}>Cost efficiency graded A+ to F based on projected WAR per million dollars of 2026 salary. A+ (4.0+ WAR/$1M) = elite pre-arb superstars producing far above their cost. A (2.0+) = excellent value. A- (1.0+) = great bargains. B+/B (0.40-0.60) = solid, team-friendly deals. C+/C (0.13-0.18) = average efficiency. D/F = significantly overpaid relative to production. Salary data sourced from Spotrac and MLB Trade Rumors.</p>
+        <p style={{margin:0}}>Cost efficiency graded A+ to F based on WAR per million dollars. A+ (2.0+ WAR/$1M) = elite bargains like pre-arb stars. A (1.0+) = excellent value. B (0.25-0.40) = solid contracts. C (0.10-0.13) = average efficiency. D/F = overpaid. Identifies market inefficiencies and roster-building opportunities.</p>
       </div>
 
     </Panel>
@@ -2353,7 +2298,7 @@ function PlayerOfTheDay({onSelect}) {
         if (splits.length) {
           const base = isPitch
             ? projectPitcherFromSeasons(splits, player.currentAge, player.fullName, player.id)
-            : projectPlayer(splits, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
+            : projectFromSeasons(splits, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
           const fv = getPlayerFV(player.id, player.fullName);
           const cWAR = getCareerWAR(player.id, player.fullName);
           setPotdData({ player, base, fv, cWAR });
@@ -2474,7 +2419,7 @@ function ComparePanel({ onSelect }) {
         forward = base ? projectPitcherForward(base, (fullPlayer || player).currentAge) : [];
       } else {
         const splits = career.filter(s => s.stat?.plateAppearances > 0);
-        base = projectPlayer(splits, (fullPlayer || player).currentAge, (fullPlayer || player).primaryPosition?.code, (fullPlayer || player).fullName, (fullPlayer || player).id);
+        base = projectFromSeasons(splits, (fullPlayer || player).currentAge, (fullPlayer || player).primaryPosition?.code, (fullPlayer || player).fullName, (fullPlayer || player).id);
         forward = base ? projectForward(base, (fullPlayer || player).currentAge, (fullPlayer || player).primaryPosition?.code) : [];
       }
       const np = [...projections]; np[idx] = { base, forward, isPitcher }; setProjections(np);

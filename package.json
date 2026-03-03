@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && vercel --prod && vercel alias $(vercel ls --meta production=true | grep https | head -1 | awk '{print $2}') viacastbaseball.com"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
