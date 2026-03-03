@@ -974,29 +974,40 @@ function projectPitcherForward(base, age, years = 10) {
 
 function projectForward(base, age, posCode, years = 10) {
   const ap = getAP(posCode);
+  // For pre-peak players, estimate peak WAR from FV or current projection
+  // Peak = current WAR scaled up by development remaining
+  const yearsToPeak = Math.max(0, ap.peak - age);
+  // Peak multiplier: young players have more upside
+  // ~5% improvement per year of development remaining
+  const peakMult = yearsToPeak > 0 ? 1 + yearsToPeak * 0.05 : 1.0;
+  const peakWAR = base.baseWAR * Math.min(2.5, peakMult);
+  const peakWRC = Math.round(100 + (base.wRCPlus - 100) * Math.min(2.5, peakMult));
+  const peakOPS = base.ops * (0.5 + 0.5 * Math.min(2.5, peakMult));
+
   return Array.from({ length: years }, (_, yr) => {
     const a = age + yr;
     if (a > 42) return null;
     const d = a - ap.peak;
-    let f;
+    let war, wrc, ops;
     if (d <= 0) {
-      const yearsToGo = Math.abs(d);
-      // Growth curve: young players improve ~4% per year toward peak
-      // At peak-1: +4%, peak-2: +7%, peak-3: +9%, etc.
-      // Farther from peak = more room to grow per year
-      f = 1 + Math.min(0.25, yearsToGo * 0.04);
-      f = Math.max(1.0, Math.min(1.30, f));
+      // Pre-peak: linear ramp from current to peak
+      const progress = yearsToPeak > 0 ? yr / yearsToPeak : 1;
+      const t = Math.min(1, progress);
+      war = base.baseWAR + (peakWAR - base.baseWAR) * t;
+      wrc = Math.round(base.wRCPlus + (peakWRC - base.wRCPlus) * t);
+      ops = base.ops + (peakOPS - base.ops) * t;
     } else {
-      f = Math.max(0.25, 1 - ap.dr * d);
+      // Post-peak: decline from peak
+      const f = Math.max(0.25, 1 - ap.dr * d);
+      war = peakWAR * f;
+      wrc = Math.round(100 + (peakWRC - 100) * f);
+      ops = peakOPS * (0.5 + 0.5 * f);
     }
-    const war = Math.max(-1, base.baseWAR * f);
-    const wrc = Math.max(60, Math.round(100 + (base.wRCPlus - 100) * f));
-    const ops = Math.max(0.500, base.ops * (0.5 + 0.5 * f));
     return {
       age: a, year: 2026 + yr, season: String(2026 + yr),
-      war: Math.round(war*10)/10,
-      wrcPlus: wrc,
-      ops: Math.round(ops*1000)/1000,
+      war: Math.round(Math.max(-1, war)*10)/10,
+      wrcPlus: Math.max(60, wrc),
+      ops: Math.round(Math.max(0.500, ops)*1000)/1000,
     };
   }).filter(Boolean);
 }
