@@ -539,10 +539,10 @@ function detectLevel(split) {
 // Historical MLB outcome benchmarks by FV tier (peak season OPS / WAR / wRC+)
 // Based on FanGraphs research on prospect outcome distributions
 const FV_BENCHMARKS = {
-  70: { ops: .940, war: 7.0, wrc: 150, floor_ops: .850, ceil_ops: 1.050 },
-  65: { ops: .870, war: 5.0, wrc: 135, floor_ops: .780, ceil_ops: .960 },
-  60: { ops: .820, war: 3.5, wrc: 125, floor_ops: .720, ceil_ops: .900 },
-  55: { ops: .780, war: 2.5, wrc: 115, floor_ops: .690, ceil_ops: .860 },
+  70: { ops: .960, war: 8.0, wrc: 160, floor_ops: .860, ceil_ops: 1.100 },
+  65: { ops: .880, war: 5.5, wrc: 140, floor_ops: .790, ceil_ops: .980 },
+  60: { ops: .830, war: 4.0, wrc: 128, floor_ops: .730, ceil_ops: .920 },
+  55: { ops: .785, war: 2.8, wrc: 118, floor_ops: .695, ceil_ops: .870 },
   50: { ops: .740, war: 1.8, wrc: 105, floor_ops: .660, ceil_ops: .820 },
   45: { ops: .710, war: 1.0, wrc: 98,  floor_ops: .640, ceil_ops: .780 },
   40: { ops: .680, war: 0.5, wrc: 90,  floor_ops: .620, ceil_ops: .750 },
@@ -602,7 +602,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
   const fv=getPlayerFV(playerId,playerName);let fW=rW;
   if(fv){const b=FV_BENCHMARKS[Math.min(70,Math.max(40,fv))]||FV_BENCHMARKS[50];
-    fW=Math.max(b.war*.3,Math.min(b.war*1.8,rW))}
+    fW=Math.max(b.war*.25,Math.min(b.war*2.0,rW))}
   fW=Math.round(fW*10)/10;
   const tPA=yrs.reduce((s,yr)=>s+(S[yr]?.pa||0),0);
   return{ops:Math.round(ops*1e3)/1e3,obp:Math.round(obp*1e3)/1e3,
@@ -728,7 +728,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   if (fv && highestLevel !== "MLB") {
     const bench = FV_BENCHMARKS[Math.min(70, Math.max(40, fv))] || FV_BENCHMARKS[50];
     // PA-scaled blend: >400 PA = trust stats heavily, <100 PA = trust FV heavily
-    const statWeight = Math.min(0.75, Math.max(0.2, paRel * 0.9));
+    const statWeight = Math.min(0.85, Math.max(0.15, paRel * 0.95));
     const fvWeight = 1 - statWeight;
     const statsOPS = finalAdjustedOPS * paRel + lgOPS * (1 - paRel);
     finalOPS = statsOPS * statWeight + bench.ops * fvWeight;
@@ -738,8 +738,8 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
     finalWRC = Math.round((finalOPS / lgOPS) * 100) + Math.round(trans.wrcAdj * (1 - paRel));
   }
 
-  finalOPS = Math.max(0.560, Math.min(1.100, finalOPS));
-  finalWRC = Math.max(65, Math.min(185, finalWRC));
+  finalOPS = Math.max(0.560, Math.min(1.150, finalOPS));
+  finalWRC = Math.max(65, Math.min(195, finalWRC));
 
   const ap = getAP(posCode);
   const estPA = highestLevel === "MLB"
@@ -808,7 +808,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   let clampedWAR = baseWAR;
   if (fv) {
     const bench = FV_BENCHMARKS[Math.min(70, Math.max(40, fv))] || FV_BENCHMARKS[50];
-    clampedWAR = Math.max(bench.war * 0.35, Math.min(bench.war * 1.7, baseWAR));
+    clampedWAR = Math.max(bench.war * 0.30, Math.min(bench.war * 2.0, baseWAR));
   }
 
   const finalOBP = (wOBP/tw) * ageBoost * performanceBoost;
@@ -981,8 +981,11 @@ function projectForward(base, age, posCode, years = 10) {
     let f;
     if (d <= 0) {
       const yearsToGo = Math.abs(d);
-      f = 1 + Math.min(0.12, (3 - yearsToGo) * 0.03);
-      f = Math.max(0.88, Math.min(1.25, f));
+      // Growth curve: young players improve ~4% per year toward peak
+      // At peak-1: +4%, peak-2: +7%, peak-3: +9%, etc.
+      // Farther from peak = more room to grow per year
+      f = 1 + Math.min(0.25, yearsToGo * 0.04);
+      f = Math.max(1.0, Math.min(1.30, f));
     } else {
       f = Math.max(0.25, 1 - ap.dr * d);
     }
