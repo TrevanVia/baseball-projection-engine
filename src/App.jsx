@@ -2288,29 +2288,42 @@ function MethodPanel() {
     </Panel>
     <Panel title="PROJECTION METHODOLOGY">
       <div style={{fontSize:12,color:C.dim,lineHeight:1.8,fontFamily:F}}>
-        <h4 style={{color:C.accent,fontSize:13,margin:"0 0 4px"}}>PA-Weighted Marcel</h4>
-        <p style={{margin:"0 0 12px"}}>3 most recent seasons weighted 5/4/3 with PA scaling and recency multiplier (2025 &gt; 2024 &gt; 2023). MiLB stats translated to MLB equivalents before weighting. Regression to league mean scales with sample size.</p>
-        
-        <h4 style={{color:C.blue,fontSize:13,margin:"0 0 4px"}}>Expected Stats (xwOBA)</h4>
-        <p style={{margin:"0 0 12px"}}>For MLB players with Statcast data, expected wOBA (xwOBA) from Baseball Savant is used to identify unlucky BABIP seasons. Players whose xwOBA significantly exceeds actual performance get a positive adjustment (up to +15%).</p>
-        
-        <h4 style={{color:C.purple,fontSize:13,margin:"0 0 4px"}}>Batted Ball Quality</h4>
-        <p style={{margin:"0 0 12px"}}>Exit velocity, max exit velocity, and barrel rate from Statcast inform projection adjustments. Elite barrel rates (10%+) can boost projections ~20%. Combines with xwOBA to capture true offensive talent.</p>
-        
-        <h4 style={{color:C.green,fontSize:13,margin:"0 0 4px"}}>Defense & Baserunning</h4>
-        <p style={{margin:"0 0 12px"}}>Defense: OAA (Outs Above Average, 70% weight) + DRS (30% weight). Decays with age past position-specific defensive peaks. Baserunning: Sprint speed tiers for MLB players (+6 to -2 runs). MiLB players use SB/CS/G with efficiency penalties.</p>
-        
-        <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>WAR Construction</h4>
-        <p style={{margin:"0 0 12px"}}>Batting runs (wRC+ × PA × 0.115) + defensive runs + baserunning runs + positional adjustment (FanGraphs scale: SS +7.5, CF +2.5, RF -5.0, 1B -12.5, DH -17.5) + replacement level, divided by 9.5 runs/win.</p>
-        
-        <h4 style={{color:"#ec4899",fontSize:13,margin:"0 0 4px"}}>FV Grade Benchmarks</h4>
-        <p style={{margin:"0 0 12px"}}>Prospect FV grades (70/65/60/55/50/45/40) provide target WAR outcomes. For MiLB players, stats-based projections are blended with FV benchmarks weighted by sample size. Higher PA = more stat weight, lower PA = more FV weight.</p>
-        
-        <h4 style={{color:C.text,fontSize:13,margin:"0 0 4px"}}>Age-for-Level & Aging Curves</h4>
-        <p style={{margin:"0 0 12px"}}>Young-for-level players get exponential boosts (4yr young = +35%). Post-peak aging is quadratic for offense, linear for defense. Position-specific peaks: SS 26, CF 27, corners 28, DH 29. Catchers age fastest.</p>
-        
-        <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Value per Dollar (VpD) Grades</h4>
-        <p style={{margin:0}}>Cost efficiency graded A+ to F based on projected WAR per million dollars of 2026 salary. A+ (4.0+ WAR/$1M) = elite pre-arb superstars producing far above their cost. A (2.0+) = excellent value. A- (1.0+) = great bargains. B+/B (0.40-0.60) = solid, team-friendly deals. C+/C (0.13-0.18) = average efficiency. D/F = significantly overpaid relative to production. Salary data sourced from Spotrac and MLB Trade Rumors.</p>
+
+        <h4 style={{color:C.accent,fontSize:13,margin:"0 0 4px"}}>VIAcast Statcast Engine (MLB Players)</h4>
+        <p style={{margin:"0 0 12px"}}>For MLB players with Statcast data (900+ players), VIAcast uses a 7-layer projection system built on 3 years of Baseball Savant and FanGraphs data. This replaces the traditional Marcel approach with process-based metrics that better predict future performance.</p>
+
+        <h4 style={{color:C.blue,fontSize:13,margin:"0 0 4px"}}>Layer 1: Contact Quality (40%)</h4>
+        <p style={{margin:"0 0 12px"}}>Expected wOBA (xwOBA) is the projection anchor. Weighted across 3 seasons (55/30/15%) with PA reliability scaling. Supported by avg exit velocity, EV50, barrel rate, and hard-hit rate.</p>
+
+        <h4 style={{color:C.purple,fontSize:13,margin:"0 0 4px"}}>Layer 2: Plate Discipline (25%)</h4>
+        <p style={{margin:"0 0 12px"}}>K% and BB% are the strongest predictive signals. Chase rate (O-Swing%), zone contact, and swinging-strike rate from FanGraphs. Selectivity index (Z-Swing/O-Swing) identifies elite pitch recognition.</p>
+
+        <h4 style={{color:"#ec4899",fontSize:13,margin:"0 0 4px"}}>Layer 3: Swing Mechanics (10%)</h4>
+        <p style={{margin:"0 0 12px"}}>Bat speed and squared-up rate from Statcast bat tracking. Year-over-year bat speed trends detect early aging signals before traditional stats reflect it.</p>
+
+        <h4 style={{color:C.green,fontSize:13,margin:"0 0 4px"}}>Layer 4: Speed & Baserunning (10%)</h4>
+        <p style={{margin:"0 0 12px"}}>Sprint speed (ft/s) with age-adjusted decay (-0.15 ft/s per year after 28). Tiers from elite (30+ ft/s, +5 runs) to below-average (sub-25.5, -4 runs).</p>
+
+        <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Layer 5: Defense</h4>
+        <p style={{margin:"0 0 12px"}}>OAA from Statcast, regressed 40% toward zero. ~1.5 runs per OAA with position-specific aging (SS/CF peak 26, corners 28).</p>
+
+        <h4 style={{color:C.text,fontSize:13,margin:"0 0 4px"}}>Layer 6: Aging Curves</h4>
+        <p style={{margin:"0 0 12px"}}>Pre-peak +2%/yr. Gradual decline -1.5%/yr through 32, steeper -3%/yr after 33. Position-specific peaks (SS 26, CF 27, corners 28, DH 29).</p>
+
+        <h4 style={{color:C.blue,fontSize:13,margin:"0 0 4px"}}>Layer 7: Trend Weighting</h4>
+        <p style={{margin:"0 0 12px"}}>Consistent multi-year improvers get amplified trend credit. Chase rate improvement, EV50 breakouts, and bat speed declines feed momentum adjustments that catch breakouts early.</p>
+
+        <h4 style={{color:C.accent,fontSize:13,margin:"12px 0 4px"}}>Marcel Fallback (MiLB Players)</h4>
+        <p style={{margin:"0 0 12px"}}>Players without Statcast data use PA-weighted Marcel: 3 seasons weighted 5/4/3 with MiLB-to-MLB translation (AAA 87%, AA 80%, A+ 72%). Blended with FV grade benchmarks by sample size.</p>
+
+        <h4 style={{color:C.green,fontSize:13,margin:"0 0 4px"}}>WAR Construction</h4>
+        <p style={{margin:"0 0 12px"}}>xwOBA to wRC+ (0.010 xwOBA = 3.2 wRC+). Batting runs + defense + baserunning + positional adj + replacement, divided by 9.5 runs/win.</p>
+
+        <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Value per Dollar (VpD)</h4>
+        <p style={{margin:"0 0 8px"}}>Projected WAR per $1M salary. A+ (4.0+) to F (below 0.08). Salary data from Spotrac and MLB Trade Rumors.</p>
+
+        <h4 style={{color:C.muted,fontSize:13,margin:"8px 0 4px"}}>Data Sources</h4>
+        <p style={{margin:0}}>Baseball Savant (xwOBA, EV, barrels, sprint speed, OAA, bat speed) | FanGraphs (discipline, wRC+, WAR) | MLB Stats API (rosters, splits) | Spotrac/MLBTR (contracts). Pipeline covers 2023-2025.</p>
       </div>
 
     </Panel>
@@ -2784,7 +2797,7 @@ export default function App() {
       </div>
       <div className="via-footer" style={{padding:"12px 24px",borderTop:`2px solid ${C.navy}`,background:"#f9f5ed",display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
         <span style={{fontSize:8,color:C.muted,fontFamily:F}}>VIAcast v2.1 VIAcast &middot; Data: MLB Stats APImiddot; Data: MLB Stats API &middot; FV: FanGraphs/ESPN consensus &middot; No affiliation with MLB</span>
-        <span style={{fontSize:8,color:C.muted,fontFamily:F}}>Methodology: Marcel (Tango) + level translation + Statcast batted ball adjustments</span>
+        <span style={{fontSize:8,color:C.muted,fontFamily:F}}>Methodology: VIAcast 7-layer Statcast engine + Marcel fallback</span>
         <span style={{fontSize:8,color:C.muted,fontFamily:F}}>Questions or inquiries? <a href="mailto:trevanvia@gmail.com" style={{color:C.accent,textDecoration:"none"}}>trevanvia@gmail.com</a></span>
       </div>
     </div>
