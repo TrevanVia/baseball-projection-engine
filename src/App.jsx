@@ -1292,23 +1292,7 @@ function PlayerCard({player}) {
       </>}
 
       {/* OPS Trajectory — historical + 3 projected seasons */}
-      {!isPitcher&&opsTrajectory.length>=2&&<Panel title="OPS TRAJECTORY" sub="Historical performance + 3-year projection using aging curves and batted ball data.">
-        <ResponsiveContainer width="100%" height={220}>
-          <ComposedChart data={opsTrajectory} margin={{top:10,right:20,left:0,bottom:0}}>
-            <CartesianGrid strokeDasharray="3 3" stroke={C.grid}/>
-            <XAxis dataKey="season" stroke={C.muted} fontSize={10} fontFamily={F}/>
-            <YAxis stroke={C.muted} fontSize={10} fontFamily={F}/>
-            <Tooltip content={<Tip/>}/>
-            <ReferenceLine y={.720} stroke={C.muted} strokeDasharray="5 5"/>
-            <Bar dataKey="ops" radius={[3,3,0,0]} name="OPS" barSize={22}>
-              {opsTrajectory.map((s,i)=><Cell key={i} fill={s.type==="projected"?C.accent:LEVEL_COLORS[s.level]||C.accent} fillOpacity={s.type==="projected"?.5:.7}/>)}
-            </Bar>
-          </ComposedChart>
-        </ResponsiveContainer>
-        <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap"}}>
-          {Object.entries(LEVEL_COLORS).map(([k,v])=><span key={k} style={{fontSize:9,color:v,fontFamily:F}}>&#9632; {k}</span>)}
-        </div>
-      </Panel>}
+      
 
       {/* Translation factors (MiLB only) */}
       {isMiLB&&<Panel title="MINOR LEAGUE TRANSLATION FACTORS" sub="How stats at each level translate to MLB equivalents. Lower levels get heavier regression to the mean.">
