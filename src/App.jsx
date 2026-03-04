@@ -508,15 +508,18 @@ async function getMiLBAffiliate(mlbTeamId) {
 
 // ── PROJECTION ENGINE ────────────────────────────────────────────────────────
 const AGING_PARAMS = {
-  C:  { peak: 28, dr: 0.032, pa: -1.0, dd: 0.05 },
-  "1B":{ peak: 28, dr: 0.032, pa: -12.5, dd: 0.02 },
-  "2B":{ peak: 27, dr: 0.038, pa: 2.5,   dd: 0.05 },
-  "3B":{ peak: 27, dr: 0.035, pa: 2.5,   dd: 0.04 },
-  SS: { peak: 26, dr: 0.040, pa: 7.5,   dd: 0.055 },
-  LF: { peak: 28, dr: 0.033, pa: -7.5,  dd: 0.035 },
-  CF: { peak: 27, dr: 0.037, pa: 2.5,   dd: 0.05 },
-  RF: { peak: 28, dr: 0.034, pa: -5.0,  dd: 0.04 },
-  DH: { peak: 29, dr: 0.030, pa: -17.5, dd: 0.0 },
+  // Peak ages reflect OFFENSIVE peak (research: 27-29 for most hitters)
+  // Defense peaks tracked separately in WAR calculation (SS/CF peak 26, corners 28)
+  // Sources: FanGraphs aging curves, Fair (2025) OPS peak 27.5, BP Bradbury peak 29
+  C:  { peak: 27, dr: 0.035, pa: -1.0, dd: 0.05 },   // catchers wear down early, offense peaks ~27
+  "1B":{ peak: 29, dr: 0.030, pa: -12.5, dd: 0.02 },  // pure offense, late peak (Freeman, Votto)
+  "2B":{ peak: 28, dr: 0.035, pa: 2.5,   dd: 0.05 },  // offensive peak ~28 (Altuve, Semien)
+  "3B":{ peak: 28, dr: 0.033, pa: 2.5,   dd: 0.04 },  // power position, peaks ~28 (Ramirez, Devers)
+  SS: { peak: 28, dr: 0.035, pa: 7.5,   dd: 0.055 },  // offensive peak ~28 (Lindor, Seager, Turner)
+  LF: { peak: 28, dr: 0.033, pa: -7.5,  dd: 0.035 },  // unchanged
+  CF: { peak: 27, dr: 0.037, pa: 2.5,   dd: 0.05 },   // speed decline offsets; keep 27
+  RF: { peak: 28, dr: 0.034, pa: -5.0,  dd: 0.04 },   // unchanged
+  DH: { peak: 30, dr: 0.028, pa: -17.5, dd: 0.0 },    // no defense drain (Cruz, Ortiz peaked late)
 };
 
 // Pitcher aging parameters
@@ -619,9 +622,10 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   // Peak to 32: -1.5 wRC+ per year
   // 33+: -3.0 wRC+ per year (steeper late decline)
   let ageAdj = 0;
-  if (age < pk) ageAdj = 1.5; // one year of improvement
-  else if (age <= 32) ageAdj = -1.5; // one year of gradual decline
-  else ageAdj = -3.0; // one year of steeper late decline
+  if (age < pk) ageAdj = 1.5; // one year of improvement toward peak
+  else if (age === pk) ageAdj = 0; // at peak: no adjustment
+  else if (age <= 32) ageAdj = -1.5; // gradual post-peak decline
+  else ageAdj = -3.0; // steeper decline after 32
 
   const wrc=Math.max(60,Math.min(195,rawWrc + Math.round(ageAdj)));
   // Project slash line from Statcast expected stats
