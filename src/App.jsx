@@ -1903,6 +1903,37 @@ function Leaderboard({ onSelect }) {
   const [posFilter, setPosFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [started, setStarted] = useState(false);
+  const [precomputed, setPrecomputed] = useState(null);
+  const [precomputedDate, setPrecomputedDate] = useState(null);
+
+  // Try loading precomputed projections on mount
+  useEffect(() => {
+    import("./precomputed_leaderboard.json")
+      .then(mod => {
+        const data = mod.default || mod;
+        if (data?.hitters?.length) {
+          // Add _player stubs for click-to-project compatibility
+          const h = data.hitters.map(p => ({
+            ...p,
+            _player: { id: p.id, fullName: p.name, currentAge: p.age,
+              primaryPosition: { code: p.pos === "C" ? "2" : p.pos === "1B" ? "3" : p.pos === "2B" ? "4" : p.pos === "3B" ? "5" : p.pos === "SS" ? "6" : p.pos === "LF" ? "7" : p.pos === "CF" ? "8" : p.pos === "RF" ? "9" : p.pos === "DH" ? "10" : "10",
+                abbreviation: p.pos },
+              currentTeam: { abbreviation: p.team }, _teamAbbr: p.team },
+          }));
+          setPlayers(h);
+          setPitchers((data.pitchers || []).map(p => ({
+            ...p,
+            fullData: { id: p.id, fullName: p.name, currentAge: p.age,
+              primaryPosition: { code: "1", abbreviation: "P" },
+              currentTeam: { abbreviation: p.team }, _teamAbbr: p.team },
+          })));
+          setPrecomputed(true);
+          setPrecomputedDate(data.generated);
+          setStarted(true);
+        }
+      })
+      .catch(() => { /* No precomputed data available, user can load live */ });
+  }, []);
 
   const loadAll = useCallback(async () => {
     setStarted(true);
@@ -2060,7 +2091,10 @@ function Leaderboard({ onSelect }) {
     return (
       <Panel style={{ textAlign: "center", padding: 50 }}>
         <div style={{ fontSize: 44, marginBottom: 12 }}>&#128202;</div>
-        <h3 style={{ margin: 0, fontSize: 16, color: C.text, fontFamily: F }}>MLB Leaderboard</h3>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <h3 style={{ margin: 0, fontSize: 16, color: C.text, fontFamily: F }}>MLB Leaderboard</h3>
+          {precomputedDate && <span style={{fontSize:9,color:C.muted,fontFamily:F,padding:"2px 6px",borderRadius:4,background:`${C.green}10`,border:`1px solid ${C.green}20`}}>Updated {new Date(precomputedDate).toLocaleDateString()}</span>}
+        </div>
         <p style={{ margin: "8px auto 0", fontSize: 12, color: C.muted, fontFamily: F, maxWidth: 520, lineHeight: 1.6 }}>
           Load every active MLB position player, run projections on all of them, and sort by any stat.
           This fetches ~400+ players from the MLB Stats API — takes about 60-90 seconds.
@@ -2068,7 +2102,7 @@ function Leaderboard({ onSelect }) {
         <button onClick={loadAll} style={{
           marginTop: 20, padding: "10px 28px", borderRadius: 8, border: "none", cursor: "pointer",
           background: C.accent, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: F,
-        }}>Load All Players &amp; Project</button>
+        }}>Load All Players &amp; Project (Live)</button>
       </Panel>
     );
   }
