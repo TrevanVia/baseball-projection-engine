@@ -2093,10 +2093,7 @@ function Leaderboard({ onSelect }) {
     return (
       <Panel style={{ textAlign: "center", padding: 50 }}>
         <div style={{ fontSize: 44, marginBottom: 12 }}>&#128202;</div>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <h3 style={{ margin: 0, fontSize: 16, color: C.text, fontFamily: F }}>MLB Leaderboard</h3>
-          {precomputedDate && <span style={{fontSize:9,color:C.muted,fontFamily:F,padding:"2px 6px",borderRadius:4,background:`${C.green}10`,border:`1px solid ${C.green}20`}}>Updated {new Date(precomputedDate).toLocaleDateString()}</span>}
-        </div>
+        <h3 style={{ margin: 0, fontSize: 16, color: C.text, fontFamily: F }}>MLB Leaderboard</h3>
         <p style={{ margin: "8px auto 0", fontSize: 12, color: C.muted, fontFamily: F, maxWidth: 520, lineHeight: 1.6 }}>
           Load every active MLB position player, run projections on all of them, and sort by any stat.
           This fetches ~400+ players from the MLB Stats API — takes about 60-90 seconds.
@@ -2104,7 +2101,7 @@ function Leaderboard({ onSelect }) {
         <button onClick={loadAll} style={{
           marginTop: 20, padding: "10px 28px", borderRadius: 8, border: "none", cursor: "pointer",
           background: C.accent, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: F,
-        }}>Load All Players &amp; Project (Live)</button>
+        }}>Load All Players &amp; Project</button>
       </Panel>
     );
   }
