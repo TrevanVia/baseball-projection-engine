@@ -1232,26 +1232,26 @@ const LEVEL_COLORS = { ROK:"#9ca3af", A:"#0077b6", "A+":"#1a3668", AA:"#5b2c8e",
 
 // ── COMPONENTS ───────────────────────────────────────────────────────────────
 const Panel = ({children,title,sub,style={}}) => (
-  <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 20px",...style}}>
-    {title&&<div style={{marginBottom:sub?4:12}}>
-      <h3 style={{margin:0,fontSize:13,fontWeight:700,color:C.text,letterSpacing:".06em",fontFamily:F}}>{title}</h3>
-      {sub&&<p style={{margin:"3px 0 10px",fontSize:11,color:C.muted,lineHeight:1.4,fontFamily:F}}>{sub}</p>}
+  <div className="via-panel" style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:12,padding:"18px 22px",boxShadow:"0 1px 3px rgba(26,54,104,0.04)",...style}}>
+    {title&&<div style={{marginBottom:sub?0:14}}>
+      <h3 style={{margin:0,fontSize:12,fontWeight:700,color:C.text,letterSpacing:".08em",fontFamily:F,textTransform:"uppercase"}}>{title}</h3>
+      {sub&&<p style={{margin:"4px 0 12px",fontSize:11,color:C.muted,lineHeight:1.5,fontFamily:F}}>{sub}</p>}
     </div>}
     {children}
   </div>
 );
 const Stat = ({label,value,color=C.accent,sub}) => (
-  <div style={{padding:"8px 12px",background:`${color}08`,borderRadius:8,border:`1px solid ${color}20`,minWidth:70,textAlign:"center"}}>
-    <div style={{fontSize:20,fontWeight:800,color,fontFamily:F}}>{value}</div>
-    <div style={{fontSize:8,color:C.muted,marginTop:1,textTransform:"uppercase",letterSpacing:".08em",fontFamily:F}}>{label}</div>
-    {sub&&<div style={{fontSize:8,color:C.dim,fontFamily:F}}>{sub}</div>}
+  <div className="via-stat" style={{padding:"10px 14px",background:`${color}06`,borderRadius:10,border:`1px solid ${color}15`,minWidth:72,textAlign:"center",cursor:"default"}}>
+    <div style={{fontSize:22,fontWeight:800,color,fontFamily:F,lineHeight:1.1}}>{value}</div>
+    <div style={{fontSize:7.5,color:C.muted,marginTop:3,textTransform:"uppercase",letterSpacing:".1em",fontFamily:F,fontWeight:600}}>{label}</div>
+    {sub&&<div style={{fontSize:7.5,color:C.dim,fontFamily:F,marginTop:1}}>{sub}</div>}
   </div>
 );
 const Pill = ({label,active,onClick,color=C.accent}) => (
-  <button onClick={onClick} style={{padding:"5px 14px",border:"none",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:active?700:500,fontFamily:F,background:active?color:"#efe9dd",color:active?"#fff":C.muted}}>{label}</button>
+  <button className="via-pill" onClick={onClick} style={{padding:"6px 16px",border:"none",borderRadius:8,cursor:"pointer",fontSize:11,fontWeight:active?700:500,fontFamily:F,background:active?color:"#efe9dd",color:active?"#fff":C.muted,letterSpacing:".02em"}}>{label}</button>
 );
 const LevelBadge = ({level}) => (
-  <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4,fontFamily:F,background:`${LEVEL_COLORS[level]||C.muted}20`,color:LEVEL_COLORS[level]||C.muted}}>{level}</span>
+  <span className="via-badge" style={{fontSize:9,fontWeight:700,padding:"3px 8px",borderRadius:5,fontFamily:F,background:`${LEVEL_COLORS[level]||C.muted}15`,color:LEVEL_COLORS[level]||C.muted,letterSpacing:".04em"}}>{level}</span>
 );
 
 const FVBadge = ({fv}) => {
@@ -1259,7 +1259,7 @@ const FVBadge = ({fv}) => {
   const s = getFVStyle(fv);
   return (
     <span style={{
-      fontSize:10, fontWeight:800, padding:"3px 10px", borderRadius:5, fontFamily:F,
+      fontSize:10, fontWeight:800, padding:"4px 11px", borderRadius:6, fontFamily:F,
       background: s.bg, color: s.color, display:"inline-block", letterSpacing:".04em",
       boxShadow: s.glow ? "0 0 12px rgba(192,132,252,.4), 0 0 24px rgba(96,165,250,.2)" : "none",
       animation: s.glow ? "fvGlow 2s ease-in-out infinite alternate" : "none",
@@ -1268,8 +1268,8 @@ const FVBadge = ({fv}) => {
 };
 
 const Spinner = ({msg="Loading..."}) => (
-  <div style={{display:"flex",alignItems:"center",gap:8,padding:20,color:C.dim,fontFamily:F,fontSize:12}}>
-    <div style={{width:16,height:16,border:`2px solid ${C.border}`,borderTopColor:C.accent,borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
+  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:32,color:C.dim,fontFamily:F,fontSize:12,animation:"fadeIn 0.3s ease"}}>
+    <div style={{width:18,height:18,border:`2px solid ${C.border}`,borderTopColor:C.accent,borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
     {msg}
     <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fvGlow{from{box-shadow:0 0 8px rgba(192,132,252,.3),0 0 16px rgba(96,165,250,.15)}to{box-shadow:0 0 16px rgba(251,146,60,.4),0 0 28px rgba(192,132,252,.25)}}
 @media(max-width:768px){
@@ -1325,9 +1325,9 @@ function PlayerSearch({onSelect}) {
   return (
     <div ref={ref} style={{position:"relative",width:260}}>
       <input value={q} onChange={e=>{setQ(e.target.value);search(e.target.value);}} placeholder="Search player..."
-        style={{width:"100%",padding:"8px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.panel,color:C.text,fontSize:12,fontFamily:F,outline:"none"}}
+        className="via-search-input" style={{width:"100%",padding:"10px 14px",borderRadius:10,border:`1px solid ${C.border}`,background:C.panel,color:C.text,fontSize:12,fontFamily:F,outline:"none"}}
         onFocus={()=>results.length&&setShow(true)}/>
-      {show&&results.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:C.panel,border:`1px solid ${C.border}`,borderRadius:8,marginTop:4,maxHeight:320,overflowY:"auto",zIndex:999,boxShadow:"0 12px 36px rgba(0,0,0,.12)"}}>
+      {show&&results.length>0&&<div className="via-search-dropdown" style={{position:"absolute",top:"100%",left:0,right:0,background:C.panel,border:`1px solid ${C.border}`,borderRadius:12,marginTop:6,maxHeight:320,overflowY:"auto",zIndex:999,boxShadow:"0 16px 48px rgba(26,54,104,.12)"}}>
         {results.map(p=>{
           const fv = getPlayerFV(p.id, p.fullName);
           return <div key={p.id} onClick={()=>{onSelect(p);setShow(false);setQ(p.fullName);}}
@@ -1475,13 +1475,13 @@ function PlayerCard({player}) {
   if(loading) return <Spinner msg="Pulling career stats from MLB Stats API..."/>;
 
   return (
-    <div style={{display:"flex",flexDirection:"column",gap:14}}>
+    <div style={{display:"flex",flexDirection:"column",gap:16}}>
       {/* Header */}
       <Panel>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-              <h2 style={{margin:0,fontSize:22,fontWeight:800,color:C.text,fontFamily:F}}>{player.fullName}</h2>
+              <h2 style={{margin:0,fontSize:24,fontWeight:800,color:C.text,fontFamily:F,letterSpacing:"-0.01em"}}>{player.fullName}</h2>
               {fv && <FVBadge fv={fv}/>}
               {!fv && isMiLB && <LevelBadge level={base?.highestLevel||"MiLB"}/>}
               {salary && base?.baseWAR && <VpDBadge war={base.baseWAR} salary={salary}/>}
@@ -1540,11 +1540,11 @@ function PlayerCard({player}) {
 
       {/* Projections — single values per year */}
       {forward.length>0&&<>
-        <div style={{display:"flex",gap:4,background:"#efe9dd",borderRadius:8,padding:3,width:"fit-content"}}>
+        <div style={{display:"flex",gap:4,background:"#efe9dd",borderRadius:10,padding:4,width:"fit-content"}}>
           {(isPitcher?[{k:"war",l:"WAR"}]:[{k:"war",l:"WAR"},{k:"wrc",l:"wRC+"},{k:"ops",l:"OPS"}]).map(t=><Pill key={t.k} label={t.l} active={projTab===t.k} onClick={()=>setProjTab(t.k)}/>)}
         </div>
         <Panel title={`PROJECTED ${projTab.toUpperCase()}`} sub={`Marcel projection${base?.translationNote?` with ${base.highestLevel} translation`:""} + position-specific aging.`}>
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer width="100%" height={300}>
             <ComposedChart data={forward.slice(0,6)} margin={{top:10,right:20,left:0,bottom:0}}>
               <CartesianGrid strokeDasharray="3 3" stroke={C.grid}/>
               <XAxis dataKey="season" stroke={C.muted} fontSize={10} fontFamily={F}/>
@@ -2979,6 +2979,12 @@ export default function App() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const [tab,setTab]=useState("player");
   const [selPlayer,setSelPlayer]=useState(null);
@@ -2994,9 +3000,200 @@ export default function App() {
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F}}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes shimmer { 0% { background-position: -400px 0 } 100% { background-position: 400px 0 } }
+        @keyframes pulse { 0%,100% { opacity:0.5 } 50% { opacity:0.8 } }
+        @keyframes slideUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes scaleIn { from { opacity:0; transform:scale(0.97) } to { opacity:1; transform:scale(1) } }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { margin:0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+        /* Smooth panel entrances */
+        .via-panel {
+          animation: fadeUp 0.35s ease-out both;
+          transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease;
+        }
+        .via-panel:hover {
+          box-shadow: 0 4px 20px rgba(26,54,104,0.06);
+        }
+
+        /* Stagger panels */
+        .via-panel:nth-child(1) { animation-delay: 0s; }
+        .via-panel:nth-child(2) { animation-delay: 0.06s; }
+        .via-panel:nth-child(3) { animation-delay: 0.12s; }
+        .via-panel:nth-child(4) { animation-delay: 0.18s; }
+        .via-panel:nth-child(5) { animation-delay: 0.24s; }
+        .via-panel:nth-child(6) { animation-delay: 0.30s; }
+
+        /* Stat boxes */
+        .via-stat {
+          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .via-stat:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Buttons and interactive elements */
+        .via-pill {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          position: relative;
+          overflow: hidden;
+        }
+        .via-pill:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .via-pill:active {
+          transform: translateY(0);
+        }
+
+        /* Search input */
+        .via-search-input {
+          transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+        }
+        .via-search-input:focus {
+          border-color: #1a3668 !important;
+          box-shadow: 0 0 0 3px rgba(26,54,104,0.08) !important;
+          background: #ffffff !important;
+        }
+
+        /* Search dropdown */
+        .via-search-dropdown {
+          animation: scaleIn 0.15s ease-out;
+          transform-origin: top center;
+          backdrop-filter: blur(8px);
+        }
+
+        /* Table rows */
+        .via-table-wrap tr {
+          transition: background 0.15s ease;
+        }
+        .via-table-wrap tbody tr:hover {
+          background: rgba(200,16,46,0.04) !important;
+        }
+        .via-table-wrap tbody tr {
+          cursor: pointer;
+        }
+
+        /* Tab bar */
+        .via-tab {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          position: relative;
+        }
+        .via-tab::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          width: 0;
+          height: 2px;
+          background: #c8102e;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          transform: translateX(-50%);
+        }
+        .via-tab:hover::after, .via-tab-active::after {
+          width: 100%;
+        }
+
+        /* Header */
+        .via-header {
+          backdrop-filter: blur(12px);
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          transition: box-shadow 0.3s ease;
+        }
+        .via-header-scrolled {
+          box-shadow: 0 2px 20px rgba(26,54,104,0.08);
+        }
+
+        /* Content area smooth entrance */
+        .via-content {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Quick-pick buttons */
+        .via-quick-pick {
+          transition: all 0.2s ease !important;
+        }
+        .via-quick-pick:hover {
+          border-color: #c8102e !important;
+          color: #c8102e !important;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(200,16,46,0.12);
+        }
+
+        /* Leaderboard filter pills */
+        .via-filter-pill {
+          transition: all 0.2s ease !important;
+        }
+        .via-filter-pill:hover {
+          transform: scale(1.03);
+        }
+
+        /* Skeleton loading */
+        .via-skeleton {
+          background: linear-gradient(90deg, #efe9dd 25%, #f5f0e6 50%, #efe9dd 75%);
+          background-size: 800px 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 6px;
+        }
+
+        /* Scrollbar styling */
+        .via-table-wrap::-webkit-scrollbar { height: 6px; }
+        .via-table-wrap::-webkit-scrollbar-track { background: #f5f0e6; border-radius: 3px; }
+        .via-table-wrap::-webkit-scrollbar-thumb { background: #d4c9b5; border-radius: 3px; }
+        .via-table-wrap::-webkit-scrollbar-thumb:hover { background: #8c8272; }
+
+        /* Chart tooltip animation */
+        .recharts-tooltip-wrapper {
+          transition: transform 0.15s ease, opacity 0.15s ease !important;
+        }
+
+        /* Mobile menu smooth */
+        @keyframes slideDown { from { opacity:0; transform:translateY(-10px) } to { opacity:1; transform:translateY(0) } }
+
+        /* Card marketplace hover */
+        .via-card-hover {
+          transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+        }
+        .via-card-hover:hover {
+          transform: translateY(-4px) scale(1.01);
+          box-shadow: 0 8px 30px rgba(26,54,104,0.12);
+        }
+
+        /* Focus ring */
+        button:focus-visible, input:focus-visible {
+          outline: 2px solid #1a3668;
+          outline-offset: 2px;
+        }
+
+        /* Progress bar smooth */
+        .via-progress-bar {
+          transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Badge pop-in */
+        .via-badge {
+          animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        /* Responsive refinements */
+        @media (max-width: 768px) {
+          .via-content { padding: 12px 14px 32px !important; }
+          .via-header-inner { gap: 10px !important; }
+          .via-stat-row { gap: 4px !important; }
+        }
+      `}</style>
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&family=Changa+One&display=swap" rel="stylesheet"/>
       {/* Header */}
-      <div className="via-header" style={{padding:"14px 24px 0",borderBottom:`2px solid ${C.navy}`,background:"linear-gradient(180deg, #ffffff 0%, #f9f5ed 100%)"}}>
+      <div className={`via-header ${scrolled?"via-header-scrolled":""}`} style={{padding:"14px 24px 0",borderBottom:`1.5px solid ${C.navy}20`,background:"linear-gradient(180deg, #ffffff 0%, #faf6ee 100%)",backdropFilter:"blur(12px)"}}>
         <div className="via-header-inner" style={{display:"flex",alignItems:"center",gap:14,marginBottom:12,flexWrap:"wrap"}}>
           <div onClick={goHome} style={{cursor:"pointer",userSelect:"none"}}>
             <div style={{display:"flex",alignItems:"baseline",gap:6}}>
@@ -3021,11 +3218,11 @@ export default function App() {
         {/* Desktop: compact horizontal tabs */}
         {!isMobile&&(
           <div className="via-tabs" style={{display:"flex",gap:2,flexWrap:"nowrap"}}>
-            {TABS.map(t=><button key={t.k} onClick={()=>switchTab(t.k)} style={{
-              padding:"7px 14px",border:"none",cursor:"pointer",fontSize:10,fontWeight:tab===t.k?700:500,fontFamily:F,
+            {TABS.map(t=><button key={t.k} className={`via-tab ${tab===t.k?"via-tab-active":""}`} onClick={()=>switchTab(t.k)} style={{
+              padding:"8px 16px",border:"none",cursor:"pointer",fontSize:10,fontWeight:tab===t.k?700:500,fontFamily:F,
               background:tab===t.k?C.panel:"transparent",color:tab===t.k?C.navy:C.muted,
-              borderRadius:"6px 6px 0 0",borderBottom:tab===t.k?`2px solid ${C.accent}`:"2px solid transparent",
-              whiteSpace:"nowrap",transition:"all 0.15s ease",
+              borderRadius:"8px 8px 0 0",borderBottom:"2px solid transparent",
+              whiteSpace:"nowrap",letterSpacing:".03em",
             }}
             onMouseEnter={e=>{if(tab!==t.k){e.target.style.color=C.navy;e.target.style.background=C.hover;}}}
             onMouseLeave={e=>{if(tab!==t.k){e.target.style.color=C.muted;e.target.style.background="transparent";}}}
@@ -3067,11 +3264,11 @@ export default function App() {
         }}/>
       )}
       {/* Content */}
-      <div className="via-content" style={{padding:"16px 24px 40px"}}>
+      <div className="via-content" style={{padding:"20px 28px 48px",maxWidth:1280,margin:"0 auto"}}>
         {tab==="player"&&<div>
-          {!selPlayer&&!lp&&<Panel style={{textAlign:"center",padding:50}}>
-            <div style={{fontSize:44,marginBottom:12}}>&#9918;</div>
-            <h3 style={{margin:0,fontSize:16,color:C.text,fontFamily:F}}>Search any MLB or minor league player</h3>
+          {!selPlayer&&!lp&&<Panel style={{textAlign:"center",padding:"56px 32px"}}>
+            <div style={{fontSize:48,marginBottom:16,filter:"drop-shadow(0 2px 4px rgba(0,0,0,0.1))"}}>&#9918;</div>
+            <h3 style={{margin:0,fontSize:17,color:C.text,fontFamily:F,letterSpacing:"-0.01em"}}>Search any MLB or minor league player</h3>
             <p style={{margin:"6px auto 0",fontSize:12,color:C.muted,fontFamily:F,maxWidth:520,lineHeight:1.6}}>
               Covers all levels from Rookie ball through the majors. MiLB stats are translated using level-specific conversion factors before projection. Top prospects include FV grades and batted ball data.
             </p>
@@ -3079,9 +3276,7 @@ export default function App() {
             <div style={{marginTop:20,display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
               {["Konnor Griffin","Aidan Miller","Juan Soto","Gunnar Henderson","Kevin McGonigle","Samuel Basallo"].map(n=>
                 <button key={n} onClick={()=>searchPlayers(n).then(r=>{if(r[0])pick(r[0]);})}
-                  style={{padding:"5px 12px",borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:C.dim,fontSize:11,fontFamily:F,cursor:"pointer"}}
-                  onMouseEnter={e=>{e.target.style.borderColor=C.accent;e.target.style.color=C.accent;}}
-                  onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.dim;}}
+                  className="via-quick-pick" style={{padding:"6px 14px",borderRadius:8,border:`1px solid ${C.border}`,background:"transparent",color:C.dim,fontSize:11,fontFamily:F,cursor:"pointer"}}
                 >{n}</button>
               )}
             </div>
