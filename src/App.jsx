@@ -913,9 +913,9 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   const isStarter = (lat.ip || 0) > 50 || bfp0 > 250;
   const pk = isStarter ? spPeak : rpPeak;
   let af = 1;
-  if (age < pk) af = Math.pow(0.985, pk - age); // young pitchers still developing
-  else if (age <= 33) af = Math.pow(1.015, age - pk); // ERA rises post-peak
-  else af = Math.pow(1.015, 33 - pk) * Math.pow(1.03, age - 33);
+  if (age < pk) af = Math.pow(0.97, pk - age); // young pitchers improve ~3%/yr
+  else if (age <= 33) af = Math.pow(1.02, age - pk); // ERA rises ~2%/yr post-peak
+  else af = Math.pow(1.02, 33 - pk) * Math.pow(1.035, age - 33); // accelerated decline
 
   // Assemble ERA projection
   // Anchor on xERA, adjust for trends and aging
@@ -926,20 +926,23 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   const projBB9 = Math.max(1, Math.min(6, pBB / 100 * 9 * 4.3));
   const projWHIP = Math.max(0.75, Math.min(1.80, 0.90 + (projERA - 2.50) * 0.12));
 
-  // IP estimate
-  const latIP = lat.ip || (bfp0 / 4.3);
+  // IP estimate: use actual IP if available, else BFP/PA ratio
+  // High-K pitchers are more efficient (fewer BF per IP)
+  const bfPerIP = pK > 25 ? 4.0 : pK > 20 ? 4.1 : 4.3;
+  const latIP = lat.ip || (bfp0 / bfPerIP);
   let estIP;
   if (isStarter) {
-    estIP = Math.max(140, Math.min(210, latIP * 0.97));
+    // Project full workload for established starters
+    estIP = Math.max(150, Math.min(215, latIP * 1.0));
   } else {
-    estIP = Math.min(75, latIP * 0.96);
+    estIP = Math.min(75, latIP * 0.98);
   }
 
   // FIP from components
   const estK = projK9 * estIP / 9;
   const estBB = projBB9 * estIP / 9;
   const estHR = Math.max(0.3, pBrl / 100 * (estIP * 4.3) * 0.035);
-  const fip = Math.max(1.50, Math.min(6.50,
+  const fip = Math.max(1.80, Math.min(6.50,
     ((13 * estHR) + (3 * estBB) - (2 * estK)) / estIP + 3.10));
 
   // WAR: replacement level approach
