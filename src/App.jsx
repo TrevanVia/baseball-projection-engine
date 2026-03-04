@@ -569,11 +569,13 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const S = sP.seasons || {}, yrs = Object.keys(S).sort().reverse();
   if (!yrs.length) return null;
   const W=[.55,.30,.15], lat=S[yrs[0]]||{}, pa0=lat.pa||0;
-  let wxw=0,wev=0,wbr=0,tw1=0;
+  let wxw=0,wev=0,wbr=0,wxba=0,wxslg=0,tw1=0;
   yrs.forEach((yr,i)=>{const s=S[yr],w=W[i]||.05,pw=w*Math.min(1,(s.pa||0)/400);
     if(s.xwoba!=null){wxw+=s.xwoba*pw;tw1+=pw}if(s.avg_ev!=null)wev+=s.avg_ev*pw;
-    if(s.barrel_pct!=null)wbr+=s.barrel_pct*pw});
+    if(s.barrel_pct!=null)wbr+=s.barrel_pct*pw;
+    if(s.xba!=null)wxba+=s.xba*pw;if(s.xslg!=null)wxslg+=s.xslg*pw});
   const pXw=tw1>0?wxw/tw1:.310, pEV=tw1>0?wev/tw1:87, pBrl=tw1>0?wbr/tw1:6;
+  const pXba=tw1>0?wxba/tw1:null, pXslg=tw1>0?wxslg/tw1:null;
   const ev5T=yrs.length>=2&&S[yrs[0]]?.ev50&&S[yrs[1]]?.ev50?S[yrs[0]].ev50-S[yrs[1]].ev50:0;
   let wbb=0,wk=0,wos=0,wzs=0,tw2=0;
   yrs.forEach((yr,i)=>{const s=S[yr],w=W[i]||.05,pw=w*Math.min(1,(s.pa||0)/200);
@@ -622,12 +624,13 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   else ageAdj = -3.0; // one year of steeper late decline
 
   const wrc=Math.max(60,Math.min(195,rawWrc + Math.round(ageAdj)));
-  const ops=Math.max(.52,Math.min(1.15,wrc*.0072+.002));
-  // AVG: use xBA directly if available, small age adj for contact decline
-  const avgAgeF = age > 32 ? Math.max(0.93, 1 - (age - 32) * 0.01) : 1.0;
-  const avg=lat.xba!=null?Math.max(.18,Math.min(.34,lat.xba*avgAgeF)):Math.max(.2,Math.min(.32,(ops-.1)/2.5));
-  const obp=Math.max(.26,Math.min(.45,avg+pBB*.85+.02));
-  const slg=Math.max(.3,Math.min(.7,ops-obp));
+  // Project slash line from Statcast expected stats
+  // AVG from xBA, OBP from xBA+BB%, SLG from xSLG, OPS = OBP+SLG
+  const avgAgeF = age > 32 ? Math.max(0.97, 1 - (age - 32) * 0.005) : 1.0;
+  const avg = pXba != null ? Math.max(.18, Math.min(.34, pXba * avgAgeF)) : Math.max(.2, Math.min(.32, .248));
+  const obp = Math.max(.26, Math.min(.45, avg + pBB * .85 + .02));
+  const slg = pXslg != null ? Math.max(.3, Math.min(.7, pXslg * avgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
+  const ops = Math.max(.52, Math.min(1.15, obp + slg));
   const ePA=Math.min(700,Math.max(200,pa0*.97));
   const hr=Math.round(Math.max(0,pBrl/100*(ePA*.75)*.24));
   const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
@@ -857,9 +860,9 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   const peakAge = (getAP(posCode)).peak;
 
   return {
-    ops: finalOPS,
     obp: Math.max(0.275, Math.min(0.430, finalOBP * paRel + 0.315 * (1 - paRel))),
-    slg: Math.max(0.310, Math.min(0.620, finalOPS - Math.max(0.275, Math.min(0.430, finalOBP * paRel + 0.315 * (1 - paRel))))),
+    slg: Math.max(0.310, Math.min(0.620, finalSLG * paRel + 0.405 * (1 - paRel))),
+    ops: Math.max(0.560, Math.min(1.100, Math.max(0.275, Math.min(0.430, finalOBP * paRel + 0.315 * (1 - paRel))) + Math.max(0.310, Math.min(0.620, finalSLG * paRel + 0.405 * (1 - paRel))))),
     avg: Math.max(0.210, Math.min(0.330, (wAVG/tw) * ageBoost * paRel + 0.248 * (1 - paRel))),
     wRCPlus: finalWRC,
     baseWAR: Math.round(clampedWAR * 10) / 10,
