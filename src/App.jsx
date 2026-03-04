@@ -924,7 +924,7 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
   let clampedWAR = Math.max(-1.5, pitchWAR);
   if (fv) {
     const bench = FV_BENCHMARKS[Math.min(70, Math.max(40, fv))] || FV_BENCHMARKS[50];
-    clampedWAR = Math.max(bench.war * 0.3, Math.min(bench.war * 1.7, clampedWAR));
+    clampedWAR = Math.max(bench.war * 0.25, Math.min(bench.war * 2.0, clampedWAR));
   }
 
   const peakAge = isReliever ? PITCHER_AGING.RP.peak : PITCHER_AGING.SP.peak;
@@ -955,19 +955,22 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
 function projectPitcherForward(base, age, years = 10) {
   if (!base) return [];
   const ap = base.isReliever ? PITCHER_AGING.RP : PITCHER_AGING.SP;
+  const yearsToPeak = Math.max(0, ap.peak - age);
+  const peakMult = yearsToPeak > 0 ? 1 + yearsToPeak * 0.05 : 1.0;
+  const peakWAR = base.baseWAR * Math.min(2.0, peakMult);
   const out = [];
   for (let y = 0; y < years; y++) {
     const a = age + y;
     const d = a - ap.peak;
-    let f;
+    let war;
     if (d <= 0) {
-      const yearsToGo = Math.abs(d);
-      f = 1 + Math.min(0.12, (3 - yearsToGo) * 0.03);
-      f = Math.max(0.88, Math.min(1.20, f));
+      const progress = yearsToPeak > 0 ? y / yearsToPeak : 1;
+      const t = Math.min(1, progress);
+      war = base.baseWAR + (peakWAR - base.baseWAR) * t;
     } else {
-      f = Math.pow(1 - ap.dr, d);
+      war = peakWAR * Math.pow(1 - ap.dr, d);
     }
-    out.push({ age: a, season: String(2026 + (out.length)), war: Math.max(-0.5, base.baseWAR * f) });
+    out.push({ age: a, season: String(2026 + y), war: Math.round(Math.max(-0.5, war)*10)/10 });
   }
   return out;
 }
@@ -1213,6 +1216,22 @@ function PlayerCard({player}) {
     };
   }).sort((a,b)=>{const sy=parseInt(a.season)-parseInt(b.season);if(sy!==0)return sy;return LEVEL_ORDER.indexOf(a.level)-LEVEL_ORDER.indexOf(b.level);}),[career,player]);
 
+  
+  const pitchSeasons = useMemo(()=>pitchCareer.filter(s=>parseFloat(s.stat?.inningsPitched||0)>0).map(s=>{
+    const lvl = detectLevel(s);
+    const st = s.stat;
+    return {
+      season:s.season, age:player.currentAge-(2025-parseInt(s.season)),
+      era:parseFloat(st.era||0), ip:parseFloat(st.inningsPitched||0),
+      k9:parseFloat(st.strikeoutsPer9Inn||0), bb9:parseFloat(st.walksPer9Inn||0),
+      whip:parseFloat(st.whip||0), fip:parseFloat(st.era||0),
+      w:parseInt(st.wins||0), l:parseInt(st.losses||0), sv:parseInt(st.saves||0),
+      so:parseInt(st.strikeOuts||0), bb:parseInt(st.baseOnBalls||0),
+      hr:parseInt(st.homeRuns||0), gs:parseInt(st.gamesStarted||0), g:parseInt(st.gamesPlayed||0),
+      team:s.team?.abbreviation||"", level:lvl,
+    };
+  }).sort((a,b)=>{const sy=parseInt(a.season)-parseInt(b.season);if(sy!==0)return sy;return LEVEL_ORDER.indexOf(a.level)-LEVEL_ORDER.indexOf(b.level);}),[pitchCareer,player]);
+
   const isPitcher = player.primaryPosition?.code === "1";
   useEffect(()=>{if(isPitcher)setProjTab("war");},[isPitcher]);
   const base = useMemo(() => {
@@ -1355,7 +1374,7 @@ function PlayerCard({player}) {
       </Panel>}
 
       {/* Career Stats — moved to bottom */}
-      {seasons.length>0&&<Panel title="CAREER STATS" sub={isMiLB?"Minor league stats shown with level indicators. Translation factors applied in projections.":"Year-by-year from MLB Stats API."}>
+      {!isPitcher&&seasons.length>0&&<Panel title="CAREER STATS" sub={isMiLB?"Minor league stats shown with level indicators. Translation factors applied in projections.":"Year-by-year from MLB Stats API."}>
         <div className="via-table-wrap" style={{overflowX:"auto"}}>
           <table style={{width:"100%",borderCollapse:"collapse",fontFamily:F,fontSize:11}}>
             <thead><tr style={{borderBottom:`1px solid ${C.border}`}}>
