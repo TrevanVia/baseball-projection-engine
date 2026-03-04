@@ -1459,7 +1459,11 @@ function PlayerCard({player}) {
     let hitProj = null;
     const savP = getSavantPlayer(player.id, player.fullName);
     if (savP && Object.keys(savP.seasons || {}).length > 0) {
-      hitProj = projectFromStatcast(savP, player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code, player.fullName, player.id);
+      // Only use Statcast for 250+ MLB PA; below that Marcel with MiLB data is better
+      const totalMLBPA = Object.values(savP.seasons || {}).reduce((s, yr) => s + (yr.pa || 0), 0);
+      if (totalMLBPA >= 250) {
+        hitProj = projectFromStatcast(savP, player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code, player.fullName, player.id);
+      }
     }
     if (!hitProj && career.length) {
       hitProj = projectFromSeasons(career, player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code, player.fullName, player.id);
