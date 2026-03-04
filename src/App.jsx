@@ -884,7 +884,7 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
       : ageAdv * 0.04));
 
   const rawIP = totalRawIP / valid.length;
-  const paRel = Math.min(highestLevel === "MLB" ? 0.90 : 0.80, (totalRawIP / (valid.length * 160)) * (PITCHER_TRANSLATION[highestLevel]?.reliability || 0.9));
+  const paRel = Math.min(highestLevel === "MLB" ? 0.93 : 0.82, (totalRawIP / (valid.length * 150)) * (PITCHER_TRANSLATION[highestLevel]?.reliability || 0.9));
 
   // Regress toward league average with recency weighting
   const regERA = (wERA / tw) * paRel + 4.20 * (1 - paRel);
@@ -915,10 +915,12 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
   const fip = ((13 * estHR) + (3 * estBB) - (2 * estK)) / estIP + fipConst;
   const finalFIP = Math.max(1.80, Math.min(6.50, fip));
 
-  // Pitcher WAR: FIP-based, scaled by IP
-  const lgERA = 4.20;
+  // Pitcher WAR: FIP-based vs replacement level
+  // Replacement level ~ 5.5 RA/9 (a freely available minor league arm)
+  // This means a league-avg pitcher (4.20 ERA) ~ 2.0 WAR, matching FanGraphs
+  const replLevel = 5.50;
   const runsPerWin = 9.5;
-  const pitchWAR = ((lgERA - finalFIP) / runsPerWin) * (estIP / 9) + (estIP / 200) * 2.0;
+  const pitchWAR = ((replLevel - finalFIP) / runsPerWin) * (estIP / 9);
   const isReliever = !isLikelyStarter;
 
   let clampedWAR = Math.max(-1.5, pitchWAR);
