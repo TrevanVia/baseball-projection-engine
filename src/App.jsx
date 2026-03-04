@@ -869,16 +869,22 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   const pBrl = tw1 > 0 ? wbrl / tw1 : 8;
 
   // L2: Command (K%, BB%, SwStr%)
+  // Note: k_pct often null (FG data unavailable). Estimate from whiff%.
+  // Whiff% to K% conversion: K% ≈ whiff% * 0.80 (empirical)
   let wk = 0, wbb = 0, wsw = 0, tw2 = 0;
   yrs.forEach((yr, i) => {
     const s = S[yr], w = W[i] || 0.05, pw = w * Math.min(1, (s.bfp || 0) / 200);
-    if (s.k_pct != null) { wk += s.k_pct * pw; tw2 += pw; }
-    if (s.bb_pct != null) wbb += s.bb_pct * pw;
+    const kVal = s.k_pct != null ? s.k_pct :
+                 s.whiff_pct != null ? s.whiff_pct * 0.80 : null;
+    const bbVal = s.bb_pct != null ? s.bb_pct : null;
+    if (kVal != null) { wk += kVal * pw; tw2 += pw; }
+    if (bbVal != null) wbb += bbVal * pw;
     if (s.swstr != null) wsw += s.swstr * pw;
     else if (s.whiff_pct != null) wsw += s.whiff_pct * pw;
   });
-  const pK = tw2 > 0 ? wk / tw2 : 22;
-  const pBB = tw2 > 0 ? wbb / tw2 : 8;
+  // Default K%=20 (league avg), BB%=8.5 (slightly above avg = conservative)
+  const pK = tw2 > 0 ? wk / tw2 : 20;
+  const pBB = tw2 > 0 ? wbb / tw2 : 8.5;
   const pSw = tw2 > 0 ? wsw / tw2 : 10;
 
   // L3: Velocity
@@ -910,46 +916,53 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
 
   // Aging
   const spPeak = 27, rpPeak = 28;
-  const isStarter = (lat.ip || 0) > 50 || bfp0 > 250;
+  // Starter = high IP or high BFP AND game start data suggests starter
+  // A reliever with 300 BFP threw ~70 IP, not 150
+  const latIPEst = lat.ip || (bfp0 / 4.3);
+  const isStarter = latIPEst > 100 || bfp0 > 450;
   const pk = isStarter ? spPeak : rpPeak;
   let af = 1;
-  if (age < pk) af = Math.pow(0.97, pk - age); // young pitchers improve ~3%/yr
-  else if (age <= 33) af = Math.pow(1.02, age - pk); // ERA rises ~2%/yr post-peak
-  else af = Math.pow(1.02, 33 - pk) * Math.pow(1.035, age - 33); // accelerated decline
+  if (age < pk) af = Math.pow(0.985, pk - age); // young pitchers improve ~1.5%/yr
+  else if (age <= 33) af = Math.pow(1.015, age - pk); // ERA rises ~1.5%/yr post-peak
+  else af = Math.pow(1.015, 33 - pk) * Math.pow(1.03, age - 33); // accelerated decline
 
   // Assemble ERA projection
   // Anchor on xERA, adjust for trends and aging
   let projERA = Math.max(1.50, Math.min(6.50, (pXera + tb) * af));
 
   // K/9 and BB/9 from percentages
-  const projK9 = Math.max(4, Math.min(15, pK / 100 * 9 * 4.3));
-  const projBB9 = Math.max(1, Math.min(6, pBB / 100 * 9 * 4.3));
+  // K/9 = K% * BF/IP * 9, where BF/IP ≈ 4.3
+  // But cap reasonably - very few pitchers sustain 13+ K/9
+  const projK9 = Math.max(4, Math.min(13.5, pK / 100 * 9 * 4.3));
+  const projBB9 = Math.max(1.5, Math.min(5.5, pBB / 100 * 9 * 4.3));
   const projWHIP = Math.max(0.75, Math.min(1.80, 0.90 + (projERA - 2.50) * 0.12));
 
-  // IP estimate: use actual IP if available, else BFP/PA ratio
-  // High-K pitchers are more efficient (fewer BF per IP)
-  const bfPerIP = pK > 25 ? 4.0 : pK > 20 ? 4.1 : 4.3;
+  // IP estimate from BFP
+  const bfPerIP = 4.3;
   const latIP = lat.ip || (bfp0 / bfPerIP);
   let estIP;
   if (isStarter) {
-    // Project full workload for established starters
-    estIP = Math.max(150, Math.min(215, latIP * 1.0));
+    estIP = Math.max(140, Math.min(210, latIP * 0.98));
   } else {
-    estIP = Math.min(75, latIP * 0.98);
+    // Relievers: cap at 75 IP, typical is 55-70
+    estIP = Math.min(75, Math.max(30, latIP * 0.95));
   }
 
-  // FIP from components
+  // WAR: use projected ERA (derived from xERA) vs replacement level
+  // xERA is more reliable than FIP when K%/BB% data may be incomplete
+  // FG replacement: 0.12 wins/game for SP, 0.03 for RP
+  const replLevel = 5.34;
+  const rpw = 9.5;
+  const rpReplLevel = isStarter ? 5.34 : 4.49; // RP: 0.03*9.5+4.20=4.49
+  const useRepl = isStarter ? replLevel : rpReplLevel;
+  const rawWAR = ((useRepl - projERA) / rpw) * (estIP / 9);
+
+  // Also compute FIP for display (even if not used for WAR)
   const estK = projK9 * estIP / 9;
   const estBB = projBB9 * estIP / 9;
   const estHR = Math.max(0.3, pBrl / 100 * (estIP * 4.3) * 0.035);
   const fip = Math.max(1.80, Math.min(6.50,
     ((13 * estHR) + (3 * estBB) - (2 * estK)) / estIP + 3.10));
-
-  // WAR: FIP vs replacement level (FG uses 0.12 wins/game for SP)
-  // replLevel = 0.12 * 9.5 + lgFIP = 5.34
-  const replLevel = 5.34;
-  const rpw = 9.5;
-  const rawWAR = ((replLevel - fip) / rpw) * (estIP / 9);
 
   // FV clamp
   const fv = getPlayerFV(playerId, playerName);
@@ -1079,7 +1092,7 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
 
   // Pitcher WAR: FIP-based vs replacement level
   // FanGraphs: starter replLvl = 0.12 wins/game -> 5.34 runs/9
-  const replLevel = 5.34;
+  const replLevel = isLikelyStarter ? 5.34 : 4.49; // RP replacement = 0.03 wins/game
   const runsPerWin = 9.5;
   const pitchWAR = ((replLevel - finalFIP) / runsPerWin) * (estIP / 9);
   const isReliever = !isLikelyStarter;
