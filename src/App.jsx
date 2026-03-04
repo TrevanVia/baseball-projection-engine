@@ -1356,7 +1356,14 @@ function PlayerCard({player}) {
     setCareer([]);
     setPitchCareer([]);
     const isPitch = player.primaryPosition?.code === "1";
-    if (isPitch) {
+    const isTwoWay = player.primaryPosition?.code === "Y";
+    if (isTwoWay) {
+      // Two-way player: fetch BOTH hitting and pitching careers
+      Promise.all([
+        getPlayerCareer(player.id, "hitting").catch(() => []),
+        getPlayerCareer(player.id, "pitching").catch(() => []),
+      ]).then(([h, p]) => { setCareer(h); setPitchCareer(p); setLoading(false); });
+    } else if (isPitch) {
       getPlayerCareer(player.id, "pitching").then(s=>{setPitchCareer(s);setLoading(false);}).catch(()=>setLoading(false));
     } else {
       getPlayerCareer(player.id, "hitting").then(s=>{setCareer(s);setLoading(false);}).catch(()=>setLoading(false));
@@ -1396,6 +1403,7 @@ function PlayerCard({player}) {
   }).sort((a,b)=>{const sy=parseInt(a.season)-parseInt(b.season);if(sy!==0)return sy;return LEVEL_ORDER.indexOf(a.level)-LEVEL_ORDER.indexOf(b.level);}),[pitchCareer,player]);
 
   const isPitcher = player.primaryPosition?.code === "1";
+  const isTwoWay = player.primaryPosition?.code === "Y";
   useEffect(()=>{if(isPitcher)setProjTab("war");},[isPitcher]);
   const base = useMemo(() => {
     if (isPitcher) {
@@ -1406,17 +1414,54 @@ function PlayerCard({player}) {
       }
       return pitchCareer.length ? projectPitcherFromSeasons(pitchCareer, player.currentAge, player.fullName, player.id) : null;
     }
+    // Hitter projection (also base for two-way)
+    let hitProj = null;
     const savP = getSavantPlayer(player.id, player.fullName);
     if (savP && Object.keys(savP.seasons || {}).length > 0) {
-      const scProj = projectFromStatcast(savP, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
-      if (scProj) return scProj;
+      hitProj = projectFromStatcast(savP, player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code, player.fullName, player.id);
     }
-    return career.length ? projectFromSeasons(career, player.currentAge, player.primaryPosition?.code, player.fullName, player.id) : null;
-  }, [career, pitchCareer, player, isPitcher]);
+    if (!hitProj && career.length) {
+      hitProj = projectFromSeasons(career, player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code, player.fullName, player.id);
+    }
+    if (!hitProj) return null;
+
+    // Two-way: add pitching WAR
+    if (isTwoWay) {
+      let pitchWAR = 0;
+      const pSav = getPitcherSavant(player.id, player.fullName);
+      if (pSav && Object.keys(pSav.seasons || {}).length > 0) {
+        const pProj = projectPitcherFromStatcast(pSav, player.currentAge, player.fullName, player.id);
+        if (pProj) pitchWAR = pProj.baseWAR;
+        hitProj._pitchProj = pProj;
+      } else if (pitchCareer.length) {
+        const pProj = projectPitcherFromSeasons(pitchCareer.filter(s => parseFloat(s.stat?.inningsPitched || 0) > 0), player.currentAge, player.fullName, player.id);
+        if (pProj) pitchWAR = pProj.baseWAR;
+        hitProj._pitchProj = pProj;
+      }
+      if (pitchWAR > 0) {
+        hitProj._hitWAR = hitProj.baseWAR;
+        hitProj._pitchWAR = pitchWAR;
+        hitProj.baseWAR = Math.round((hitProj.baseWAR + pitchWAR) * 10) / 10;
+        hitProj._isTwoWay = true;
+      }
+    }
+    return hitProj;
+  }, [career, pitchCareer, player, isPitcher, isTwoWay]);
   const forward = useMemo(() => {
     if (!base) return [];
     if (isPitcher) return projectPitcherForward(base, player.currentAge);
-    return projectForward(base, player.currentAge, player.primaryPosition?.code);
+    const hitFwd = projectForward(base, player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code);
+    // Two-way: add pitching trajectory to each year
+    if (base._isTwoWay && base._pitchProj) {
+      const pitchFwd = projectPitcherForward(base._pitchProj, player.currentAge);
+      return hitFwd.map((h, i) => ({
+        ...h,
+        war: Math.round((h.war + (pitchFwd[i]?.war || 0)) * 10) / 10,
+        _hitWar: h.war,
+        _pitchWar: pitchFwd[i]?.war || 0,
+      }));
+    }
+    return hitFwd;
   }, [base, player, isPitcher]);
   const peak = forward.length?{age:getAP(player.primaryPosition?.code).peak}:null;
   const cWAR = getCareerWAR(player.id, player.fullName);
@@ -1463,6 +1508,11 @@ function PlayerCard({player}) {
           </>}
           {base&&!isPitcher&&<>
               <Stat label="Proj WAR" value={base.baseWAR.toFixed(1)} color={base.baseWAR>=4?C.green:base.baseWAR>=2?C.blue:C.yellow}/>
+              {base._isTwoWay&&<>
+                <Stat label="Hit WAR" value={base._hitWAR?.toFixed(1)} color={C.blue} sub="Batting"/>
+                <Stat label="Pitch WAR" value={base._pitchWAR?.toFixed(1)} color={C.purple} sub="Pitching"/>
+                {base._pitchProj&&<Stat label="Proj ERA" value={base._pitchProj.era?.toFixed(2)} color={base._pitchProj.era<=3.00?C.green:C.text}/>}
+              </>}
               <Stat label="Proj wRC+" value={base.wRCPlus} color={base.wRCPlus>=120?C.green:base.wRCPlus>=100?C.blue:C.yellow}/>
               <Stat label="Proj OPS" value={base.ops.toFixed(3)} color={base.ops>=.85?C.green:base.ops>=.73?C.blue:C.yellow}/>
               {peak&&<Stat label="Peak Age" value={peak.age} color={C.cyan}/>}
@@ -1831,7 +1881,17 @@ function Leaderboard({ onSelect }) {
             team: p._teamAbbr || p.currentTeam?.abbreviation || "FA",
             pos: posLabel(p.primaryPosition?.code),
             age: p.currentAge,
-            projWAR: base.baseWAR,
+            projWAR: base.baseWAR + (() => {
+              // Add pitching WAR for two-way players
+              if (p.primaryPosition?.code === "Y") {
+                const pSav = getPitcherSavant(p.id, p.fullName);
+                if (pSav && Object.keys(pSav.seasons || {}).length > 0) {
+                  const pp = projectPitcherFromStatcast(pSav, p.currentAge, p.fullName, p.id);
+                  if (pp) return pp.baseWAR;
+                }
+              }
+              return 0;
+            })(),
             careerWAR: getCareerWAR(p.id, p.fullName),
             cumWAR: Math.round(cum * 10) / 10,
             projWRC: base.wRCPlus,
