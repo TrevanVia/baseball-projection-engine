@@ -627,7 +627,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const avgAgeF = age > 32 ? Math.max(0.93, 1 - (age - 32) * 0.01) : 1.0;
   const avg=lat.xba!=null?Math.max(.18,Math.min(.34,lat.xba*avgAgeF)):Math.max(.2,Math.min(.32,(ops-.1)/2.5));
   const obp=Math.max(.26,Math.min(.45,avg+pBB*.85+.02));
-  const slg=Math.max(.3,Math.min(.7,ops-obp+avg));
+  const slg=Math.max(.3,Math.min(.7,ops-obp));
   const ePA=Math.min(700,Math.max(200,pa0*.97));
   const hr=Math.round(Math.max(0,pBrl/100*(ePA*.75)*.24));
   const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
@@ -859,7 +859,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   return {
     ops: finalOPS,
     obp: Math.max(0.275, Math.min(0.430, finalOBP * paRel + 0.315 * (1 - paRel))),
-    slg: Math.max(0.310, Math.min(0.620, finalSLG * paRel + 0.405 * (1 - paRel))),
+    slg: Math.max(0.310, Math.min(0.620, finalOPS - Math.max(0.275, Math.min(0.430, finalOBP * paRel + 0.315 * (1 - paRel))))),
     avg: Math.max(0.210, Math.min(0.330, (wAVG/tw) * ageBoost * paRel + 0.248 * (1 - paRel))),
     wRCPlus: finalWRC,
     baseWAR: Math.round(clampedWAR * 10) / 10,
