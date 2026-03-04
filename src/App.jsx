@@ -654,8 +654,13 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
 function projectPlayer(splits, age, posCode, name, id) {
   const savP = getSavantPlayer(id, name);
   if (savP && Object.keys(savP.seasons || {}).length > 0) {
-    const sc = projectFromStatcast(savP, age, posCode, name, id);
-    if (sc) return sc;
+    // Only use Statcast if meaningful MLB sample exists
+    // Below 250 PA, MiLB-inclusive Marcel is more reliable
+    const totalMLBPA = Object.values(savP.seasons || {}).reduce((s, yr) => s + (yr.pa || 0), 0);
+    if (totalMLBPA >= 250) {
+      const sc = projectFromStatcast(savP, age, posCode, name, id);
+      if (sc) return sc;
+    }
   }
   return splits && splits.length
     ? projectFromSeasons(splits, age, posCode, name, id)
