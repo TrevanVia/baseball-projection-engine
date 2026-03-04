@@ -945,8 +945,9 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   const fip = Math.max(1.80, Math.min(6.50,
     ((13 * estHR) + (3 * estBB) - (2 * estK)) / estIP + 3.10));
 
-  // WAR: replacement level approach
-  const replLevel = 5.50;
+  // WAR: FIP vs replacement level (FG uses 0.12 wins/game for SP)
+  // replLevel = 0.12 * 9.5 + lgFIP = 5.34
+  const replLevel = 5.34;
   const rpw = 9.5;
   const rawWAR = ((replLevel - fip) / rpw) * (estIP / 9);
 
@@ -1077,9 +1078,8 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
   const finalFIP = Math.max(1.80, Math.min(6.50, fip));
 
   // Pitcher WAR: FIP-based vs replacement level
-  // Replacement level ~ 5.5 RA/9 (a freely available minor league arm)
-  // This means a league-avg pitcher (4.20 ERA) ~ 2.0 WAR, matching FanGraphs
-  const replLevel = 5.50;
+  // FanGraphs: starter replLvl = 0.12 wins/game -> 5.34 runs/9
+  const replLevel = 5.34;
   const runsPerWin = 9.5;
   const pitchWAR = ((replLevel - finalFIP) / runsPerWin) * (estIP / 9);
   const isReliever = !isLikelyStarter;
