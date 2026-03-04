@@ -629,7 +629,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const obp=Math.max(.26,Math.min(.45,avg+pBB*.85+.02));
   const slg=Math.max(.3,Math.min(.7,ops-obp+avg));
   const ePA=Math.min(700,Math.max(200,pa0*.97));
-  const hr=Math.round(Math.max(0,pBrl/100*(ePA*.75)*.24*af));
+  const hr=Math.round(Math.max(0,pBrl/100*(ePA*.75)*.24));
   const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
   const fv=getPlayerFV(playerId,playerName);let fW=rW;
