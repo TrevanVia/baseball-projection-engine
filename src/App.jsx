@@ -641,7 +641,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
   const fv=getPlayerFV(playerId,playerName);let fW=rW;
   if(fv){const b=FV_BENCHMARKS[Math.min(70,Math.max(40,fv))]||FV_BENCHMARKS[50];
-    fW=Math.max(b.war*.25,Math.min(b.war*2.0,rW))}
+    fW=Math.max(b.war*.50,Math.min(b.war*2.0,rW))}
   fW=Math.round(fW*10)/10;
   const tPA=yrs.reduce((s,yr)=>s+(S[yr]?.pa||0),0);
   return{ops:Math.round(ops*1e3)/1e3,obp:Math.round(obp*1e3)/1e3,
@@ -776,7 +776,9 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   if (fv && mlbPA < 400) {
     const bench = FV_BENCHMARKS[Math.min(70, Math.max(40, fv))] || FV_BENCHMARKS[50];
     // PA-scaled blend: more MLB PA = trust stats more, less = trust FV more
-    const statWeight = Math.min(0.80, Math.max(0.15, paRel * 0.90));
+    // Higher FV prospects get more FV weight (70 FV = we're very confident in the grade)
+    const fvBoost = fv >= 70 ? 0.20 : fv >= 65 ? 0.12 : fv >= 60 ? 0.06 : 0;
+    const statWeight = Math.min(0.80, Math.max(0.10, paRel * 0.90 - fvBoost));
     const fvWeight = 1 - statWeight;
     const statsOPS = finalAdjustedOPS * paRel + lgOPS * (1 - paRel);
     finalOPS = statsOPS * statWeight + bench.ops * fvWeight;
@@ -856,7 +858,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   let clampedWAR = baseWAR;
   if (fv) {
     const bench = FV_BENCHMARKS[Math.min(70, Math.max(40, fv))] || FV_BENCHMARKS[50];
-    clampedWAR = Math.max(bench.war * 0.30, Math.min(bench.war * 2.0, baseWAR));
+    clampedWAR = Math.max(bench.war * 0.50, Math.min(bench.war * 2.0, baseWAR));
   }
 
   const finalOBP = (wOBP/tw) * ageBoost * performanceBoost;
