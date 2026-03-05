@@ -1347,6 +1347,21 @@ const Spinner = ({msg="Loading..."}) => (
   .via-mode-toggle button{padding:5px 12px!important;font-size:10px!important}
   .via-leaderboard-filters{flex-direction:column!important;gap:8px!important;align-items:stretch!important}
   .via-leaderboard-filters input{width:100%!important;box-sizing:border-box!important}
+  /* Landing page grids → single column on mobile */
+  .via-landing-2col{grid-template-columns:1fr!important}
+  /* Compare tool slots */
+  .via-compare-slots{grid-template-columns:1fr!important}
+  /* Roster team grid */
+  .via-roster-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))!important}
+  /* Quick pick buttons wrap better */
+  .via-quick-pick{padding:6px 10px!important;font-size:10px!important}
+  /* Stats bar on landing */
+  .via-engine-stats{gap:12px!important;padding:10px 14px!important}
+  .via-engine-stats > div{min-width:60px!important}
+  /* Player card stat boxes */
+  .via-card-stats{flex-wrap:wrap!important;gap:6px!important}
+  /* VpD table */
+  .via-vpd-table{min-width:600px}
 }
 @media(max-width:480px){
   .via-title{font-size:24px!important}
@@ -1354,6 +1369,8 @@ const Spinner = ({msg="Loading..."}) => (
   .via-stat-box .via-stat-val{font-size:12px!important}
   .via-table-wrap th,.via-table-wrap td{padding:3px 4px!important;font-size:9px!important}
   .via-player-name{font-size:18px!important}
+  .via-engine-stats{gap:8px!important;flex-wrap:wrap!important}
+  .via-quick-pick{padding:5px 8px!important;font-size:9px!important}
 }`}</style>
   </div>
 );
@@ -1707,7 +1724,7 @@ function RosterBrowser({onSelect}) {
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}}>
       <Panel title="SELECT MLB ORGANIZATION" sub="All 30 teams listed alphabetically.">
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:6}}>
+        <div className="via-roster-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:6}}>
           {[...teams].sort((a,b)=>a.name.localeCompare(b.name)).map(t=><button key={t.id} onClick={()=>pickTeam(t)} style={{
             display:"flex",alignItems:"center",gap:10,padding:"8px 12px",fontSize:12,fontWeight:selTeam?.id===t.id?700:500,
             fontFamily:F,borderRadius:8,cursor:"pointer",
@@ -3407,7 +3424,7 @@ export default function App() {
             </Panel>
 
             {/* Engine Stats Bar - moved up */}
-            <div style={{display:"flex",justifyContent:"center",gap:20,flexWrap:"wrap",padding:"14px 20px",background:`linear-gradient(135deg, ${C.navy}08, ${C.accent}05)`,borderRadius:12,border:`1px solid ${C.navy}12`}}>
+            <div className="via-engine-stats" style={{display:"flex",justifyContent:"center",gap:20,flexWrap:"wrap",padding:"14px 20px",background:`linear-gradient(135deg, ${C.navy}08, ${C.accent}05)`,borderRadius:12,border:`1px solid ${C.navy}12`}}>
               {[
                 {v:"900+",l:"MLB Hitters",c:C.green},
                 {v:"1,200+",l:"MLB Pitchers",c:C.blue},
@@ -3423,7 +3440,7 @@ export default function App() {
             </div>
 
             {/* Top Projections Grid */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+            <div className="via-landing-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
               <Panel title="TOP HITTERS" sub="2026 projected WAR leaders." style={{borderTop:`3px solid ${C.green}`}}>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   {[
@@ -3495,7 +3512,7 @@ export default function App() {
             </div>
 
             {/* Top Prospects + What Is VIAcast */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+            <div className="via-landing-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
               <Panel title="TOP PROSPECTS" sub="Highest FV grades in the system." style={{borderTop:`3px solid ${C.accent}`}}>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   {[
