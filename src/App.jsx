@@ -1319,59 +1319,7 @@ const Spinner = ({msg="Loading..."}) => (
   <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:32,color:C.dim,fontFamily:F,fontSize:12,animation:"fadeIn 0.3s ease"}}>
     <div style={{width:18,height:18,border:`2px solid ${C.border}`,borderTopColor:C.accent,borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
     {msg}
-    <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fvGlow{from{box-shadow:0 0 8px rgba(192,132,252,.3),0 0 16px rgba(96,165,250,.15)}to{box-shadow:0 0 16px rgba(251,146,60,.4),0 0 28px rgba(192,132,252,.25)}}
-@media(max-width:768px){
-  .via-header{padding:12px 16px 0!important}
-  .via-header-inner{flex-direction:row!important;align-items:center!important;gap:8px!important;flex-wrap:nowrap!important}
-  .via-search{display:none!important}
-  .via-content{padding:8px 12px 20px!important}
-  .via-tabs{display:none!important}
-  .via-search{width:100%!important;margin:8px auto 0!important;box-sizing:border-box!important;max-width:400px!important;display:block!important}
-  .via-title{font-size:28px!important}
-  .via-subtitle{font-size:8px!important;letter-spacing:.14em!important}
-  .via-tagline{font-size:7px!important}
-  .via-stat-row{gap:4px!important;flex-wrap:wrap!important;justify-content:center!important}
-  .via-stat-box{min-width:58px!important;padding:6px 8px!important}
-  .via-stat-box .via-stat-val{font-size:14px!important}
-  .via-stat-box .via-stat-label{font-size:6px!important}
-  .via-panel{padding:10px 12px!important;margin-bottom:8px!important}
-  .via-footer{padding:8px 12px!important;flex-direction:column!important;gap:4px!important;text-align:center!important}
-  .via-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px}
-  .via-table-wrap table{min-width:500px}
-  .via-table-wrap th,.via-table-wrap td{padding:4px 6px!important;font-size:10px!important}
-  .via-player-name{font-size:20px!important}
-  .via-player-info{font-size:10px!important}
-  .via-pos-filters{gap:2px!important}
-  .via-pos-filters button{padding:4px 8px!important;font-size:9px!important}
-  .via-mode-toggle{gap:2px!important}
-  .via-mode-toggle button{padding:5px 12px!important;font-size:10px!important}
-  .via-leaderboard-filters{flex-direction:column!important;gap:8px!important;align-items:stretch!important}
-  .via-leaderboard-filters input{width:100%!important;box-sizing:border-box!important}
-  /* Landing page grids → single column on mobile */
-  .via-landing-2col{grid-template-columns:1fr!important}
-  /* Compare tool slots */
-  .via-compare-slots{grid-template-columns:1fr!important}
-  /* Roster team grid */
-  .via-roster-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))!important}
-  /* Quick pick buttons wrap better */
-  .via-quick-pick{padding:6px 10px!important;font-size:10px!important}
-  /* Stats bar on landing */
-  .via-engine-stats{gap:12px!important;padding:10px 14px!important}
-  .via-engine-stats > div{min-width:60px!important}
-  /* Player card stat boxes */
-  .via-card-stats{flex-wrap:wrap!important;gap:6px!important}
-  /* VpD table */
-  .via-vpd-table{min-width:600px}
-}
-@media(max-width:480px){
-  .via-title{font-size:24px!important}
-  .via-stat-box{min-width:50px!important;padding:5px 6px!important}
-  .via-stat-box .via-stat-val{font-size:12px!important}
-  .via-table-wrap th,.via-table-wrap td{padding:3px 4px!important;font-size:9px!important}
-  .via-player-name{font-size:18px!important}
-  .via-engine-stats{gap:8px!important;flex-wrap:wrap!important}
-  .via-quick-pick{padding:5px 8px!important;font-size:9px!important}
-}`}</style>
+    <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fvGlow{from{box-shadow:0 0 8px rgba(192,132,252,.3),0 0 16px rgba(96,165,250,.15)}to{box-shadow:0 0 16px rgba(251,146,60,.4),0 0 28px rgba(192,132,252,.25)}}`}</style>
   </div>
 );
 const Tip = ({active,payload,label}) => {
@@ -3326,9 +3274,46 @@ export default function App() {
 
         /* Responsive refinements */
         @media (max-width: 768px) {
-          .via-content { padding: 12px 14px 32px !important; }
-          .via-header-inner { gap: 10px !important; }
-          .via-stat-row { gap: 4px !important; }
+          .via-content { padding: 8px 12px 20px !important; }
+          .via-header { padding: 12px 16px 0 !important; }
+          .via-header-inner { flex-direction: row !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; }
+          .via-tabs { display: none !important; }
+          .via-title { font-size: 28px !important; }
+          .via-subtitle { font-size: 8px !important; letter-spacing: .14em !important; }
+          .via-tagline { font-size: 7px !important; }
+          .via-stat-row { gap: 4px !important; flex-wrap: wrap !important; justify-content: center !important; }
+          .via-stat-box { min-width: 58px !important; padding: 6px 8px !important; }
+          .via-stat-box .via-stat-val { font-size: 14px !important; }
+          .via-stat-box .via-stat-label { font-size: 6px !important; }
+          .via-panel { padding: 10px 12px !important; margin-bottom: 8px !important; }
+          .via-footer { padding: 8px 12px !important; flex-direction: column !important; gap: 4px !important; text-align: center !important; }
+          .via-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -12px; padding: 0 12px; }
+          .via-table-wrap table { min-width: 500px; }
+          .via-table-wrap th, .via-table-wrap td { padding: 4px 6px !important; font-size: 10px !important; }
+          .via-player-name { font-size: 20px !important; }
+          .via-player-info { font-size: 10px !important; }
+          .via-pos-filters { gap: 2px !important; }
+          .via-pos-filters button { padding: 4px 8px !important; font-size: 9px !important; }
+          .via-mode-toggle { gap: 2px !important; }
+          .via-mode-toggle button { padding: 5px 12px !important; font-size: 10px !important; }
+          .via-leaderboard-filters { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; }
+          .via-leaderboard-filters input { width: 100% !important; box-sizing: border-box !important; }
+          /* Landing page grids → single column */
+          .via-landing-2col { grid-template-columns: 1fr !important; }
+          .via-compare-slots { grid-template-columns: 1fr !important; }
+          .via-roster-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; }
+          .via-quick-pick { padding: 6px 10px !important; font-size: 10px !important; }
+          .via-engine-stats { gap: 12px !important; padding: 10px 14px !important; }
+          .via-engine-stats > div { min-width: 60px !important; }
+        }
+        @media (max-width: 480px) {
+          .via-title { font-size: 24px !important; }
+          .via-stat-box { min-width: 50px !important; padding: 5px 6px !important; }
+          .via-stat-box .via-stat-val { font-size: 12px !important; }
+          .via-table-wrap th, .via-table-wrap td { padding: 3px 4px !important; font-size: 9px !important; }
+          .via-player-name { font-size: 18px !important; }
+          .via-engine-stats { gap: 8px !important; flex-wrap: wrap !important; }
+          .via-quick-pick { padding: 5px 8px !important; font-size: 9px !important; }
         }
       `}</style>
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&family=Changa+One&display=swap" rel="stylesheet"/>
