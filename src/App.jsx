@@ -2687,29 +2687,32 @@ function MethodPanel() {
 
 // ── PLAYER OF THE DAY ────────────────────────────────────────────────────────
 const POTD_POOL = [
-  "Aaron Judge","Juan Soto","Shohei Ohtani","Mookie Betts","Gunnar Henderson",
-  "Bobby Witt Jr.","Elly De La Cruz","Julio Rodriguez","Jackson Chourio","Corbin Carroll",
-  "Ronald Acuña Jr.","Fernando Tatis Jr.","Corey Seager","Freddie Freeman","Bryce Harper",
-  "Mike Trout","Yordan Alvarez","Kyle Tucker","Adley Rutschman","Cal Raleigh",
-  "Riley Greene","Jackson Merrill","James Wood","Pete Crow-Armstrong","Roman Anthony",
-  "Marcelo Mayer","Colson Montgomery","Junior Caminero","Jackson Holliday","Wyatt Langford",
-  "Dylan Crews","Evan Carter","Andy Pages","Masyn Winn","Colt Keith",
-  "Matt McLain","Maikel Garcia","Anthony Volpe","CJ Abrams","Zach Neto",
-  "Jarren Duran","Steven Kwan","Kerry Carpenter","Michael Harris II","Bryson Stott",
-  "Vladimir Guerrero Jr.","Rafael Devers","Jose Ramirez","Manny Machado","Alex Bregman",
-  "Marcus Semien","Francisco Lindor","Trea Turner","Dansby Swanson","Bo Bichette",
-  "Willy Adames","Matt Olson","Pete Alonso","Cody Bellinger","Kyle Schwarber",
-  "Konnor Griffin","Kevin McGonigle","Samuel Basallo","Sebastian Walcott","Aidan Miller",
-  "Max Clark","JJ Wetherholt","Colt Emerson","Carter Jensen","Nick Kurtz",
-  "Paul Skenes","Roki Sasaki","Tarik Skubal","Corbin Burnes","Zack Wheeler",
-  "Cole Ragans","Logan Webb","Garrett Crochet","Chris Sale","Dylan Cease",
+  // Launch week: marquee names
+  "Gunnar Henderson","Juan Soto","Bobby Witt Jr.","Shohei Ohtani","Paul Skenes",
+  "Aaron Judge","Konnor Griffin","Elly De La Cruz","Corbin Carroll","Julio Rodriguez",
+  // Week 2: stars + top prospects
+  "Fernando Tatis Jr.","Bryce Harper","Mookie Betts","Samuel Basallo","Tarik Skubal",
+  "Ronald Acuña Jr.","Corey Seager","Freddie Freeman","Mike Trout","Roki Sasaki",
+  // Week 3: young stars + breakouts
+  "Jackson Chourio","Adley Rutschman","Kyle Tucker","Yordan Alvarez","Garrett Crochet",
+  "Riley Greene","Jackson Merrill","James Wood","Cal Raleigh","Kevin McGonigle",
+  // Week 4+: deep roster
+  "Vladimir Guerrero Jr.","Rafael Devers","Jose Ramirez","Francisco Lindor","Kyle Schwarber",
+  "Trea Turner","Bo Bichette","Pete Alonso","Willy Adames","Max Clark",
+  "Anthony Volpe","CJ Abrams","Jarren Duran","Roman Anthony","JJ Wetherholt",
+  "Jackson Holliday","Dylan Crews","Evan Carter","Corbin Burnes","Zack Wheeler",
+  "Matt McLain","Dansby Swanson","Marcus Semien","Alex Bregman","Manny Machado",
+  "Pete Crow-Armstrong","Steven Kwan","Michael Harris II","Chris Sale","Cole Ragans",
+  "Logan Webb","Dylan Cease","Colt Keith","Zach Neto","Matt Olson",
+  "Kerry Carpenter","Bryson Stott","Cody Bellinger","Maikel Garcia","Aidan Miller",
   "Grayson Rodriguez","Hunter Brown","Jared Jones","Luis Gil","Tanner Bibee",
 ];
 
 function getPlayerOfTheDay() {
   const now = new Date();
   const daysSinceEpoch = Math.floor(now.getTime() / 86400000);
-  const idx = daysSinceEpoch % POTD_POOL.length;
+  const launchDay = 20518; // March 5, 2026
+  const idx = Math.abs(daysSinceEpoch - launchDay) % POTD_POOL.length;
   return POTD_POOL[idx];
 }
 
