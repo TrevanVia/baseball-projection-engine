@@ -690,6 +690,17 @@ function projectPlayer(splits, age, posCode, name, id) {
 }
 
 
+// Unified pitcher projection router (mirrors projectPlayer for hitters)
+function projectPitcher(career, age, playerName, playerId) {
+  const pSav = getPitcherSavant(playerId, playerName);
+  if (pSav && Object.keys(pSav.seasons || {}).length > 0) {
+    const sc = projectPitcherFromStatcast(pSav, age, playerName, playerId);
+    if (sc) return sc;
+  }
+  const pitchSplits = career.filter(s => parseFloat(s.stat?.inningsPitched || 0) > 0);
+  return pitchSplits.length ? projectPitcherFromSeasons(pitchSplits, age, playerName, playerId) : null;
+}
+
 function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   const valid = splits
     .filter(s => s.stat?.plateAppearances > 30)
@@ -1441,26 +1452,12 @@ function PlayerCard({player}) {
   useEffect(()=>{if(isPitcher)setProjTab("war");},[isPitcher]);
   const base = useMemo(() => {
     if (isPitcher) {
-      const pSav = getPitcherSavant(player.id, player.fullName);
-      if (pSav && Object.keys(pSav.seasons || {}).length > 0) {
-        const scP = projectPitcherFromStatcast(pSav, player.currentAge, player.fullName, player.id);
-        if (scP) return scP;
-      }
-      return pitchCareer.length ? projectPitcherFromSeasons(pitchCareer, player.currentAge, player.fullName, player.id) : null;
+      return pitchCareer.length ? projectPitcher(pitchCareer, player.currentAge, player.fullName, player.id) : null;
     }
-    // Hitter projection (also base for two-way)
-    let hitProj = null;
-    const savP = getSavantPlayer(player.id, player.fullName);
-    if (savP && Object.keys(savP.seasons || {}).length > 0) {
-      // Only use Statcast for 250+ MLB PA; below that Marcel with MiLB data is better
-      const totalMLBPA = Object.values(savP.seasons || {}).reduce((s, yr) => s + (yr.pa || 0), 0);
-      if (totalMLBPA >= 250) {
-        hitProj = projectFromStatcast(savP, player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code, player.fullName, player.id);
-      }
-    }
-    if (!hitProj && career.length) {
-      hitProj = projectFromSeasons(career, player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code, player.fullName, player.id);
-    }
+    // Hitter projection — uses same router as leaderboard & compare
+    let hitProj = career.length
+      ? projectPlayer(career.filter(s => s.stat?.plateAppearances > 0), player.currentAge, player.primaryPosition?.code === "Y" ? "10" : player.primaryPosition?.code, player.fullName, player.id)
+      : null;
     if (!hitProj) return null;
 
     // Two-way: add pitching WAR
@@ -2227,15 +2224,7 @@ function VpDPanel() {
               const career = await getPlayerCareer(player.id, isPitcher ? "pitching" : "hitting");
               let base;
               if (isPitcher) {
-                const pSav2 = getPitcherSavant(player.id, player.fullName);
-                if (pSav2 && Object.keys(pSav2.seasons || {}).length > 0) {
-                  const scP2 = projectPitcherFromStatcast(pSav2, player.currentAge, player.fullName, player.id);
-                  if (scP2) { base = scP2; } else {
-                    base = projectPitcherFromSeasons(career.filter(s => parseFloat(s.stat?.inningsPitched || 0) > 0), player.currentAge, player.fullName, player.id);
-                  }
-                } else {
-                  base = projectPitcherFromSeasons(career.filter(s => parseFloat(s.stat?.inningsPitched || 0) > 0), player.currentAge, player.fullName, player.id);
-                }
+                base = projectPitcher(career, player.currentAge, player.fullName, player.id);
               } else {
                 const splits = career.filter(s => s.stat?.plateAppearances > 0);
                 base = projectPlayer(splits, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
@@ -2913,7 +2902,7 @@ function ComparePanel({ onSelect }) {
       const career = await getPlayerCareer((fullPlayer || player).id, isPitcher ? "pitching" : "hitting");
       let base, forward;
       if (isPitcher) {
-        base = projectPitcherFromSeasons(career.filter(s => parseFloat(s.stat?.inningsPitched || 0) > 0), (fullPlayer || player).currentAge, (fullPlayer || player).fullName, (fullPlayer || player).id);
+        base = projectPitcher(career, (fullPlayer || player).currentAge, (fullPlayer || player).fullName, (fullPlayer || player).id);
         forward = base ? projectPitcherForward(base, (fullPlayer || player).currentAge) : [];
       } else {
         const splits = career.filter(s => s.stat?.plateAppearances > 0);
