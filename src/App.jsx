@@ -609,7 +609,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const oaa=sP.oaa!=null?sP.oaa:null;
   const dPk=(posCode==="6"||posCode==="8")?26:(posCode==="4"||posCode==="5")?27:28;
   const dAg=Math.max(.3,1-Math.max(0,age-dPk)*.06);
-  let dR=0; if(oaa!==null)dR=oaa*.6*1.5*dAg;
+  let dR=0; if(oaa!==null)dR=oaa*.5*dAg;
   const ap=getAP(posCode), pk=ap.peak;
   // Trend detection (before aging)
   let tb=0;
@@ -830,9 +830,9 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   const defAge = Math.max(0, 1 - Math.max(0, age - defPeak) * 0.06);
   let defRuns = 0;
   if (def) {
-    const oaaRuns = def.oaa * 1.75;
-    const drsAdj = def.drs * 1.5;
-    defRuns = (oaaRuns * 0.70 + drsAdj * 0.30) * defAge * (estPA / 600);
+    const oaaRuns = def.oaa * 0.5;
+    const drsAdj = def.drs * 0.5;
+    defRuns = (oaaRuns * 0.80 + drsAdj * 0.20) * defAge * (estPA / 600);
   }
 
   // ── BASERUNNING RUNS ──────────────────────────────────────────────────────
@@ -3436,21 +3436,21 @@ export default function App() {
               <Panel title="TOP HITTERS" sub="2026 projected WAR leaders." style={{borderTop:`3px solid ${C.green}`}}>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   {[
-                    {n:"Aaron Judge",t:"NYY",war:7.0,wrc:166,pos:"RF"},
-                    {n:"Shohei Ohtani",t:"LAD",war:6.9,wrc:152,pos:"DH"},
-                    {n:"Juan Soto",t:"NYM",war:6.5,wrc:156,pos:"RF"},
-                    {n:"Bobby Witt Jr.",t:"KC",war:5.5,wrc:128,pos:"SS"},
-                    {n:"Kyle Schwarber",t:"PHI",war:4.8,wrc:138,pos:"LF"},
-                    {n:"Francisco Lindor",t:"NYM",war:4.6,wrc:115,pos:"SS"},
-                    {n:"Gunnar Henderson",t:"BAL",war:4.3,wrc:116,pos:"SS"},
-                    {n:"Mookie Betts",t:"LAD",war:4.2,wrc:114,pos:"SS"},
+                    {n:"Bobby Witt Jr.",t:"KC",war:7.8,wrc:130,pos:"SS"},
+                    {n:"Aaron Judge",t:"NYY",war:6.7,wrc:167,pos:"RF"},
+                    {n:"Juan Soto",t:"NYM",war:6.6,wrc:158,pos:"RF"},
+                    {n:"Francisco Lindor",t:"NYM",war:5.5,wrc:116,pos:"SS"},
+                    {n:"Shohei Ohtani",t:"LAD",war:5.3,wrc:152,pos:"DH"},
+                    {n:"Gunnar Henderson",t:"BAL",war:5.1,wrc:119,pos:"SS"},
+                    {n:"Elly De La Cruz",t:"CIN",war:5.0,wrc:105,pos:"SS"},
+                    {n:"Fernando Tatis Jr.",t:"SD",war:5.0,wrc:129,pos:"RF"},
                   ].map((p,i)=>(
                     <div key={p.n} onClick={()=>searchPlayers(p.n).then(r=>{if(r[0])pick(r[0]);})}
                       style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
                       onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                       <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
-                      <img src={`https://www.mlbstatic.com/team-logos/${({NYY:147,LAD:119,NYM:121,KC:118,PHI:143,BAL:110})[p.t]||147}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
+                      <img src={`https://www.mlbstatic.com/team-logos/${({NYY:147,LAD:119,NYM:121,KC:118,PHI:143,BAL:110,CIN:113,SD:135})[p.t]||147}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
                       <div style={{flex:1}}>
                         <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.n}</div>
                         <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.t}</div>
@@ -3476,15 +3476,15 @@ export default function App() {
                     {n:"Bryan Woo",t:"SEA",war:4.8,era:3.00,pos:"SP"},
                     {n:"Yoshinobu Yamamoto",t:"LAD",war:4.5,era:2.99,pos:"SP"},
                     {n:"Zack Wheeler",t:"PHI",war:4.3,era:3.05,pos:"SP"},
-                    {n:"Roki Sasaki",t:"LAD",war:4.1,era:2.88,pos:"SP"},
-                    {n:"Chris Sale",t:"ATL",war:3.9,era:3.15,pos:"SP"},
+                    {n:"Tanner Bibee",t:"CLE",war:3.8,era:3.57,pos:"SP"},
+                    {n:"Logan Webb",t:"SF",war:3.3,era:3.94,pos:"SP"},
                   ].map((p,i)=>(
                     <div key={p.n} onClick={()=>searchPlayers(p.n).then(r=>{if(r[0])pick(r[0]);})}
                       style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
                       onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                       <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
-                      <img src={`https://www.mlbstatic.com/team-logos/${({PIT:134,DET:116,BOS:111,SEA:136,LAD:119,PHI:143,ATL:144})[p.t]||134}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
+                      <img src={`https://www.mlbstatic.com/team-logos/${({PIT:134,DET:116,BOS:111,SEA:136,LAD:119,PHI:143,CLE:114,SF:137})[p.t]||134}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
                       <div style={{flex:1}}>
                         <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.n}</div>
                         <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.t}</div>
