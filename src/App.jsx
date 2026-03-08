@@ -1976,13 +1976,7 @@ function Leaderboard({ onSelect }) {
         try {
           const splits = await fetchPlayerPitchingStats(p.id);
           if (!splits.length) return null;
-          const pSavV = getPitcherSavant(p.id, p.fullName);
-                let base;
-                if (pSavV && Object.keys(pSavV.seasons || {}).length > 0) {
-                  base = projectPitcherFromStatcast(pSavV, p.currentAge, p.fullName, p.id) || projectPitcherFromSeasons(splits, p.currentAge, p.fullName, p.id);
-                } else {
-                  base = projectPitcherFromSeasons(splits, p.currentAge, p.fullName, p.id);
-                }
+          let base = projectPitcher(splits, p.currentAge, p.fullName, p.id);
           if (!base) return null;
           const fwd = projectPitcherForward(base, p.currentAge);
           const cum = fwd.reduce((s, d) => s + Math.max(0, d.war), 0);
@@ -2744,7 +2738,7 @@ function PlayerOfTheDay({onSelect}) {
           : career.filter(s => s.stat?.plateAppearances > 0);
         if (splits.length) {
           const base = isPitch
-            ? projectPitcherFromSeasons(splits, player.currentAge, player.fullName, player.id)
+            ? projectPitcher(splits, player.currentAge, player.fullName, player.id)
             : projectPlayer(splits, player.currentAge, player.primaryPosition?.code, player.fullName, player.id);
           const fv = getPlayerFV(player.id, player.fullName);
           const cWAR = getCareerWAR(player.id, player.fullName);
