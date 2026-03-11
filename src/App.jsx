@@ -3075,23 +3075,61 @@ export default function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   const [scrolled, setScrolled] = useState(false);
+
+  // Browser back/forward support
+  useEffect(() => {
+    const onPop = () => {
+      const r = parseURL();
+      setTab(r.tab);
+      if (r.playerId) {
+        setLp(true);
+        getPlayerStats(parseInt(r.playerId)).then(d => { if(d){setSelPlayer(d);setDetail(d);} setLp(false); });
+      } else if (r.tab === "player") { setSelPlayer(null); setDetail(null); }
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // Deep link: load player from URL on mount
+  useEffect(() => {
+    const r = parseURL();
+    if (r.playerId) {
+      setLp(true);
+      getPlayerStats(parseInt(r.playerId)).then(d => { if(d){setSelPlayer(d);setDetail(d);} setLp(false); }).catch(() => setLp(false));
+    }
+  }, []);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const [tab,setTab]=useState("player");
+  // URL routing
+  const parseURL = () => {
+    const path = window.location.pathname;
+    const m = path.match(/^\/player\/([^/]+?)(?:-(\d+))?$/);
+    if (m) return { tab: "player", playerId: m[2] || null };
+    if (path === "/leaderboard") return { tab: "leaders" };
+    if (path === "/rosters") return { tab: "roster" };
+    if (path === "/compare") return { tab: "compare" };
+    if (path === "/value") return { tab: "cost" };
+    if (path === "/methodology") return { tab: "method" };
+    return { tab: "player" };
+  };
+  const initRoute = parseURL();
+  const [tab,setTab]=useState(initRoute.tab);
   const [selPlayer,setSelPlayer]=useState(null);
   const [detail,setDetail]=useState(null);
   const [lp,setLp]=useState(false);
   const [menuOpen,setMenuOpen]=useState(false);
 
-  const pick=useCallback(p=>{setSelPlayer(p);setLp(true);setTab("player");getPlayerStats(p.id).then(d=>{setDetail(d||p);setLp(false);});},[]);
+  const slugify = (name) => (name||"player").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const pick=useCallback(p=>{setSelPlayer(p);setLp(true);setTab("player");window.history.pushState({},"",`/player/${slugify(p.fullName||p.name)}-${p.id}`);getPlayerStats(p.id).then(d=>{setDetail(d||p);setLp(false);});},[]);
 
-  const goHome = useCallback(()=>{setSelPlayer(null);setDetail(null);setLp(false);setTab("player");},[]);
+  const goHome = useCallback(()=>{setSelPlayer(null);setDetail(null);setLp(false);setTab("player");window.history.pushState({},"","/");},[]);
 
-  const switchTab = useCallback((k) => { setTab(k); setMenuOpen(false); }, []);
+  const tabPaths = {player:"/",leaders:"/leaderboard",roster:"/rosters",compare:"/compare",cost:"/value",method:"/methodology"};
+  const switchTab = useCallback((k) => { setTab(k); setMenuOpen(false); window.history.pushState({},"",tabPaths[k]||"/"); }, []);
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F}}>

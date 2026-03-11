@@ -3,6 +3,12 @@
     "silent": true
   },
   "alias": ["viacastbaseball.com"],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
