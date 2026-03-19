@@ -2895,13 +2895,13 @@ function MethodPanel() {
         <p style={{margin:"0 0 12px"}}>Bat speed and squared-up rate from Statcast bat tracking. Year-over-year bat speed trends detect early aging signals before traditional stats reflect it.</p>
 
         <h4 style={{color:C.green,fontSize:13,margin:"0 0 4px"}}>Layer 4: Speed & Baserunning (10%)</h4>
-        <p style={{margin:"0 0 12px"}}>Sprint speed (ft/s) with age-adjusted decay (-0.15 ft/s per year after 28). For MiLB players without sprint speed, baserunning is derived from SB/CS/G with efficiency multipliers.</p>
+        <p style={{margin:"0 0 12px"}}>Statcast Baserunning Run Value (BsR) for 252 MLB players, measuring actual runs created via stolen bases, extra bases taken, and baserunner decisions. BsR maps directly to WAR (divide by 9.5). Players without BsR data fall back to sprint speed tiers. For MiLB players, baserunning is derived from SB/CS rates.</p>
 
         <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Layer 5: Defense</h4>
-        <p style={{margin:"0 0 12px"}}>OAA from Statcast, regressed 40% toward zero. Approximately 1.5 runs per OAA with position-specific aging curves (SS/CF peak at 26, corners at 28).</p>
+        <p style={{margin:"0 0 12px"}}>Outs Above Average (OAA) from Statcast, converted at 0.5 runs per OAA with position-specific aging curves. Defensive peaks: SS/CF at 26, corners at 28. Defense decays at 6% per year past peak.</p>
 
         <h4 style={{color:C.text,fontSize:13,margin:"0 0 4px"}}>Layer 6: Aging Curves (Hitters)</h4>
-        <p style={{margin:"0 0 12px"}}>Single-year forward adjustment applied to wRC+ (not multiplicative xwOBA). Pre-peak: +1.5 wRC+ per year. Ages 28-32: -1.5 wRC+/yr. Ages 33+: -3.0 wRC+/yr. Position-specific peaks: SS 26, CF 27, 2B/3B 27, 1B/DH/OF 28.</p>
+        <p style={{margin:"0 0 12px"}}>Single-year forward adjustment applied to wRC+ (not multiplicative xwOBA). Pre-peak: +1.5 wRC+ per year. Ages 28-32: -1.5 wRC+/yr. Ages 33+: -3.0 wRC+/yr. Offensive peaks based on research (Fair 2025, Bradbury, FanGraphs): SS/2B/3B 28, CF 27, C 27, LF/RF 28, 1B 29, DH 30.</p>
 
         <h4 style={{color:C.blue,fontSize:13,margin:"0 0 4px"}}>Layer 7: Trend Weighting</h4>
         <p style={{margin:"0 0 12px"}}>Consistent multi-year improvers get amplified trend credit (+30% for same-direction trends). Chase rate improvements, EV50 breakouts, and bat speed declines feed momentum adjustments.</p>
@@ -2922,19 +2922,19 @@ function MethodPanel() {
         <p style={{margin:"0 0 12px"}}>Fastball velocity trends across seasons. Velocity loss is the strongest predictor of pitcher decline. Arsenal mix effectiveness weights pitch-type performance.</p>
 
         <h4 style={{color:C.text,fontSize:13,margin:"0 0 4px"}}>Pitcher Aging & WAR</h4>
-        <p style={{margin:"0 0 12px"}}>Pre-peak: -1.5% ERA improvement/yr. Post-peak to 33: +1.5% ERA rise/yr. After 33: +3%/yr. Pitcher WAR uses xERA vs. replacement level (5.34 for starters, 4.49 for relievers). Starter detection requires 100+ IP or 450+ BFP. Reliever IP capped at 75.</p>
+        <p style={{margin:"0 0 12px"}}>Pre-peak: -1.5% ERA improvement/yr. Post-peak to 33: +1.5% ERA rise/yr. After 33: +3%/yr. Pitcher WAR uses xERA vs. replacement level (5.34 for starters, 4.49 for relievers). Starter detection checks entire career history (not just most recent season), so injury-return pitchers are correctly classified. Returning starters project minimum 140 IP using 70% of career-max as floor. Reliever IP capped at 75.</p>
 
         <h4 style={{color:C.accent,fontSize:13,margin:"16px 0 4px"}}>Marcel Engine (MiLB & Small-Sample Players)</h4>
-        <p style={{margin:"0 0 12px"}}>Players with fewer than 250 Statcast PA use PA-weighted Marcel across all levels. Best 3 seasons weighted 5/4/3 with recency multipliers (1.0/0.85/0.70). Stats translated using level-specific conversion factors (AAA 0.82x, AA 0.68x, A+ 0.58x, A 0.50x).</p>
+        <p style={{margin:"0 0 12px"}}>Players with fewer than 250 Statcast PA use PA-weighted Marcel across all levels. Best 3 seasons weighted 5/4/3 with recency multipliers (1.0/0.85/0.70). Stats translated using level-specific conversion factors (AAA 0.82x, AA 0.68x, A+ 0.58x, A 0.50x). HR are also translated by level factor and projected using games-based rate (HR/G x projected games). Players with fewer than 400 MLB PA use prospect PA estimation (projected games x 4.0 PA/G).</p>
 
         <h4 style={{color:C.green,fontSize:13,margin:"0 0 4px"}}>FV Grade Integration</h4>
-        <p style={{margin:"0 0 12px"}}>Prospects with FanGraphs FV grades and fewer than 400 MLB PA get a weighted blend of their translated stats and FV benchmark OPS. The blend weights scale by sample size: small samples trust FV heavily, larger samples trust stats more. This ensures elite prospects like top FV 65+ players are not penalized by brief MLB callups.</p>
+        <p style={{margin:"0 0 12px"}}>Prospects with FanGraphs FV grades and fewer than 400 MLB PA get a weighted blend of their translated stats and FV benchmark OPS. Higher FV grades get more FV weight (70 FV +20%, 65 +12%, 60 +6%). WAR floor is 50% of FV benchmark (70 FV = 4.0 WAR min). Slash line scales proportionally with FV-boosted OPS so wRC+ and OPS are always consistent. HR scales with the SLG boost.</p>
 
         <h4 style={{color:C.purple,fontSize:13,margin:"0 0 4px"}}>Value per Dollar (VpD)</h4>
         <p style={{margin:"0 0 8px"}}>Projected WAR per $1M salary. Grades from A+ (4.0+) through F (below 0.08). Pre-arbitration players at league minimum ($0.8M) naturally receive top grades when projecting positive WAR. Salary data from Spotrac and MLB Trade Rumors.</p>
 
         <h4 style={{color:C.muted,fontSize:13,margin:"8px 0 4px"}}>Data Pipeline</h4>
-        <p style={{margin:0}}>Baseball Savant: xwOBA, xERA, xBA, barrel%, exit velocity, whiff%, sprint speed, OAA, bat speed (2023-2025, 900+ hitters, 1200+ pitchers). FanGraphs: plate discipline, FV grades, career fWAR. MLB Stats API: rosters, career splits, all MiLB levels. Spotrac/MLBTR: 2026 contract data.</p>
+        <p style={{margin:0}}>Baseball Savant: xwOBA, xERA, xBA, barrel%, exit velocity, whiff%, sprint speed, OAA, bat speed, Baserunning Run Value (2023-2025, 900+ hitters, 1200+ pitchers, 252 BsR players). FanGraphs: plate discipline, FV grades, career fWAR. MLB Stats API: rosters, career splits, all MiLB levels. Spotrac/MLBTR: 2026 contract data.</p>
       </div>
 
     </Panel>
