@@ -715,7 +715,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   // PA-weighted Marcel with recency multiplier
   // Season weights: most recent=5, prior=4, oldest=3 — but scaled by actual PA
   const RECENCY = [1.0, 0.85, 0.70];
-  let tw = 0, wOPS = 0, wPA = 0, wHR = 0, wAVG = 0, wOBP = 0, wSLG = 0;
+  let tw = 0, wOPS = 0, wPA = 0, wHR = 0, wAVG = 0, wOBP = 0, wSLG = 0, wG = 0;
   let highestLevel = "ROK";
   let youngestAgeAtHighest = 99;
   let totalRawPA = 0;
@@ -739,9 +739,10 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
     wAVG += parseFloat(st.avg || 0) * trans.factor * w;
     wOBP += parseFloat(st.obp || 0) * trans.factor * w;
     wSLG += parseFloat(st.slg || 0) * trans.factor * w;
-    wHR += (st.homeRuns || 0) * w;
+    wHR += (st.homeRuns || 0) * trans.factor * w;
     wPA += pa * w;
     totalRawPA += pa;
+    wG += (s.stat?.gamesPlayed || 0) * w;
   });
 
   const rawOPS = wOPS / tw;
