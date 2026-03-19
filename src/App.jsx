@@ -1342,8 +1342,8 @@ const F = "'IBM Plex Mono', monospace";
 const LEVEL_COLORS = { ROK:"#9ca3af", A:"#0077b6", "A+":"#1a3668", AA:"#5b2c8e", AAA:"#d4a017", MLB:"#2d6a4f", PROJ:"#c8102e" };
 
 // ── COMPONENTS ───────────────────────────────────────────────────────────────
-const Panel = ({children,title,sub,style={}}) => (
-  <div className="via-panel" style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:12,padding:"18px 22px",boxShadow:"0 1px 3px rgba(26,54,104,0.04)",...style}}>
+const Panel = ({children,title,sub,style={},onClick,onMouseEnter,onMouseLeave}) => (
+  <div className="via-panel" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:12,padding:"18px 22px",boxShadow:"0 1px 3px rgba(26,54,104,0.04)",...style}}>
     {title&&<div style={{marginBottom:sub?0:14}}>
       <h3 style={{margin:0,fontSize:12,fontWeight:700,color:C.text,letterSpacing:".08em",fontFamily:F,textTransform:"uppercase"}}>{title}</h3>
       {sub&&<p style={{margin:"4px 0 12px",fontSize:11,color:C.muted,lineHeight:1.5,fontFamily:F}}>{sub}</p>}
