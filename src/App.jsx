@@ -820,12 +820,14 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
 
   const ap = getAP(posCode);
   // Project games first, then derive PA
+  // Use prospect formula for players with < 400 MLB PA (brief callups shouldn't get MLB treatment)
   const avgG = wG > 0 ? wG / tw : 100;
-  const projGames = highestLevel === "MLB"
+  const isEstablishedMLB = highestLevel === "MLB" && mlbPA >= 400;
+  const projGames = isEstablishedMLB
     ? Math.min(162, Math.max(100, Math.round(avgG * 0.97)))
     : posCode === "2" ? Math.min(130, Math.max(90, 120))
     : Math.min(155, Math.max(100, 140));
-  const estPA = highestLevel === "MLB"
+  const estPA = isEstablishedMLB
     ? Math.min(700, Math.round(rawPA * 0.97))
     : Math.round(projGames * 4.0);
   const def = getDefense(playerName);
