@@ -819,9 +819,15 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   finalWRC = Math.max(65, Math.min(195, finalWRC));
 
   const ap = getAP(posCode);
+  // Project games first, then derive PA
+  const avgG = wG > 0 ? wG / tw : 100;
+  const projGames = highestLevel === "MLB"
+    ? Math.min(162, Math.max(100, Math.round(avgG * 0.97)))
+    : posCode === "2" ? Math.min(130, Math.max(90, 120))
+    : Math.min(155, Math.max(100, 140));
   const estPA = highestLevel === "MLB"
-    ? Math.min(700, rawPA * 0.97)
-    : Math.min(650, rawPA * 0.93);
+    ? Math.min(700, Math.round(rawPA * 0.97))
+    : Math.round(projGames * 4.0);
   const def = getDefense(playerName);
   const spd = getSprintSpeed(playerName);
 
@@ -909,12 +915,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
     projOPS = projOBP + projSLG;
   }
 
-  // HR: project games first, then apply translated HR/G rate
-  const avgG = wG > 0 ? wG / tw : 100;
-  const projGames = highestLevel === "MLB"
-    ? Math.min(162, Math.max(100, avgG * 0.97))
-    : posCode === "2" ? Math.min(130, Math.max(90, 120))
-    : Math.min(155, Math.max(100, 140));
+  // HR: use translated HR/G rate * projected games
   const hrPerGame = wG > 0 ? (wHR / tw) / (wG / tw) : 0;
   let projHR = Math.round(hrPerGame * projGames * ageBoost * performanceBoost);
   const baselineSLG = Math.max(0.310, rawSLG * paRel + 0.405 * (1 - paRel));
