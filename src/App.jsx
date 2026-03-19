@@ -897,7 +897,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
 
   return {
     obp: Math.max(0.275, Math.min(0.430, finalOBP * paRel + 0.315 * (1 - paRel))),
-    slg: Math.max(0.310, Math.min(0.620, finalSLG * paRel + 0.405 * (1 - paRel))),
+    slg: Math.max(0.310, Math.min(0.620, finalOPS - Math.max(0.275, Math.min(0.430, finalOBP * paRel + 0.315 * (1 - paRel))))),
     ops: Math.max(0.560, Math.min(1.100, Math.max(0.275, Math.min(0.430, finalOBP * paRel + 0.315 * (1 - paRel))) + Math.max(0.310, Math.min(0.620, finalSLG * paRel + 0.405 * (1 - paRel))))),
     avg: Math.max(0.210, Math.min(0.330, (wAVG/tw) * ageBoost * paRel + 0.248 * (1 - paRel))),
     wRCPlus: finalWRC,
