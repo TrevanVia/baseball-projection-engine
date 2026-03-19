@@ -661,7 +661,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const tPA=yrs.reduce((s,yr)=>s+(S[yr]?.pa||0),0);
   return{ops:Math.round(ops*1e3)/1e3,obp:Math.round(obp*1e3)/1e3,
     slg:Math.round(slg*1e3)/1e3,avg:Math.round(avg*1e3)/1e3,
-    wRCPlus:wrc,baseWAR:fW,estPA:Math.round(ePA),hr:hr,
+    wRCPlus:wrc,baseWAR:fW,estPA:Math.round(ePA),hr:hr,projGames:Math.round(ePA/4.1),
     paReliability:Math.min(95,Math.round((tPA/1200)*95)),
     highestLevel:"MLB",peakAge:pk,ageForLevel:0,translationNote:null,
     _statcast:{xwoba:Math.round(axw*1e3)/1e3,projEV:Math.round(pEV*10)/10,
@@ -930,6 +930,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
     wRCPlus: finalWRC,
     baseWAR: Math.round(clampedWAR * 10) / 10,
     estPA: Math.round(estPA),
+    projGames: projGames,
     hr: projHR,
     paReliability: Math.round(paRel * 100),
     highestLevel,
@@ -1565,42 +1566,55 @@ function PlayerCard({player}) {
               <Stat label="Proj IP" value={base.ip} color={base.ip>=180?C.green:base.ip>=140?C.blue:C.text}/>
               <Stat label="Proj WAR" value={base.baseWAR?.toFixed(1)} color={base.baseWAR>=5?C.green:base.baseWAR>=3?C.blue:base.baseWAR>=1?C.purple:C.text}/>
               {cWAR!==null&&<Stat label="Career fWAR" value={cWAR.toFixed(1)} color={cWAR>=30?C.green:cWAR>=15?C.blue:C.purple}/>}
-              {peak&&<Stat label="Peak Age" value={peak.age} color={C.cyan}/>}
             </div>
           </>}
           {base&&!isPitcher&&<>
-              <Stat label="Proj WAR" value={base.baseWAR.toFixed(1)} color={base.baseWAR>=4?C.green:base.baseWAR>=2?C.blue:C.yellow}/>
+              {cWAR!==null&&<Stat label="Career fWAR" value={cWAR.toFixed(1)} color={cWAR>=30?C.green:cWAR>=15?C.blue:C.purple} sub="FanGraphs"/>}
+              <Stat label="10yr WAR" value={cum.toFixed(1)} color={C.purple} sub="Projected"/>
               {base._isTwoWay&&<>
                 <Stat label="Hit WAR" value={base._hitWAR?.toFixed(1)} color={C.blue} sub="Batting"/>
                 <Stat label="Pitch WAR" value={base._pitchWAR?.toFixed(1)} color={C.purple} sub="Pitching"/>
-                {base._pitchProj&&<Stat label="Proj ERA" value={base._pitchProj.era?.toFixed(2)} color={base._pitchProj.era<=3.00?C.green:C.text}/>}
               </>}
-              <Stat label="Proj wRC+" value={base.wRCPlus} color={base.wRCPlus>=120?C.green:base.wRCPlus>=100?C.blue:C.yellow}/>
-              <Stat label="Proj OPS" value={base.ops.toFixed(3)} color={base.ops>=.85?C.green:base.ops>=.73?C.blue:C.yellow}/>
-              {peak&&<Stat label="Peak Age" value={peak.age} color={C.cyan}/>}
-              {cWAR!==null&&<Stat label="Career fWAR" value={cWAR.toFixed(1)} color={cWAR>=30?C.green:cWAR>=15?C.blue:C.purple} sub="FanGraphs"/>}
-              <Stat label="10yr WAR" value={cum.toFixed(1)} color={C.purple} sub="Projected"/>
             </>}
           </div>
         </div>
-        {base&&<div style={{marginTop:10,padding:"7px 12px",background:`${isMiLB?C.purple:C.accent}08`,borderRadius:6,border:`1px solid ${isMiLB?C.purple:C.accent}15`}}>
-          <span style={{fontSize:10,color:C.muted,fontFamily:F}}>
-            {base.paReliability}% reliability &middot; {isPitcher ? pitchCareer.filter(s=>parseFloat(s.stat?.inningsPitched||0)>0).length : seasons.length} seasons &middot; Marcel 5/4/3 weighting
-            {base.translationNote&&<span style={{color:LEVEL_COLORS[base.highestLevel]}}> &middot; {base.translationNote}</span>}
-          </span>
-        </div>}
+
       </Panel>
 
       {/* Statcast Batted Ball Data (if available) */}
-      {sc && !isPitcher && <Panel title="BATTED BALL DATA" sub="Statcast metrics from most recent MiLB TrackMan data.">
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          <Stat label="Avg EV" value={`${sc.avgEV}`} sub="mph" color={sc.avgEV>=90?C.green:sc.avgEV>=87?C.blue:C.muted}/>
-          <Stat label="Max EV" value={`${sc.maxEV}`} sub="mph" color={sc.maxEV>=108?C.green:sc.maxEV>=104?C.blue:C.muted}/>
-          <Stat label="Barrel%" value={`${sc.barrelPct}`} sub="%" color={sc.barrelPct>=12?C.green:sc.barrelPct>=8?C.blue:C.muted}/>
-        </div>
-      </Panel>}
+      
 
       {/* Projections — single values per year */}
+      {/* Season Projection Table */}
+      {base && !isPitcher && (
+        <Panel title="2026 SEASON PROJECTION" sub="Projected counting stats for the upcoming season.">
+          <div className="via-table-wrap" style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,fontFamily:F}}>
+              <thead>
+                <tr style={{borderBottom:`2px solid ${C.navy}20`}}>
+                  {["G","PA","HR","AVG","OBP","SLG","OPS","wRC+","WAR"].map(h=>(
+                    <th key={h} style={{padding:"6px 10px",fontSize:10,fontWeight:700,color:C.navy,textAlign:"right",fontFamily:F,letterSpacing:".04em"}}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{base.projGames||Math.round((base.estPA||550)/4.1)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{base.estPA||"—"}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.hr>=30?C.green:base.hr>=20?"#1a6b3c":C.text,fontFamily:F}}>{base.hr}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.avg>=.290?C.green:base.avg>=.260?"#1a6b3c":C.text,fontFamily:F}}>{base.avg?.toFixed(3)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.obp>=.370?C.green:base.obp>=.330?"#1a6b3c":C.text,fontFamily:F}}>{base.obp?.toFixed(3)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.slg>=.500?C.green:base.slg>=.430?"#1a6b3c":C.text,fontFamily:F}}>{base.slg?.toFixed(3)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:800,color:base.ops>=.850?C.green:base.ops>=.730?"#1a6b3c":C.text,fontFamily:F}}>{base.ops?.toFixed(3)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:800,color:base.wRCPlus>=120?C.green:base.wRCPlus>=100?"#1a6b3c":C.text,fontFamily:F}}>{base.wRCPlus}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:800,color:base.baseWAR>=4?C.green:base.baseWAR>=2?"#1a6b3c":C.text,fontFamily:F}}>{base.baseWAR?.toFixed(1)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      )}
+
       {forward.length>0&&<>
         <div style={{display:"flex",gap:4,background:"#efe9dd",borderRadius:10,padding:4,width:"fit-content"}}>
           {(isPitcher?[{k:"war",l:"WAR"}]:[{k:"war",l:"WAR"},{k:"wrc",l:"wRC+"},{k:"ops",l:"OPS"}]).map(t=><Pill key={t.k} label={t.l} active={projTab===t.k} onClick={()=>setProjTab(t.k)}/>)}
