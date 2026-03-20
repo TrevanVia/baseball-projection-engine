@@ -1035,7 +1035,7 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   else if (age <= 33) af = Math.pow(1.015, age - pk);
   else af = Math.pow(1.015, 33 - pk) * Math.pow(1.03, age - 33);
 
-  // Layered ERA anchor (Appel ranking: SIERA > xFIP > xERA > FIP > K-BB > ERA)
+  // Layered ERA anchor: SIERA > xFIP > xERA > FIP > K-BB > ERA
   const fg = getFGPitcher(playerName);
   let eraAnchor = pXera; // default: xERA from Savant
   if (fg) {
@@ -1073,8 +1073,17 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   const careerMaxIP = maxCareerIP;
   let estIP;
   if (isStarter) {
-    const baseIP = Math.max(latIP, careerMaxIP * 0.70);
-    estIP = Math.max(140, Math.min(210, baseIP * 0.98));
+    // Use FG IP data: best full season (100+ IP) with age adjustment
+    let bestFullIP = 0;
+    const fgP = getFGPitcher(playerName);
+    if (fgP) {
+      Object.values(fgP.seasons || {}).forEach(s => {
+        if (s.ip >= 100 && s.ip > bestFullIP) bestFullIP = s.ip;
+      });
+    }
+    const ipAgeFactor = age <= 27 ? 1.03 : age <= 30 ? 1.00 : age <= 33 ? 0.97 : 0.93;
+    const baseIP = Math.max(bestFullIP, latIP, careerMaxIP * 0.70);
+    estIP = Math.max(140, Math.min(210, Math.round(baseIP * ipAgeFactor)));
   } else {
     estIP = Math.min(75, Math.max(30, latIP * 0.95));
   }
@@ -1210,7 +1219,19 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
   const isLikelyStarter = (rawIP / valid.length) > 50 || valid.some(s => (s.stat?.gamesStarted || 0) > 5);
   let estIP;
   if (highestLevel === "MLB") {
-    estIP = isLikelyStarter ? Math.max(140, Math.min(210, rawIP * 0.97)) : Math.min(70, rawIP * 0.96);
+    if (isLikelyStarter) {
+      let bestFullIP2 = 0;
+      const fgP2 = getFGPitcher(playerName);
+      if (fgP2) {
+        Object.values(fgP2.seasons || {}).forEach(s => {
+          if (s.ip >= 100 && s.ip > bestFullIP2) bestFullIP2 = s.ip;
+        });
+      }
+      const ipAgeFactor2 = age <= 27 ? 1.03 : age <= 30 ? 1.00 : age <= 33 ? 0.97 : 0.93;
+      estIP = Math.max(140, Math.min(210, Math.round(Math.max(bestFullIP2, rawIP) * ipAgeFactor2)));
+    } else {
+      estIP = Math.min(70, Math.round(rawIP * 0.96));
+    }
   } else {
     estIP = isLikelyStarter ? Math.max(120, Math.min(195, rawIP * 1.05)) : Math.min(65, rawIP * 0.92);
   }
@@ -3196,7 +3217,7 @@ function MethodPanel() {
         <p style={{margin:"0 0 12px"}}>xwOBA → wRC+ at 4.5 points per .010 xwOBA (league avg .315 xwOBA = 100 wRC+), plus discipline bonus. Batting runs + defense + baserunning + positional adjustment + replacement level, divided by 9.5 runs per win.</p>
 
         <h4 style={{color:C.accent,fontSize:13,margin:"16px 0 4px"}}>VIAcast Statcast Engine (Pitchers)</h4>
-        <p style={{margin:"0 0 12px"}}>5-layer pitcher projection system using Baseball Savant and FanGraphs data. WAR is calculated using a layered ERA anchor based on Peter Appel's predictive ranking: SIERA (primary) → xFIP → xERA → FIP → K-BB → ERA. FanGraphs data provides SIERA, xFIP, K%, BB%, and GB% for 815 pitchers across 2023-2025.</p>
+        <p style={{margin:"0 0 12px"}}>5-layer pitcher projection system using Baseball Savant and FanGraphs data. WAR is calculated using a layered ERA anchor SIERA (primary) → xFIP → xERA → FIP → K-BB → ERA. FanGraphs data provides SIERA, xFIP, K%, BB%, and GB% for 815 pitchers across 2023-2025.</p>
 
         <h4 style={{color:C.blue,fontSize:13,margin:"0 0 4px"}}>Pitcher Layer 1: Stuff Quality (35%)</h4>
         <p style={{margin:"0 0 12px"}}>SIERA (Skill-Interactive ERA) is the primary projection anchor from FanGraphs, weighted across 3 seasons (55/30/15%) with IP-based reliability scaling. SIERA accounts for K%, BB%, and ground ball rate interactions, making it the most predictive single ERA estimator. Falls back to xFIP, then xERA from Statcast for pitchers without FG data.</p>
@@ -4053,14 +4074,14 @@ export default function App() {
               <Panel title="TOP PITCHERS" sub="2026 projected WAR leaders." style={{borderTop:`3px solid ${C.blue}`}}>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   {[
-                    {n:"Garrett Crochet",t:"BOS",war:5.7,era:2.70,pos:"SP"},
-                    {n:"Paul Skenes",t:"PIT",war:5.0,era:2.79,pos:"SP"},
-                    {n:"Tarik Skubal",t:"DET",war:5.0,era:2.86,pos:"SP"},
-                    {n:"Logan Webb",t:"SF",war:4.5,era:3.38,pos:"SP"},
-                    {n:"Yoshinobu Yamamoto",t:"LAD",war:3.8,era:3.26,pos:"SP"},
-                    {n:"Bryan Woo",t:"SEA",war:3.6,era:3.50,pos:"SP"},
-                    {n:"Cole Ragans",t:"KC",war:3.5,era:3.19,pos:"SP"},
-                    {n:"Zack Wheeler",t:"PHI",war:3.0,era:3.51,pos:"SP"},
+                    {n:"Garrett Crochet",t:"BOS",war:6.5,era:2.70,pos:"SP"},
+                    {n:"Paul Skenes",t:"PIT",war:5.8,era:2.79,pos:"SP"},
+                    {n:"Tarik Skubal",t:"DET",war:5.7,era:2.86,pos:"SP"},
+                    {n:"Logan Webb",t:"SF",war:4.8,era:3.38,pos:"SP"},
+                    {n:"Cole Ragans",t:"KC",war:4.7,era:3.19,pos:"SP"},
+                    {n:"Yoshinobu Yamamoto",t:"LAD",war:4.3,era:3.26,pos:"SP"},
+                    {n:"Bryan Woo",t:"SEA",war:4.1,era:3.50,pos:"SP"},
+                    {n:"Zack Wheeler",t:"PHI",war:4.0,era:3.51,pos:"SP"},
                   ].map((p,i)=>(
                     <div key={p.n} onClick={()=>searchPlayers(p.n).then(r=>{if(r[0])pick(r[0]);})}
                       style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
