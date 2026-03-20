@@ -3988,7 +3988,7 @@ export default function App() {
               <Panel title="TOP HITTERS" sub="2026 projected WAR leaders." style={{borderTop:`3px solid ${C.green}`}}>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   {[
-                    {n:"Shohei Ohtani",t:"LAD",war:8.6,wrc:152,pos:"DH"},
+                    {n:"Shohei Ohtani",t:"LAD",war:8.5,wrc:152,pos:"DH"},
                     {n:"Bobby Witt Jr.",t:"KC",war:7.8,wrc:130,pos:"SS"},
                     {n:"Aaron Judge",t:"NYY",war:6.7,wrc:167,pos:"RF"},
                     {n:"Juan Soto",t:"NYM",war:6.6,wrc:158,pos:"RF"},
@@ -4022,21 +4022,21 @@ export default function App() {
               <Panel title="TOP PITCHERS" sub="2026 projected WAR leaders." style={{borderTop:`3px solid ${C.blue}`}}>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   {[
-                    {n:"Paul Skenes",t:"PIT",war:5.7,era:2.44,pos:"SP"},
-                    {n:"Tarik Skubal",t:"DET",war:5.2,era:2.72,pos:"SP"},
-                    {n:"Garrett Crochet",t:"BOS",war:5.1,era:2.97,pos:"SP"},
-                    {n:"Bryan Woo",t:"SEA",war:4.6,era:3.00,pos:"SP"},
-                    {n:"Yoshinobu Yamamoto",t:"LAD",war:4.3,era:2.99,pos:"SP"},
-                    {n:"Cole Ragans",t:"KC",war:3.8,era:3.01,pos:"SP"},
-                    {n:"Zack Wheeler",t:"PHI",war:3.7,era:3.10,pos:"SP"},
-                    {n:"Tanner Bibee",t:"CLE",war:3.6,era:3.57,pos:"SP"},
+                    {n:"Garrett Crochet",t:"BOS",war:5.7,era:2.70,pos:"SP"},
+                    {n:"Paul Skenes",t:"PIT",war:5.0,era:2.79,pos:"SP"},
+                    {n:"Tarik Skubal",t:"DET",war:5.0,era:2.86,pos:"SP"},
+                    {n:"Logan Webb",t:"SF",war:4.5,era:3.38,pos:"SP"},
+                    {n:"Yoshinobu Yamamoto",t:"LAD",war:3.8,era:3.26,pos:"SP"},
+                    {n:"Bryan Woo",t:"SEA",war:3.6,era:3.50,pos:"SP"},
+                    {n:"Cole Ragans",t:"KC",war:3.5,era:3.19,pos:"SP"},
+                    {n:"Zack Wheeler",t:"PHI",war:3.0,era:3.51,pos:"SP"},
                   ].map((p,i)=>(
                     <div key={p.n} onClick={()=>searchPlayers(p.n).then(r=>{if(r[0])pick(r[0]);})}
                       style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
                       onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                       <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
-                      <img src={`https://www.mlbstatic.com/team-logos/${({PIT:134,DET:116,BOS:111,SEA:136,LAD:119,PHI:143,CLE:114,KC:118})[p.t]||134}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
+                      <img src={`https://www.mlbstatic.com/team-logos/${({PIT:134,DET:116,BOS:111,SEA:136,LAD:119,PHI:143,SF:137,KC:118})[p.t]||134}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
                       <div style={{flex:1}}>
                         <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.n}</div>
                         <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.t}</div>
