@@ -979,9 +979,12 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   let wk = 0, wbb = 0, wsw = 0, tw2 = 0;
   yrs.forEach((yr, i) => {
     const s = S[yr], w = W[i] || 0.05, pw = w * Math.min(1, (s.bfp || 0) / 200);
-    const kVal = s.k_pct != null ? s.k_pct :
-                 s.whiff_pct != null ? s.whiff_pct * 0.80 : null;
-    const bbVal = s.bb_pct != null ? s.bb_pct : null;
+    const fgS = (getFGPitcher(playerName)?.seasons || {})[yr];
+    const kVal = fgS?.k_pct != null ? fgS.k_pct :
+                 s.k_pct != null ? s.k_pct :
+                 s.whiff_pct != null ? s.whiff_pct * 1.05 : null;
+    const bbVal = fgS?.bb_pct != null ? fgS.bb_pct :
+            s.bb_pct != null ? s.bb_pct : null;
     if (kVal != null) { wk += kVal * pw; tw2 += pw; }
     if (bbVal != null) wbb += bbVal * pw;
     if (s.swstr != null) wsw += s.swstr * pw;
@@ -1088,7 +1091,9 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   // Also compute FIP for display (even if not used for WAR)
   const estK = projK9 * estIP / 9;
   const estBB = projBB9 * estIP / 9;
-  const estHR = Math.max(0.3, pBrl / 100 * (estIP * 4.3) * 0.035);
+  // HR allowed: league avg 1.2 HR/9 scaled by barrel% allowed
+  const hrRate = 1.2 * (0.5 + pBrl / 10);
+  const estHR = Math.max(3, Math.round(estIP / 9 * hrRate));
   const fip = Math.max(1.80, Math.min(6.50,
     ((13 * estHR) + (3 * estBB) - (2 * estK)) / estIP + 3.10));
 
