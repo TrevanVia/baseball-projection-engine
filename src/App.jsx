@@ -3257,10 +3257,10 @@ const POTD_POOL = [
   "Gunnar Henderson","Juan Soto","Bobby Witt Jr.","Shohei Ohtani","Paul Skenes",
   "Aaron Judge","Konnor Griffin","Elly De La Cruz","Corbin Carroll","Julio Rodriguez",
   // Week 2: stars + top prospects
-  "Fernando Tatis Jr.","Bryce Harper","Mookie Betts","Samuel Basallo","Tarik Skubal",
+  "Fernando Tatis Jr.","Bryce Harper","Mookie Betts","Samuel Basallo","Kyle Tucker",
   "Ronald Acuña Jr.","Corey Seager","Freddie Freeman","Mike Trout","Roki Sasaki",
   // Week 3: young stars + breakouts
-  "Jackson Chourio","Adley Rutschman","Kyle Tucker","Yordan Alvarez","Garrett Crochet",
+  "Jackson Chourio","Adley Rutschman","Yordan Alvarez","Tarik Skubal","Garrett Crochet",
   "Riley Greene","Jackson Merrill","James Wood","Cal Raleigh","Kevin McGonigle",
   // Week 4+: deep roster
   "Vladimir Guerrero Jr.","Rafael Devers","Jose Ramirez","Francisco Lindor","Kyle Schwarber",
