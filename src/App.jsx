@@ -1587,13 +1587,8 @@ function PlayerCard({player}) {
           <div className="via-stat-row" style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {base&&isPitcher&&<>
             <div className="via-stat-row" style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              <Stat label="Proj ERA" value={base.era?.toFixed(2)} color={base.era<=3.00?C.green:base.era<=3.80?C.blue:base.era<=4.50?C.text:C.accent}/>
-              <Stat label="Proj FIP" value={base.fip?.toFixed(2)} color={base.fip<=3.00?C.green:base.fip<=3.80?C.blue:base.fip<=4.50?C.text:C.accent}/>
-              <Stat label="Proj WHIP" value={base.whip?.toFixed(2)} color={base.whip<=1.05?C.green:base.whip<=1.20?C.blue:base.whip<=1.35?C.text:C.accent}/>
-              <Stat label="Proj K/9" value={base.k9?.toFixed(1)} color={base.k9>=10?C.green:base.k9>=8.5?C.blue:C.text}/>
-              <Stat label="Proj IP" value={base.ip} color={base.ip>=180?C.green:base.ip>=140?C.blue:C.text}/>
-              <Stat label="Proj WAR" value={base.baseWAR?.toFixed(1)} color={base.baseWAR>=5?C.green:base.baseWAR>=3?C.blue:base.baseWAR>=1?C.purple:C.text}/>
-              {cWAR!==null&&<Stat label="Career fWAR" value={cWAR.toFixed(1)} color={cWAR>=30?C.green:cWAR>=15?C.blue:C.purple}/>}
+              {cWAR!==null&&<Stat label="Career fWAR" value={cWAR.toFixed(1)} color={cWAR>=30?C.green:cWAR>=15?C.blue:C.purple} sub="FanGraphs"/>}
+              <Stat label="10yr WAR" value={cum.toFixed(1)} color={C.purple} sub="Projected"/>
             </div>
           </>}
           {base&&!isPitcher&&<>
@@ -1636,6 +1631,37 @@ function PlayerCard({player}) {
                   <td style={{padding:"8px 10px",textAlign:"right",fontWeight:800,color:base.ops>=.850?C.green:base.ops>=.730?"#1a6b3c":C.text,fontFamily:F}}>{base.ops?.toFixed(3)}</td>
                   <td style={{padding:"8px 10px",textAlign:"right",fontWeight:800,color:base.wRCPlus>=120?C.green:base.wRCPlus>=100?"#1a6b3c":C.text,fontFamily:F}}>{base.wRCPlus}</td>
                   <td style={{padding:"8px 10px",textAlign:"right",fontWeight:800,color:base.baseWAR>=4?C.green:base.baseWAR>=2?"#1a6b3c":C.text,fontFamily:F}}>{base.baseWAR?.toFixed(1)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      )}
+
+      {/* Pitcher Season Projection Table */}
+      {base && isPitcher && (
+        <Panel title="2026 SEASON PROJECTION" sub="Projected pitching stats for the upcoming season.">
+          <div className="via-table-wrap" style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,fontFamily:F}}>
+              <thead>
+                <tr style={{borderBottom:`2px solid ${C.navy}20`}}>
+                  {["W","L","ERA","FIP","WHIP","K/9","BB/9","IP","K","WAR"].map(h=>(
+                    <th key={h} style={{padding:"6px 10px",fontSize:10,fontWeight:700,color:C.navy,textAlign:"right",fontFamily:F,letterSpacing:".04em"}}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{base.w||Math.round((base.ip||150)/9*(1-base.era/9.5)*0.55+5)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{base.l||Math.round((base.ip||150)/9*(base.era/9.5)*0.55+4)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.era<=3.00?C.green:base.era<=3.80?"#1a6b3c":C.text,fontFamily:F}}>{base.era?.toFixed(2)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.fip<=3.00?C.green:base.fip<=3.80?"#1a6b3c":C.text,fontFamily:F}}>{base.fip?.toFixed(2)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.whip<=1.05?C.green:base.whip<=1.20?"#1a6b3c":C.text,fontFamily:F}}>{base.whip?.toFixed(2)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.k9>=10?C.green:base.k9>=8.5?"#1a6b3c":C.text,fontFamily:F}}>{base.k9?.toFixed(1)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.bb9<=2.5?C.green:base.bb9<=3.5?"#1a6b3c":C.text,fontFamily:F}}>{base.bb9?.toFixed(1)||"—"}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:base.ip>=180?C.green:base.ip>=140?"#1a6b3c":C.text,fontFamily:F}}>{base.ip}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{Math.round((base.k9||8)*(base.ip||150)/9)}</td>
+                  <td style={{padding:"8px 10px",textAlign:"right",fontWeight:800,color:base.baseWAR>=5?C.green:base.baseWAR>=3?"#1a6b3c":C.text,fontFamily:F}}>{base.baseWAR?.toFixed(1)}</td>
                 </tr>
               </tbody>
             </table>
