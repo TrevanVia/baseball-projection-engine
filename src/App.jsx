@@ -3196,19 +3196,19 @@ function MethodPanel() {
         <p style={{margin:"0 0 12px"}}>xwOBA → wRC+ at 4.5 points per .010 xwOBA (league avg .315 xwOBA = 100 wRC+), plus discipline bonus. Batting runs + defense + baserunning + positional adjustment + replacement level, divided by 9.5 runs per win.</p>
 
         <h4 style={{color:C.accent,fontSize:13,margin:"16px 0 4px"}}>VIAcast Statcast Engine (Pitchers)</h4>
-        <p style={{margin:"0 0 12px"}}>5-layer pitcher projection system using Baseball Savant data. WAR is calculated from projected xERA against replacement level, which is more reliable than FIP when K%/BB% data is incomplete.</p>
+        <p style={{margin:"0 0 12px"}}>5-layer pitcher projection system using Baseball Savant and FanGraphs data. WAR is calculated using a layered ERA anchor based on Peter Appel's predictive ranking: SIERA (primary) → xFIP → xERA → FIP → K-BB → ERA. FanGraphs data provides SIERA, xFIP, K%, BB%, and GB% for 815 pitchers across 2023-2025.</p>
 
         <h4 style={{color:C.blue,fontSize:13,margin:"0 0 4px"}}>Pitcher Layer 1: Stuff Quality (35%)</h4>
-        <p style={{margin:"0 0 12px"}}>xERA is the projection anchor, weighted across 3 seasons (55/30/15%). Barrel rate allowed and hard-hit rate provide quality-of-contact validation.</p>
+        <p style={{margin:"0 0 12px"}}>SIERA (Skill-Interactive ERA) is the primary projection anchor from FanGraphs, weighted across 3 seasons (55/30/15%) with IP-based reliability scaling. SIERA accounts for K%, BB%, and ground ball rate interactions, making it the most predictive single ERA estimator. Falls back to xFIP, then xERA from Statcast for pitchers without FG data.</p>
 
         <h4 style={{color:C.purple,fontSize:13,margin:"0 0 4px"}}>Pitcher Layer 2: Command (25%)</h4>
-        <p style={{margin:"0 0 12px"}}>K% estimated from whiff rate (whiff% × 0.80) when FanGraphs data is unavailable. BB% and swinging-strike rate round out the command profile.</p>
+        <p style={{margin:"0 0 12px"}}>K% and BB% sourced directly from FanGraphs for 815 pitchers (2023-2025). When FG data is unavailable, K% is estimated from Statcast whiff rate (whiff% × 1.05). FIP is computed using these rates with HR allowed estimated from IP and barrel rate (league avg 1.2 HR/9, scaled by pitcher barrel% allowed).</p>
 
         <h4 style={{color:C.orange,fontSize:13,margin:"0 0 4px"}}>Pitcher Layer 3: Velocity (15%)</h4>
         <p style={{margin:"0 0 12px"}}>Fastball velocity trends across seasons. Velocity loss is the strongest predictor of pitcher decline. Arsenal mix effectiveness weights pitch-type performance.</p>
 
         <h4 style={{color:C.text,fontSize:13,margin:"0 0 4px"}}>Pitcher Aging & WAR</h4>
-        <p style={{margin:"0 0 12px"}}>Pre-peak: -1.5% ERA improvement/yr. Post-peak to 33: +1.5% ERA rise/yr. After 33: +3%/yr. Pitcher WAR uses xERA vs. replacement level (5.34 for starters, 4.49 for relievers). Starter detection checks entire career history (not just most recent season), so injury-return pitchers are correctly classified. Returning starters project minimum 140 IP using 70% of career-max as floor. Reliever IP capped at 75.</p>
+        <p style={{margin:"0 0 12px"}}>Pre-peak: -1.5% ERA improvement/yr. Post-peak to 33: +1.5% ERA rise/yr. After 33: +3%/yr. Pitcher WAR uses the SIERA-based layered anchor vs. replacement level (5.34 for starters, 4.49 for relievers). Starter detection checks entire career history for injury returns. IP projection uses the best full season (100+ IP) from FanGraphs data with an age-based workload adjustment: ≤27 × 1.03 (trending up), 28-30 × 1.00 (peak workload), 31-33 × 0.97, 34+ × 0.93. Capped at 210 IP. Reliever IP capped at 75.</p>
 
         <h4 style={{color:C.accent,fontSize:13,margin:"16px 0 4px"}}>Marcel Engine (MiLB & Small-Sample Players)</h4>
         <p style={{margin:"0 0 12px"}}>Players with fewer than 250 Statcast PA use PA-weighted Marcel across all levels. Best 3 seasons weighted 5/4/3 with recency multipliers (1.0/0.85/0.70). Stats translated using level-specific conversion factors (AAA 0.82x, AA 0.68x, A+ 0.58x, A 0.50x). HR are also translated by level factor and projected using games-based rate (HR/G x projected games). Players with fewer than 400 MLB PA use prospect PA estimation (projected games x 4.0 PA/G).</p>
@@ -3220,7 +3220,7 @@ function MethodPanel() {
         <p style={{margin:"0 0 8px"}}>Projected WAR per $1M salary. Grades from A+ (4.0+) through F (below 0.08). Pre-arbitration players at league minimum ($0.8M) naturally receive top grades when projecting positive WAR. Salary data from Spotrac and MLB Trade Rumors.</p>
 
         <h4 style={{color:C.muted,fontSize:13,margin:"8px 0 4px"}}>Data Pipeline</h4>
-        <p style={{margin:0}}>Baseball Savant: xwOBA, xERA, xBA, barrel%, exit velocity, whiff%, sprint speed, OAA, bat speed, Baserunning Run Value (2023-2025, 900+ hitters, 1200+ pitchers, 252 BsR players). FanGraphs: plate discipline, FV grades, career fWAR. MLB Stats API: rosters, career splits, all MiLB levels. Spotrac/MLBTR: 2026 contract data.</p>
+        <p style={{margin:0}}>Baseball Savant: xwOBA, xERA, xBA, barrel%, exit velocity, whiff%, sprint speed, OAA, bat speed, Baserunning Run Value (2023-2025, 900+ hitters, 1200+ pitchers, 252 BsR players). FanGraphs: SIERA, xFIP, FIP, K%, BB%, GB%, IP for 815 pitchers (2023-2025), plus plate discipline, FV grades, career fWAR. MLB Stats API: rosters, career splits, all MiLB levels. Spotrac/MLBTR: 2026 contract data.</p>
       </div>
 
     </Panel>
