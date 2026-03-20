@@ -10,6 +10,7 @@ import _ from "lodash";
 let WAR_DATA = {};
 import warDataJson from "./war_data.json";
 import baserunningDataJson from "./baserunning_data.json";
+import fgPitcherDataJson from "./fg_pitcher_data.json";
 import xwobaDataJson from "./xwoba_data.json";
 import savantDataJson from "./savant_data.json";
 import pitcherSavantJson from "./pitcher_savant_data.json";
@@ -447,6 +448,12 @@ const SPRINT_SPEED = {
 
 function getDefense(playerName) { return DEFENSIVE_DATA[playerName] || null; }
 function getSprintSpeed(playerName) { return SPRINT_SPEED[playerName] || null; }
+
+// FanGraphs Pitcher Data (SIERA, xFIP, FIP, K%, BB%, GB%)
+const FG_PITCHER = fgPitcherDataJson || {};
+function getFGPitcher(playerName) {
+  return FG_PITCHER[playerName] || null;
+}
 
 // Statcast Baserunning Run Value (runs above average, seasonal)
 const BSR_DATA = baserunningDataJson || { byId: {}, byName: {} };
@@ -1025,7 +1032,33 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   else if (age <= 33) af = Math.pow(1.015, age - pk);
   else af = Math.pow(1.015, 33 - pk) * Math.pow(1.03, age - 33);
 
-  let projERA = Math.max(1.50, Math.min(6.50, (pXera + tb) * af));
+  // Layered ERA anchor (Appel ranking: SIERA > xFIP > xERA > FIP > K-BB > ERA)
+  const fg = getFGPitcher(playerName);
+  let eraAnchor = pXera; // default: xERA from Savant
+  if (fg) {
+    const fgYrs = Object.keys(fg.seasons || {}).sort().reverse().slice(0, 3);
+    const fgW = [0.55, 0.30, 0.15];
+    let wSiera = 0, wXfip = 0, wFip = 0, wKbb = 0, wEra = 0, fgtw = 0;
+    fgYrs.forEach((yr, i) => {
+      const s = fg.seasons[yr];
+      const w = fgW[i] || 0.05;
+      const ipW = w * Math.min(1, (s.ip || 0) / 100);
+      if (s.siera != null) wSiera += s.siera * ipW;
+      if (s.xfip != null) wXfip += s.xfip * ipW;
+      if (s.fip != null) wFip += s.fip * ipW;
+      if (s.kbb_pct != null) wKbb += (5.40 - s.kbb_pct * 0.10) * ipW;
+      if (s.era != null) wEra += s.era * ipW;
+      fgtw += ipW;
+    });
+    if (fgtw > 0) {
+      if (wSiera > 0) eraAnchor = wSiera / fgtw;
+      else if (wXfip > 0) eraAnchor = wXfip / fgtw;
+      else if (wFip > 0) eraAnchor = wFip / fgtw;
+      else if (wKbb > 0) eraAnchor = wKbb / fgtw;
+      else if (wEra > 0) eraAnchor = wEra / fgtw;
+    }
+  }
+  let projERA = Math.max(1.50, Math.min(6.50, (eraAnchor + tb) * af));
 
   const projK9 = Math.max(4, Math.min(13.5, pK / 100 * 9 * 4.3));
   const projBB9 = Math.max(1.5, Math.min(5.5, pBB / 100 * 9 * 4.3));
