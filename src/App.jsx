@@ -925,6 +925,8 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   }
   // Recalculate wRC+ from final displayed OPS (ensures correlation)
   finalWRC = Math.max(65, Math.min(195, Math.round(((projOBP + projSLG) / 0.720) * 100)));
+  // Recalculate wRC+ from final displayed OPS (ensures correlation)
+  finalWRC = Math.max(65, Math.min(195, Math.round(((projOBP + projSLG) / 0.720) * 100)));
 
   return {
     obp: projOBP,
