@@ -644,7 +644,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   // AVG from xBA, OBP from xBA+BB%, SLG from xSLG, OPS = OBP+SLG
   const avgAgeF = age > 32 ? Math.max(0.97, 1 - (age - 32) * 0.005) : 1.0;
   const avg = pXba != null ? Math.max(.18, Math.min(.34, pXba * avgAgeF)) : Math.max(.2, Math.min(.32, .248));
-  const obp = Math.max(.26, Math.min(.45, avg + pBB * .85 + .02));
+  const obp = Math.max(.26, Math.min(.45, avg + pBB * .65 + .015));
   const slg = pXslg != null ? Math.max(.3, Math.min(.7, pXslg * avgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
   const ops = Math.max(.52, Math.min(1.15, obp + slg));
   // wRC+ derived from displayed OPS (ensures correlation)
