@@ -650,7 +650,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   // wRC+ derived from displayed OPS (ensures correlation)
   const wrc = Math.max(60, Math.min(195, Math.round((ops / 0.720) * 100 + db)));
   const ePA=Math.min(700,Math.max(200,pa0*.97));
-  const hr=Math.round(Math.max(0,pBrl/100*(ePA*.75)*.45+ePA*.010));
+  const hr=Math.round(Math.max(0,(pBrl*slgAgeF)/100*(ePA*.75)*.45+ePA*.010));
   const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
   const fv=getPlayerFV(playerId,playerName);let fW=rW;
