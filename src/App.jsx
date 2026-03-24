@@ -634,22 +634,12 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   if(selI!=null){if(selI>3.5)db=Math.min(5,(selI-3.5)*3);else if(selI<2)db=Math.max(-4,(selI-2)*3)}
   if(pK<.15)db+=3;else if(pK>.30)db-=2; if(pBB>.12)db+=2;
 
-  // xwOBA -> wRC+ (4.5 per .010 xwOBA, calibrated to actual wRC+ values)
-  let rawWrc = Math.round(((axw-.315)/.01)*4.5+100+db);
-
-  // Aging: single-year forward adjustment
-  // The weighted xwOBA already reflects the player's CURRENT age performance
-  // We only need to project one year of aging delta, not cumulative since peak
-  // Pre-peak: +1.5 wRC+ (still improving)
-  // Peak to 32: -1.5 wRC+ per year
-  // 33+: -3.0 wRC+ per year (steeper late decline)
+  // Aging adjustment (applied to wRC+ after OPS is computed)
   let ageAdj = 0;
-  if (age < pk) ageAdj = 1.5; // one year of improvement toward peak
-  else if (age === pk) ageAdj = 0; // at peak: no adjustment
-  else if (age <= 32) ageAdj = -1.5; // gradual post-peak decline
-  else ageAdj = -3.0; // steeper decline after 32
-
-  const wrc=Math.max(60,Math.min(195,rawWrc + Math.round(ageAdj)));
+  if (age < pk) ageAdj = 1.5;
+  else if (age === pk) ageAdj = 0;
+  else if (age <= 32) ageAdj = -1.5;
+  else ageAdj = -3.0;
   // Project slash line from Statcast expected stats
   // AVG from xBA, OBP from xBA+BB%, SLG from xSLG, OPS = OBP+SLG
   const avgAgeF = age > 32 ? Math.max(0.97, 1 - (age - 32) * 0.005) : 1.0;
@@ -657,6 +647,8 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const obp = Math.max(.26, Math.min(.45, avg + pBB * .85 + .02));
   const slg = pXslg != null ? Math.max(.3, Math.min(.7, pXslg * avgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
   const ops = Math.max(.52, Math.min(1.15, obp + slg));
+  // wRC+ derived from displayed OPS (ensures correlation)
+  const wrc = Math.max(60, Math.min(195, Math.round((ops / 0.720) * 100 + db + ageAdj)));
   const ePA=Math.min(700,Math.max(200,pa0*.97));
   const hr=Math.round(Math.max(0,pBrl/100*(ePA*.75)*.45+ePA*.010));
   const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
@@ -931,6 +923,8 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   if (fv && projSLG > baselineSLG) {
     projHR = Math.round(projHR * (projSLG / baselineSLG));
   }
+  // Recalculate wRC+ from final displayed OPS (ensures correlation)
+  finalWRC = Math.max(65, Math.min(195, Math.round(((projOBP + projSLG) / 0.720) * 100)));
 
   return {
     obp: projOBP,
