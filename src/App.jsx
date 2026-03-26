@@ -596,7 +596,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
     if(s.barrel_pct!=null)wbr+=s.barrel_pct*pw;
     if(s.xba!=null)wxba+=s.xba*pw;if(s.xslg!=null)wxslg+=s.xslg*pw});
   const pXw=tw1>0?wxw/tw1:.310, pEV=tw1>0?wev/tw1:87, pBrl=tw1>0?wbr/tw1:6;
-  const pXba=tw1>0?wxba/tw1:null, pXslg=tw1>0?wxslg/tw1:null;
+  let pXba=tw1>0?wxba/tw1:null, pXslg=tw1>0?wxslg/tw1:null;
   const ev5T=yrs.length>=2&&S[yrs[0]]?.ev50&&S[yrs[1]]?.ev50?S[yrs[0]].ev50-S[yrs[1]].ev50:0;
   let wbb=0,wk=0,wos=0,wzs=0,tw2=0;
   yrs.forEach((yr,i)=>{const s=S[yr],w=W[i]||.05,pw=w*Math.min(1,(s.pa||0)/200);
@@ -642,7 +642,13 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   else ageAdj = -3.0;
   // Project slash line from Statcast expected stats
   // AVG from xBA, OBP from xBA+BB%, SLG from xSLG, OPS = OBP+SLG
-  // Separate aging for AVG (contact, mild decline) and SLG (power, steeper decline)
+  // Pre-peak development boost: young hitters projected to improve toward peak
+  const yrsToPeak = Math.max(0, pk - age);
+  const devBoostAVG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.012, 0.08) : 1.0;
+  const devBoostSLG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.018, 0.12) : 1.0;
+  if (pXba != null) pXba = pXba * devBoostAVG;
+  if (pXslg != null) pXslg = pXslg * devBoostSLG;
+  // Post-peak aging for AVG (contact, mild decline) and SLG (power, steeper decline)
   const avgAgeF = age > 32 ? Math.max(0.95, 1 - (age - 32) * 0.008) : 1.0;
   const slgAgeF = age > 30 ? Math.max(0.88, 1 - (age - 30) * 0.015) : 1.0;
   const avg = pXba != null ? Math.max(.18, Math.min(.34, pXba * avgAgeF)) : Math.max(.2, Math.min(.32, .248));
