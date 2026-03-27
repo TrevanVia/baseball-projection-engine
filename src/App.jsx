@@ -657,7 +657,9 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const ops = Math.max(.52, Math.min(1.15, obp + slg));
   // wRC+ derived from displayed OPS (ensures correlation)
   const wrc = Math.max(60, Math.min(195, Math.round((ops / 0.720) * 100 + db)));
-  const ePA=Math.min(700,Math.max(200,pa0*.97));
+  // PA estimate: use best full season from last 3 yrs (handles injury-shortened seasons)
+  const bestPA = Math.max(...yrs.slice(0,3).map(yr => S[yr]?.pa || 0));
+  const ePA=Math.min(700,Math.max(200,Math.max(pa0, bestPA * 0.90) * 0.97));
   const hr=Math.round(Math.max(0,(pBrl*slgAgeF)/100*(ePA*.75)*.45+ePA*.010));
   const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
