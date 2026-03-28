@@ -653,14 +653,15 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const slgAgeF = age > 30 ? Math.max(0.88, 1 - (age - 30) * 0.015) : 1.0;
   const avg = pXba != null ? Math.max(.18, Math.min(.34, pXba * avgAgeF)) : Math.max(.2, Math.min(.32, .248));
   const obp = Math.max(.26, Math.min(.45, avg + pBB * .65 + .015));
-  const slg = pXslg != null ? Math.max(.3, Math.min(.7, pXslg * slgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
+  const slg = pXslg != null ? Math.max(.3, Math.min(.7, (pXslg * 0.80 + 0.405 * 0.20) * slgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
   const ops = Math.max(.52, Math.min(1.15, obp + slg));
   // PA estimate: use best full season from last 3 yrs (handles injury-shortened seasons)
   const bestPA = Math.max(...yrs.slice(0,3).map(yr => S[yr]?.pa || 0));
   const ePA=Math.min(700,Math.max(200,Math.max(pa0, bestPA * 0.90) * 0.97));
   const hr=Math.round(Math.max(0,(pBrl*slgAgeF)/100*(ePA*.75)*.38+ePA*.010));
   // wRC+ from wOBA approximation (OBP weighted 2.3x more than SLG)
-  const wrc = Math.max(60, Math.min(195, Math.round(((obp * 0.70 + slg * 0.30) / 0.342) * 100 + db)));
+  const _rawWrc = ((obp * 0.70 + slg * 0.30) / 0.342) * 100;
+  const wrc = Math.max(60, Math.min(195, Math.round(100 + (_rawWrc - 100) * 2.0 + db)));
   const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
   const fv=getPlayerFV(playerId,playerName);let fW=rW;
@@ -934,7 +935,8 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
     projHR = Math.round(projHR * (projSLG / baselineSLG));
   }
   // wRC+ from wOBA approximation (OBP weighted 2.3x more than SLG)
-  finalWRC = Math.max(65, Math.min(195, Math.round(((projOBP * 0.70 + projSLG * 0.30) / 0.342) * 100)));
+  const _mRawWrc = ((projOBP * 0.70 + projSLG * 0.30) / 0.342) * 100;
+  finalWRC = Math.max(65, Math.min(195, Math.round(100 + (_mRawWrc - 100) * 2.0)));
 
   return {
     obp: projOBP,
