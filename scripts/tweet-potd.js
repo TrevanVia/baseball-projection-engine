@@ -11,7 +11,6 @@ function fetchJSON(url) {
   });
 }
 
-// Same POTD pool and logic as the site
 const POTD_POOL = [
   "Gunnar Henderson","Juan Soto","Bobby Witt Jr.","Shohei Ohtani","Paul Skenes",
   "Aaron Judge","Konnor Griffin","Elly De La Cruz","Corbin Carroll","Julio Rodriguez",
@@ -30,7 +29,6 @@ const POTD_POOL = [
   "Garrett Crochet",
 ];
 
-// Known pitchers in the pool
 const PITCHERS = new Set(["Paul Skenes","Tarik Skubal","Garrett Crochet","Roki Sasaki",
   "Corbin Burnes","Zack Wheeler","Chris Sale","Cole Ragans","Logan Webb","Dylan Cease"]);
 
@@ -42,52 +40,17 @@ function getPlayerOfTheDay() {
   return POTD_POOL[idx];
 }
 
-async function getProjections(playerName, isPitcher) {
-  const stats = isPitcher ? 'pit' : 'bat';
-  const [zips, steamer] = await Promise.all([
-    fetchJSON('https://www.fangraphs.com/api/projections?type=zips&stats=' + stats + '&pos=all&team=0&players=0&lg=all&season=2026'),
-    fetchJSON('https://www.fangraphs.com/api/projections?type=steamer&stats=' + stats + '&pos=all&team=0&players=0&lg=all&season=2026'),
-  ]);
-  const find = (data) => data.find(p => p.PlayerName === playerName) ||
-    data.find(p => p.PlayerName && p.PlayerName.includes(playerName.split(' ').pop()));
-  const z = find(zips), s = find(steamer);
-  if (isPitcher) {
-    return {
-      zips: z ? { era: z.ERA?.toFixed(2), war: z.WAR?.toFixed(1), k: Math.round(z.SO||0), ip: Math.round(z.IP||0) } : null,
-      steamer: s ? { era: s.ERA?.toFixed(2), war: s.WAR?.toFixed(1), k: Math.round(s.SO||0), ip: Math.round(s.IP||0) } : null,
-    };
-  }
-  return {
-    zips: z ? { ops: z.OPS?.toFixed(3), war: z.WAR?.toFixed(1), hr: Math.round(z.HR||0), wrc: Math.round(z['wRC+']||0) } : null,
-    steamer: s ? { ops: s.OPS?.toFixed(3), war: s.WAR?.toFixed(1), hr: Math.round(s.HR||0), wrc: Math.round(s['wRC+']||0) } : null,
-  };
-}
-
-async function getVIAcastStats(playerName) {
-  // Scrape the player card page directly
-  const puppeteer = require('puppeteer');
-  const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox','--disable-setuid-sandbox'] });
-  const page = await browser.newPage();
-  const slug = playerName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const url = 'https://viacastbaseball.com/player/' + slug;
-  console.log('Fetching: ' + url);
-  await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-  await new Promise(r => setTimeout(r, 4000));
-
-  const stats = await page.evaluate(() => {
-    const text = document.body.textContent;
-    return {
-      ops: (text.match(/([\d.]+)\s*OPS/) || [])[1],
-      wrc: (text.match(/(\d+)\s*wRC\+/i) || [])[1],
-      war: (text.match(/([\d.]+)\s*(?:Proj )?WAR/) || [])[1],
-      hr: (text.match(/(\d+)\s*HR/) || [])[1],
-      era: (text.match(/([\d.]+)\s*(?:Proj )?ERA/) || [])[1],
-      ip: (text.match(/(\d+)\s*(?:Proj )?IP/) || [])[1],
-      k: (text.match(/(\d+)\s*K\b/) || [])[1],
-    };
-  });
-  await browser.close();
-  return stats;
+function findPlayer(data, name) {
+  // Exact match first
+  let p = data.find(d => d.PlayerName === name);
+  if (p) return p;
+  // Match all name parts (handles accents, suffixes like Jr.)
+  const parts = name.replace(/Jr\.|Sr\.|III|II/g, '').trim().split(/\s+/);
+  p = data.find(d => d.PlayerName && parts.every(part => d.PlayerName.includes(part)));
+  if (p) return p;
+  // Last resort: first + last name contains
+  const first = parts[0], last = parts[parts.length - 1];
+  return data.find(d => d.PlayerName && d.PlayerName.includes(first) && d.PlayerName.includes(last));
 }
 
 async function run() {
@@ -95,25 +58,29 @@ async function run() {
   const isPitcher = PITCHERS.has(playerName);
   console.log('POTD: ' + playerName + ' (' + (isPitcher ? 'pitcher' : 'hitter') + ')');
 
-  console.log('Fetching VIAcast stats...');
-  const via = await getVIAcastStats(playerName);
-  console.log('VIAcast:', via);
+  const stats = isPitcher ? 'pit' : 'bat';
+  console.log('Fetching projections...');
+  const [zips, steamer] = await Promise.all([
+    fetchJSON('https://www.fangraphs.com/api/projections?type=zips&stats=' + stats + '&pos=all&team=0&players=0&lg=all&season=2026'),
+    fetchJSON('https://www.fangraphs.com/api/projections?type=steamer&stats=' + stats + '&pos=all&team=0&players=0&lg=all&season=2026'),
+  ]);
 
-  console.log('Fetching ZiPS/Steamer...');
-  const proj = await getProjections(playerName, isPitcher);
+  const z = findPlayer(zips, playerName);
+  const s = findPlayer(steamer, playerName);
 
-  let tweet;
+  if (z) console.log('ZiPS match: ' + z.PlayerName);
+  if (s) console.log('Steamer match: ' + s.PlayerName);
+
+  let zLine, sLine;
   if (isPitcher) {
-    const vLine = 'VIAcast: ' + (via.era||'-') + ' ERA | ' + (via.k||'-') + ' K | ' + (via.ip||'-') + ' IP | ' + (via.war||'-') + ' WAR';
-    const zLine = proj.zips ? 'ZiPS: ' + proj.zips.era + ' ERA | ' + proj.zips.k + ' K | ' + proj.zips.ip + ' IP | ' + proj.zips.war + ' WAR' : 'ZiPS: N/A';
-    const sLine = proj.steamer ? 'Steamer: ' + proj.steamer.era + ' ERA | ' + proj.steamer.k + ' K | ' + proj.steamer.ip + ' IP | ' + proj.steamer.war + ' WAR' : 'Steamer: N/A';
-    tweet = 'VIAcast Player of the Day: ' + playerName + '\n\n2026 Projections:\n' + vLine + '\n' + zLine + '\n' + sLine + '\n\nviacastbaseball.com';
+    zLine = z ? 'ZiPS: ' + z.ERA.toFixed(2) + ' ERA | ' + Math.round(z.SO) + ' K | ' + Math.round(z.IP) + ' IP | ' + z.WAR.toFixed(1) + ' WAR' : 'ZiPS: N/A';
+    sLine = s ? 'Steamer: ' + s.ERA.toFixed(2) + ' ERA | ' + Math.round(s.SO) + ' K | ' + Math.round(s.IP) + ' IP | ' + s.WAR.toFixed(1) + ' WAR' : 'Steamer: N/A';
   } else {
-    const vLine = 'VIAcast: ' + (via.ops||'-') + ' OPS | ' + (via.wrc||'-') + ' wRC+ | ' + (via.hr||'-') + ' HR | ' + (via.war||'-') + ' WAR';
-    const zLine = proj.zips ? 'ZiPS: ' + proj.zips.ops + ' OPS | ' + proj.zips.wrc + ' wRC+ | ' + proj.zips.hr + ' HR | ' + proj.zips.war + ' WAR' : 'ZiPS: N/A';
-    const sLine = proj.steamer ? 'Steamer: ' + proj.steamer.ops + ' OPS | ' + proj.steamer.wrc + ' wRC+ | ' + proj.steamer.hr + ' HR | ' + proj.steamer.war + ' WAR' : 'Steamer: N/A';
-    tweet = 'VIAcast Player of the Day: ' + playerName + '\n\n2026 Projections:\n' + vLine + '\n' + zLine + '\n' + sLine + '\n\nviacastbaseball.com';
+    zLine = z ? 'ZiPS: ' + z.OPS.toFixed(3) + ' OPS | ' + Math.round(z['wRC+']) + ' wRC+ | ' + Math.round(z.HR) + ' HR | ' + z.WAR.toFixed(1) + ' WAR' : 'ZiPS: N/A';
+    sLine = s ? 'Steamer: ' + s.OPS.toFixed(3) + ' OPS | ' + Math.round(s['wRC+']) + ' wRC+ | ' + Math.round(s.HR) + ' HR | ' + s.WAR.toFixed(1) + ' WAR' : 'Steamer: N/A';
   }
+
+  const tweet = 'VIAcast Player of the Day: ' + playerName + '\n\n2026 Projections:\n' + zLine + '\n' + sLine + '\n\nFull VIAcast projection at viacastbaseball.com';
 
   console.log('\nTweet:\n' + tweet + '\n');
 
