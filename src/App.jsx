@@ -659,18 +659,8 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const bestPA = Math.max(...yrs.slice(0,3).map(yr => S[yr]?.pa || 0));
   const ePA=Math.min(700,Math.max(200,Math.max(pa0, bestPA * 0.90) * 0.97));
   const hr=Math.round(Math.max(0,(pBrl*slgAgeF)/100*(ePA*.75)*.38+ePA*.010));
-  // wRC+ from event-level linear weights (2024 FanGraphs)
-  const _ab = ePA * (1 - pBB - 0.02);
-  const _h = avg * _ab;
-  const _bb = pBB * ePA;
-  const _hbp = ePA * 0.01;
-  const _tb = slg * _ab;
-  const _extraTB = Math.max(0, _tb - _h - 3 * hr);
-  const _2b = Math.round(_extraTB * 0.85);
-  const _3b = Math.round(_extraTB * 0.075);
-  const _1b = Math.max(0, Math.round(_h - hr - _2b - _3b));
-  const _wOBA = (0.690*_bb + 0.722*_hbp + 0.878*_1b + 1.242*_2b + 1.568*_3b + 2.004*hr) / ePA;
-  const wrc = Math.max(60, Math.min(195, Math.round(((_wOBA - 0.310) / 1.15 + 0.110) / 0.110 * 100 + db)));
+  // wRC+ from wOBA approximation (OBP weighted 2.3x more than SLG)
+  const wrc = Math.max(60, Math.min(195, Math.round(((obp * 0.70 + slg * 0.30) / 0.342) * 100 + db)));
   const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
   const fv=getPlayerFV(playerId,playerName);let fW=rW;
@@ -943,20 +933,8 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   if (fv && projSLG > baselineSLG) {
     projHR = Math.round(projHR * (projSLG / baselineSLG));
   }
-  // wRC+ from event-level linear weights (2024 FanGraphs)
-  const _mBBpct = Math.max(0.03, (projOBP - (wAVG/tw) * ageBoost * paRel - 0.015) / 0.65);
-  const _mAVG = Math.max(0.200, (wAVG/tw) * ageBoost * paRel + 0.248 * (1 - paRel));
-  const _mAB = estPA * (1 - _mBBpct - 0.02);
-  const _mH = _mAVG * _mAB;
-  const _mBB = _mBBpct * estPA;
-  const _mHBP = estPA * 0.01;
-  const _mTB = projSLG * _mAB;
-  const _mXTB = Math.max(0, _mTB - _mH - 3 * projHR);
-  const _m2B = Math.round(_mXTB * 0.85);
-  const _m3B = Math.round(_mXTB * 0.075);
-  const _m1B = Math.max(0, Math.round(_mH - projHR - _m2B - _m3B));
-  const _mwOBA = (0.690*_mBB + 0.722*_mHBP + 0.878*_m1B + 1.242*_m2B + 1.568*_m3B + 2.004*projHR) / estPA;
-  finalWRC = Math.max(65, Math.min(195, Math.round(((_mwOBA - 0.310) / 1.15 + 0.110) / 0.110 * 100)));
+  // wRC+ from wOBA approximation (OBP weighted 2.3x more than SLG)
+  finalWRC = Math.max(65, Math.min(195, Math.round(((projOBP * 0.70 + projSLG * 0.30) / 0.342) * 100)));
 
   return {
     obp: projOBP,
