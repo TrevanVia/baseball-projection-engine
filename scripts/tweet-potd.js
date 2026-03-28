@@ -41,14 +41,12 @@ async function run() {
   await page.goto('https://viacastbaseball.com', { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('text/PLAYER OF THE DAY', { timeout: 10000 });
   await new Promise(r => setTimeout(r, 3000));
-
   const potdEl = await page.evaluateHandle(() => {
     const els = document.querySelectorAll('.via-panel');
     for (const el of els) { if (el.textContent.includes('PLAYER OF THE DAY')) return el; }
     return null;
   });
   if (!potdEl) { console.error('POTD panel not found'); await browser.close(); process.exit(1); }
-
   const info = await page.evaluate(el => {
     const text = el.textContent;
     const h2 = el.querySelector('h2') || el.querySelector('[style*="fontSize"]');
@@ -65,41 +63,31 @@ async function run() {
       k: (text.match(/(\d+)\s*K\b/) || [])[1],
     };
   }, potdEl);
-
-  await potdEl.screenshot({ path: '/tmp/potd.png' });
-  console.log(`Screenshot: ${info.name} (${info.isPitcher ? 'P' : 'H'})`);
+  console.log('POTD: ' + info.name);
   await browser.close();
-
   console.log('Fetching ZiPS/Steamer...');
   const proj = await getProjections(info.name, info.isPitcher);
-
   let tweet;
   if (info.isPitcher) {
-    const via = `VIAcast: ${info.era} ERA | ${info.k||'-'} K | ${info.ip} IP | ${info.war} WAR`;
-    const z = proj.zips ? `ZiPS: ${proj.zips.era} ERA | ${proj.zips.k} K | ${proj.zips.ip} IP | ${proj.zips.war} WAR` : 'ZiPS: N/A';
-    const s = proj.steamer ? `Steamer: ${proj.steamer.era} ERA | ${proj.steamer.k} K | ${proj.steamer.ip} IP | ${proj.steamer.war} WAR` : 'Steamer: N/A';
-    tweet = `VIAcast Player of the Day: ${info.name}\n\n2026 Projections:\n${via}\n${z}\n${s}\n\nviacastbaseball.com`;
+    const via = 'VIAcast: ' + info.era + ' ERA | ' + (info.k||'-') + ' K | ' + info.ip + ' IP | ' + info.war + ' WAR';
+    const z = proj.zips ? 'ZiPS: ' + proj.zips.era + ' ERA | ' + proj.zips.k + ' K | ' + proj.zips.ip + ' IP | ' + proj.zips.war + ' WAR' : 'ZiPS: N/A';
+    const s = proj.steamer ? 'Steamer: ' + proj.steamer.era + ' ERA | ' + proj.steamer.k + ' K | ' + proj.steamer.ip + ' IP | ' + proj.steamer.war + ' WAR' : 'Steamer: N/A';
+    tweet = 'VIAcast Player of the Day: ' + info.name + '\n\n2026 Projections:\n' + via + '\n' + z + '\n' + s + '\n\nviacastbaseball.com';
   } else {
-    const via = `VIAcast: ${info.ops} OPS | ${info.wrc} wRC+ | ${info.hr} HR | ${info.war} WAR`;
-    const z = proj.zips ? `ZiPS: ${proj.zips.ops} OPS | ${proj.zips.wrc} wRC+ | ${proj.zips.hr} HR | ${proj.zips.war} WAR` : 'ZiPS: N/A';
-    const s = proj.steamer ? `Steamer: ${proj.steamer.ops} OPS | ${proj.steamer.wrc} wRC+ | ${proj.steamer.hr} HR | ${proj.steamer.war} WAR` : 'Steamer: N/A';
-    tweet = `VIAcast Player of the Day: ${info.name}\n\n2026 Projections:\n${via}\n${z}\n${s}\n\nviacastbaseball.com`;
+    const via = 'VIAcast: ' + info.ops + ' OPS | ' + info.wrc + ' wRC+ | ' + info.hr + ' HR | ' + info.war + ' WAR';
+    const z = proj.zips ? 'ZiPS: ' + proj.zips.ops + ' OPS | ' + proj.zips.wrc + ' wRC+ | ' + proj.zips.hr + ' HR | ' + proj.zips.war + ' WAR' : 'ZiPS: N/A';
+    const s = proj.steamer ? 'Steamer: ' + proj.steamer.ops + ' OPS | ' + proj.steamer.wrc + ' wRC+ | ' + proj.steamer.hr + ' HR | ' + proj.steamer.war + ' WAR' : 'Steamer: N/A';
+    tweet = 'VIAcast Player of the Day: ' + info.name + '\n\n2026 Projections:\n' + via + '\n' + z + '\n' + s + '\n\nviacastbaseball.com';
   }
-
   console.log('Tweet:\n' + tweet);
-
   const client = new TwitterApi({
     appKey: process.env.TWITTER_API_KEY,
     appSecret: process.env.TWITTER_API_SECRET,
     accessToken: process.env.TWITTER_ACCESS_TOKEN,
     accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
   });
-
-  const mediaId = await client.v1.uploadMedia('/tmp/potd.png');
-  console.log('Media uploaded:', mediaId);
-
-  const result = await client.v2.tweet({ text: tweet, media: { media_ids: [mediaId] } });
-  console.log('Posted:', `https://twitter.com/trevanvia/status/${result.data.id}`);
+  const result = await client.v2.tweet(tweet);
+  console.log('Posted:', 'https://twitter.com/trevanvia/status/' + result.data.id);
 }
 
 run().catch(err => { console.error('Error:', err); process.exit(1); });
