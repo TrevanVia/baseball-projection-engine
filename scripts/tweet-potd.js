@@ -48,14 +48,20 @@ function findPlayer(data, name, label) {
   const n = norm(name);
   const parts = n.replace(/jr|sr|iii|ii/g,'').trim().split(/\s+/).filter(p=>p.length>1);
   for (const d of data) {
-    const dn = norm(d.PlayerName);
-    if (dn === n) { console.log(label + ' exact: ' + d.PlayerName); return d; }
+    if (norm(d.PlayerName) === n) { console.log(label + ' exact: ' + d.PlayerName); return d; }
   }
   for (const d of data) {
-    const dn = norm(d.PlayerName);
-    if (parts.every(p => dn.includes(p))) { console.log(label + ' parts: ' + d.PlayerName); return d; }
+    if (parts.every(p => norm(d.PlayerName).includes(p))) { console.log(label + ' parts: ' + d.PlayerName); return d; }
   }
   console.log(label + ': NO MATCH for "' + name + '"');
+  return null;
+}
+
+function findInData(data, name) {
+  const parts = norm(name).replace(/jr|sr|iii|ii/g,'').trim().split(/\s+/).filter(p=>p.length>1);
+  for (const p of Object.values(data)) {
+    if (parts.every(part => norm(p.name||'').includes(part))) return p;
+  }
   return null;
 }
 
@@ -79,9 +85,7 @@ function projectHitter(player) {
   const pBB = tw2 > 0 ? wbb/tw2 : 0.08;
   const pK = tw2 > 0 ? wk/tw2 : 0.22;
   const pBrl = twb > 0 ? wbrl/twb : 0;
-  const age = player.age || 27;
-  const pos = player.pos || 'RF';
-  const pk = PEAKS[pos] || 28;
+  const age = player.age || 27, pos = player.pos || 'RF', pk = PEAKS[pos] || 28;
   const ytp = Math.max(0, pk - age);
   pXba *= (1 + Math.min(ytp * 0.012, 0.08));
   pXslg *= (1 + Math.min(ytp * 0.018, 0.12));
@@ -108,6 +112,51 @@ function projectHitter(player) {
   return { ops: ops.toFixed(3), wrc, hr, war: war.toFixed(1) };
 }
 
+function projectPitcher(savantP, fgP) {
+  const fgS = fgP ? fgP.seasons : {};
+  const savS = savantP ? savantP.seasons : {};
+  const yrs = Object.keys({...fgS, ...savS}).sort().reverse().slice(0, 3);
+  const W = [0.55, 0.30, 0.15];
+  let wera=0, wk=0, wbb=0, tw=0, tw2=0, bestIP=0;
+
+  for (let i = 0; i < yrs.length; i++) {
+    const fg = fgS[yrs[i]] || {};
+    const sav = savS[yrs[i]] || {};
+    const w = W[i] || 0.05;
+    const ip = fg.ip || 0;
+    const pw = w * Math.min(1, ip / 120);
+
+    // ERA anchor: SIERA first, then xFIP, then xERA, then FIP, then ERA
+    const anchor = fg.siera || fg.xfip || sav.xera || fg.fip || fg.era || 4.50;
+    if (pw > 0) { wera += anchor * pw; tw += pw; }
+
+    const pw2 = w * Math.min(1, ip / 80);
+    if (fg.k_pct) { wk += fg.k_pct * pw2; tw2 += pw2; }
+    if (fg.bb_pct) wbb += fg.bb_pct * pw2;
+
+    if (ip >= 100) bestIP = Math.max(bestIP, ip);
+  }
+
+  if (tw === 0) return null;
+  const era = wera / tw;
+  const kpct = tw2 > 0 ? wk / tw2 : 20;
+  const bbpct = tw2 > 0 ? wbb / tw2 : 8;
+
+  // IP: best full season, age-adjusted, cap 210
+  const age = savantP?.age || 27;
+  const ipFactor = age <= 27 ? 1.03 : age <= 30 ? 1.00 : age <= 33 ? 0.97 : 0.93;
+  const ip = Math.min(210, Math.round((bestIP || 160) * ipFactor));
+
+  // K count: K% * estimated BFP (IP * 4.1)
+  const bfp = ip * 4.1;
+  const k = Math.round(kpct / 100 * bfp);
+
+  // WAR: (replacement_RA9 - projected_RA9) * IP/9 / runs_per_win
+  const war = Math.round((5.5 - era * 1.08) * ip / 9 / 9.5 * 10) / 10;
+
+  return { era: era.toFixed(2), k, ip, war: war.toFixed(1) };
+}
+
 async function run() {
   const playerName = getPlayerOfTheDay();
   const isPitcher = PITCHERS.has(playerName);
@@ -122,21 +171,27 @@ async function run() {
   const z = findPlayer(zips, playerName, 'ZiPS');
   const s = findPlayer(steamer, playerName, 'Steamer');
 
-  let viaLine = 'VIAcast: see full projection below';
-  if (!isPitcher) {
+  let viaLine;
+  if (isPitcher) {
+    const [savantData, fgData] = await Promise.all([
+      fetchJSON('https://raw.githubusercontent.com/TrevanVia/baseball-projection-engine/main/src/pitcher_savant_data.json'),
+      fetchJSON('https://raw.githubusercontent.com/TrevanVia/baseball-projection-engine/main/src/fg_pitcher_data.json'),
+    ]);
+    const savP = findInData(savantData, playerName);
+    const fgP = findInData(fgData, playerName);
+    if (savP) savP.age = z ? Math.round(z.Age || 27) : 27;
+    const v = projectPitcher(savP, fgP);
+    viaLine = v ? 'VIAcast: ' + v.era + ' ERA | ' + v.k + ' K | ' + v.ip + ' IP | ' + v.war + ' WAR' : 'VIAcast: see full projection below';
+  } else {
     const savant = await fetchJSON('https://raw.githubusercontent.com/TrevanVia/baseball-projection-engine/main/src/savant_data.json');
-    let sp = null;
-    for (const p of Object.values(savant)) {
-      const pn = norm(p.name || '');
-      if (norm(playerName).split(/\s+/).filter(x=>x.length>1).every(part => pn.includes(part))) { sp = p; break; }
-    }
+    let sp = findInData(savant, playerName);
     if (sp) {
       sp.age = z ? Math.round(z.Age || 27) : 27;
       const posMap = {'C':'C','1B':'1B','2B':'2B','3B':'3B','SS':'SS','LF':'LF','CF':'CF','RF':'RF','DH':'DH','OF':'RF'};
       sp.pos = z ? (posMap[z.POS] || 'DH') : 'DH';
       const v = projectHitter(sp);
-      if (v) viaLine = 'VIAcast: ' + v.ops + ' OPS | ' + v.wrc + ' wRC+ | ' + v.hr + ' HR | ' + v.war + ' WAR';
-    }
+      viaLine = v ? 'VIAcast: ' + v.ops + ' OPS | ' + v.wrc + ' wRC+ | ' + v.hr + ' HR | ' + v.war + ' WAR' : 'VIAcast: N/A';
+    } else { viaLine = 'VIAcast: N/A'; }
   }
 
   let zLine, sLine;
