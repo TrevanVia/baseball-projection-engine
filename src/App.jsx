@@ -1062,6 +1062,20 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
 }
 
 
+// ── INJURY IP OVERRIDES (2026 season) ────────────────────────────────────────
+// Manual IP caps for pitchers returning from major injuries/surgery.
+// These override the engine's IP estimation when stale data doesn't reflect
+// the injury. Updated manually each season. Set to 0 to mark as "out for year".
+const IP_OVERRIDES = {
+  "Zack Wheeler": 120,       // returning from elbow surgery, ramp-up year
+  "Shane McClanahan": 130,   // TJS recovery, limited workload
+  "Shane Baz": 100,          // TJS, gradual return
+  "Tyler Glasnow": 140,      // back issues, managed workload
+  "Dustin May": 130,          // TJS, second recovery
+  "Andrew Painter": 100,      // TJS, first full pro season post-surgery
+  "Hunter Greene": 140,       // elbow injury, returning
+};
+
 // VIAcast Pitcher Statcast Engine (5 Layers)
 function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   const S = pSav.seasons || {}, yrs = Object.keys(S).sort().reverse();
@@ -1207,6 +1221,10 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
     }
     if (recentLowIP && bestFullIP > 140) {
       estIP = Math.min(150, estIP);
+    }
+    // Manual injury IP override (takes priority over all estimation)
+    if (IP_OVERRIDES[playerName] != null) {
+      estIP = IP_OVERRIDES[playerName];
     }
   } else {
     estIP = Math.min(75, Math.max(30, latIP * 0.95));
@@ -1361,6 +1379,10 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
       const mostRecentIP = mostRecentSeason ? parseFloat(mostRecentSeason.stat?.inningsPitched || 0) : rawIP;
       if (mostRecentIP < 80 && mostRecentIP > 0 && bestFullIP2 > 140) {
         estIP = Math.min(150, estIP);
+      }
+      // Manual injury IP override (takes priority over all estimation)
+      if (IP_OVERRIDES[playerName] != null) {
+        estIP = IP_OVERRIDES[playerName];
       }
     } else {
       estIP = Math.min(70, Math.round(rawIP * 0.96));
