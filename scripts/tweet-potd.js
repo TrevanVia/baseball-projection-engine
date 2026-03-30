@@ -59,8 +59,13 @@ function findPlayer(data, name, label) {
 
 function findInData(data, name) {
   const parts = norm(name).replace(/jr|sr|iii|ii/g,'').trim().split(/\s+/).filter(p=>p.length>1);
+  // Check by value.name (savant data)
   for (const p of Object.values(data)) {
-    if (parts.every(part => norm(p.name||'').includes(part))) return p;
+    if (p.name && parts.every(part => norm(p.name).includes(part))) return p;
+  }
+  // Check by key name (fg_pitcher_data uses name as key)
+  for (const [k, v] of Object.entries(data)) {
+    if (parts.every(part => norm(k).includes(part))) { v.name = v.name || k; return v; }
   }
   return null;
 }
