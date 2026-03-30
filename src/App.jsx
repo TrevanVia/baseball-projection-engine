@@ -3320,7 +3320,7 @@ function LiveWARBoard({onSelect}) {
   const tmLogo = (tm) => `https://www.mlbstatic.com/team-logos/${FG_TEAM_IDS[tm]||147}.svg`;
   return (
     <div className="via-landing-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-      <Panel title="LIVE fWAR LEADERS" sub="2026 season \u2014 hitters." style={{borderTop:`3px solid ${C.green}`}}>
+      <Panel title="LIVE fWAR LEADERS" sub="Top 8 Hitters" style={{borderTop:`3px solid ${C.green}`}}>
         <div style={{display:"flex",flexDirection:"column",gap:0}}>
           <div style={{display:"grid",gridTemplateColumns:"20px 22px 1fr 44px 36px 44px",gap:4,padding:"4px 6px",borderBottom:`1px solid ${C.border}33`}}>
             <span style={{fontSize:8,color:C.muted,fontFamily:F}}>#</span>
@@ -3349,7 +3349,7 @@ function LiveWARBoard({onSelect}) {
         </div>
         <div style={{fontSize:8,color:C.muted,fontFamily:F,marginTop:6,textAlign:"right"}}>via FanGraphs</div>
       </Panel>
-      <Panel title="LIVE fWAR LEADERS" sub="2026 season \u2014 pitchers." style={{borderTop:`3px solid ${C.green}`}}>
+      <Panel title="LIVE fWAR LEADERS" style={{borderTop:`3px solid ${C.green}`}}>
         <div style={{display:"flex",flexDirection:"column",gap:0}}>
           <div style={{display:"grid",gridTemplateColumns:"20px 22px 1fr 44px 40px 40px 44px",gap:4,padding:"4px 6px",borderBottom:`1px solid ${C.border}33`}}>
             <span style={{fontSize:8,color:C.muted,fontFamily:F}}>#</span>
