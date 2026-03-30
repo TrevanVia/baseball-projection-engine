@@ -110,7 +110,7 @@ function projectHitter(player) {
   const pa0 = S[yrs[0]]?.pa || 0;
   const ePA = Math.min(700, Math.max(200, Math.max(pa0, bestPA * 0.90) * 0.97));
   const hr = Math.round(Math.max(0, (pBrl*slgAgeF)/100*(ePA*0.75)*0.38 + ePA*0.010));
-  const bat = ((wrc-100)/100)*ePA*0.115;
+  const bat = ((rawWrc-100)/100)*ePA*0.115;
   const posAdj = (POS_ADJ[pos]||0)*(ePA/600);
   const rep = 20*(ePA/600);
   const war = Math.round(((bat + posAdj + rep) / 9.5) * 10) / 10;
@@ -153,11 +153,11 @@ function projectPitcher(savantP, fgP) {
   const ip = Math.min(210, Math.round((bestIP || 160) * ipFactor));
 
   // K count: K% * estimated BFP (IP * 4.1)
-  const bfp = ip * 4.1;
+  const bfp = ip * 3.8;
   const k = Math.round(kpct / 100 * bfp);
 
   // WAR: (replacement_RA9 - projected_RA9) * IP/9 / runs_per_win
-  const war = Math.round((5.5 - era * 1.08) * ip / 9 / 9.5 * 10) / 10;
+  const war = Math.round((5.34 - era) / 9.5 * ip / 9 * 10) / 10;
 
   return { era: era.toFixed(2), k, ip, war: war.toFixed(1) };
 }
