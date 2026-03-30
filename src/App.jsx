@@ -4232,9 +4232,6 @@ export default function App() {
             {/* Live fWAR Leaderboard */}
             <LiveWARBoard onSelect={pick}/>
 
-            {/* Live fWAR Leaderboard */}
-            <LiveWARBoard onSelect={pick}/>
-
             {/* Top Prospects + What Is VIAcast */}
             <div className="via-landing-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
               <Panel title="TOP PROSPECTS" sub="Highest FV grades in the system." style={{borderTop:`3px solid ${C.accent}`}}>
