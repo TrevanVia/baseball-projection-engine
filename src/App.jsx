@@ -1197,7 +1197,15 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
     estIP = Math.max(140, Math.min(210, Math.round(baseIP * ipAgeFactor)));
     // Injury IP cap: if latest season was <80 IP (injury/TJS), cap projection at 150
     // to reflect ramp-up year. Pitchers returning from surgery rarely hit 180+ IP.
-    if (latIP < 80 && latIP > 0 && bestFullIP > 140) {
+    // Check both Savant latIP and FG most recent season for injury signal.
+    let recentLowIP = latIP < 80 && latIP > 0;
+    if (!recentLowIP && fgP) {
+      const fgRecent = Object.keys(fgP.seasons || {}).sort().reverse()[0];
+      if (fgRecent && fgP.seasons[fgRecent]?.ip < 80 && fgP.seasons[fgRecent]?.ip > 0) {
+        recentLowIP = true;
+      }
+    }
+    if (recentLowIP && bestFullIP > 140) {
       estIP = Math.min(150, estIP);
     }
   } else {
@@ -1348,6 +1356,12 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
       }
       const ipAgeFactor2 = age <= 27 ? 1.03 : age <= 30 ? 1.00 : age <= 33 ? 0.97 : 0.93;
       estIP = Math.max(140, Math.min(210, Math.round(Math.max(bestFullIP2, rawIP) * ipAgeFactor2)));
+      // Injury IP cap: if most recent season was <80 IP, cap at 150 for ramp-up
+      const mostRecentSeason = valid[0];
+      const mostRecentIP = mostRecentSeason ? parseFloat(mostRecentSeason.stat?.inningsPitched || 0) : rawIP;
+      if (mostRecentIP < 80 && mostRecentIP > 0 && bestFullIP2 > 140) {
+        estIP = Math.min(150, estIP);
+      }
     } else {
       estIP = Math.min(70, Math.round(rawIP * 0.96));
     }
