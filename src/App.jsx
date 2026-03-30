@@ -232,7 +232,7 @@ const FV_BY_NAME = {
   "Noelvi Marte": 45,
   // ── 2026 FV refresh: 40-man roster prospects missing from original list ────
   "Junior Caminero": 50,
-  "Jackson Holliday": 50,
+  "Jackson Holliday": 65,
   "Matt McLain": 50,
   "Luis De León": 50,
   "Luis De Leon": 50,
@@ -1131,10 +1131,12 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   // Aging
   const spPeak = 27, rpPeak = 28;
   // Starter detection: check ALL seasons (not just most recent — handles injury returns like Ohtani)
+  // Also treat high-FV pitcher prospects as starters even with limited IP (e.g. McLean, Yesavage)
   const latIPEst = lat.ip || (bfp0 / 4.3);
   const maxCareerBFP = Math.max(...yrs.map(yr => S[yr]?.bfp || 0));
   const maxCareerIP = Math.max(...yrs.map(yr => S[yr]?.ip || (S[yr]?.bfp || 0) / 4.3));
-  const isStarter = latIPEst > 100 || bfp0 > 450 || maxCareerBFP > 450 || maxCareerIP > 100;
+  const pitcherFV = getPlayerFV(playerId, playerName);
+  const isStarter = latIPEst > 100 || bfp0 > 450 || maxCareerBFP > 450 || maxCareerIP > 100 || (pitcherFV && pitcherFV >= 50);
   const pk = isStarter ? spPeak : rpPeak;
   let af = 1;
   if (age < pk) af = Math.pow(0.985, pk - age);
@@ -1190,6 +1192,11 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
     const ipAgeFactor = age <= 27 ? 1.03 : age <= 30 ? 1.00 : age <= 33 ? 0.97 : 0.93;
     const baseIP = Math.max(bestFullIP, latIP, careerMaxIP * 0.70);
     estIP = Math.max(140, Math.min(210, Math.round(baseIP * ipAgeFactor)));
+    // Injury IP cap: if latest season was <80 IP (injury/TJS), cap projection at 150
+    // to reflect ramp-up year. Pitchers returning from surgery rarely hit 180+ IP.
+    if (latIP < 80 && latIP > 0 && bestFullIP > 140) {
+      estIP = Math.min(150, estIP);
+    }
   } else {
     estIP = Math.min(75, Math.max(30, latIP * 0.95));
   }
@@ -1744,39 +1751,72 @@ function PlayerCard({player}) {
 
       </Panel>
 
-      {/* Statcast Batted Ball Data (if available) */}
+      {/* Statcast Batted Ball Data — Savant-style percentile bars */}
       {base && !isPitcher && base._statcast && (
-        <Panel title="STATCAST PROFILE" sub="Projected Statcast metrics from weighted 3-year Baseball Savant data.">
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
-            {base._statcast.xwoba!=null&&<Stat label="xwOBA" value={base._statcast.xwoba.toFixed(3)} color={base._statcast.xwoba>=.370?C.green:base._statcast.xwoba>=.320?C.blue:C.text}/>}
-            {base._statcast.projEV!=null&&<Stat label="Avg EV" value={base._statcast.projEV.toFixed(1)} color={base._statcast.projEV>=90?C.green:base._statcast.projEV>=88?C.blue:C.text} sub="mph"/>}
-            {base._statcast.projBarrel!=null&&<Stat label="Barrel%" value={base._statcast.projBarrel.toFixed(1)} color={base._statcast.projBarrel>=10?C.green:base._statcast.projBarrel>=7?C.blue:C.text}/>}
-            {base._statcast.projK!=null&&<Stat label="K%" value={base._statcast.projK.toFixed(1)} color={base._statcast.projK<=18?C.green:base._statcast.projK<=24?C.blue:C.red}/>}
-            {base._statcast.projBB!=null&&<Stat label="BB%" value={base._statcast.projBB.toFixed(1)} color={base._statcast.projBB>=10?C.green:base._statcast.projBB>=8?C.blue:C.text}/>}
-            {base._statcast.sprintSpeed!=null&&<Stat label="Sprint" value={base._statcast.sprintSpeed.toFixed(1)} color={base._statcast.sprintSpeed>=29?C.green:base._statcast.sprintSpeed>=27?C.blue:C.text} sub="ft/s"/>}
-            {base._statcast.oaa!=null&&<Stat label="OAA" value={base._statcast.oaa} color={base._statcast.oaa>=5?C.green:base._statcast.oaa>=0?C.blue:C.red}/>}
-            {base._statcast.selectivityIndex!=null&&<Stat label="Sel. Index" value={base._statcast.selectivityIndex.toFixed(2)} color={base._statcast.selectivityIndex>=3.0?C.green:base._statcast.selectivityIndex>=2.0?C.blue:C.text} sub="Z/O swing"/>}
+        <Panel title="STATCAST PROFILE" sub="Projected metrics from 3-year weighted Baseball Savant data. Percentiles are league-wide.">
+          <div style={{display:"flex",flexDirection:"column",gap:1}}>
+            {[
+              {label:"xwOBA",      val:base._statcast.xwoba,   fmt:v=>v.toFixed(3), min:.240, max:.420, avg:.310, higher:true},
+              {label:"Avg EV",     val:base._statcast.projEV,  fmt:v=>v.toFixed(1)+" mph", min:83, max:94, avg:88.5, higher:true},
+              {label:"Barrel%",    val:base._statcast.projBarrel, fmt:v=>v.toFixed(1)+"%", min:2, max:18, avg:7.5, higher:true},
+              {label:"K%",         val:base._statcast.projK,   fmt:v=>v.toFixed(1)+"%", min:10, max:35, avg:22.5, higher:false},
+              {label:"BB%",        val:base._statcast.projBB,  fmt:v=>v.toFixed(1)+"%", min:3, max:18, avg:8.5, higher:true},
+              {label:"Sprint Spd", val:base._statcast.sprintSpeed, fmt:v=>v.toFixed(1)+" ft/s", min:23, max:31, avg:27, higher:true},
+              {label:"OAA",        val:base._statcast.oaa,     fmt:v=>String(v), min:-15, max:20, avg:0, higher:true},
+            ].filter(m=>m.val!=null).map(m=>{
+              const pct = m.higher
+                ? Math.max(1, Math.min(99, Math.round(((m.val - m.min) / (m.max - m.min)) * 100)))
+                : Math.max(1, Math.min(99, Math.round(((m.max - m.val) / (m.max - m.min)) * 100)));
+              const barColor = pct >= 90 ? C.red : pct >= 75 ? "#e17726" : pct >= 60 ? "#eab308" : pct >= 40 ? "#94a3b8" : pct >= 25 ? "#3b82f6" : "#2563eb";
+              return (
+                <div key={m.label} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:`1px solid ${C.border}20`}}>
+                  <div style={{width:72,fontSize:10,fontWeight:600,color:C.dim,fontFamily:F,textAlign:"right",flexShrink:0}}>{m.label}</div>
+                  <div style={{flex:1,height:8,background:`${C.border}30`,borderRadius:4,position:"relative",overflow:"hidden"}}>
+                    <div style={{width:`${pct}%`,height:"100%",background:barColor,borderRadius:4,transition:"width 0.5s ease"}}/>
+                  </div>
+                  <div style={{width:40,fontSize:11,fontWeight:700,color:barColor,fontFamily:F,textAlign:"center",flexShrink:0}}>{pct}</div>
+                  <div style={{width:72,fontSize:10,fontWeight:600,color:C.text,fontFamily:F,textAlign:"left",flexShrink:0}}>{m.fmt(m.val)}</div>
+                </div>
+              );
+            })}
           </div>
           {base._statcast.trendBoost!=null&&base._statcast.trendBoost!==0&&(
-            <div style={{marginTop:10,textAlign:"center",fontSize:10,color:base._statcast.trendBoost>0?C.green:C.red,fontFamily:F}}>
+            <div style={{marginTop:8,textAlign:"center",fontSize:10,color:base._statcast.trendBoost>0?C.green:C.red,fontFamily:F}}>
               {base._statcast.trendBoost>0?"▲":"▼"} Trend: {base._statcast.trendBoost>0?"+":""}{(base._statcast.trendBoost*1000).toFixed(0)} xwOBA points
             </div>
           )}
         </Panel>
       )}
-      {/* Statcast Pitching Profile */}
+      {/* Statcast Pitching Profile — Savant-style percentile bars */}
       {base && isPitcher && base._statcast && (
-        <Panel title="STATCAST PROFILE" sub="Projected Statcast pitching metrics from weighted Baseball Savant data.">
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
-            {base._statcast.xwoba!=null&&<Stat label="xwOBA vs" value={base._statcast.xwoba.toFixed(3)} color={base._statcast.xwoba<=.290?C.green:base._statcast.xwoba<=.320?C.blue:C.red}/>}
-            {base._statcast.xera!=null&&<Stat label="xERA" value={base._statcast.xera.toFixed(2)} color={base._statcast.xera<=3.00?C.green:base._statcast.xera<=3.80?C.blue:C.text}/>}
-            {base._statcast.fbVelo!=null&&<Stat label="FB Velo" value={base._statcast.fbVelo.toFixed(1)} color={base._statcast.fbVelo>=96?C.green:base._statcast.fbVelo>=93?C.blue:C.text} sub="mph"/>}
-            {base._statcast.projBarrelAgainst!=null&&<Stat label="Barrel% vs" value={base._statcast.projBarrelAgainst.toFixed(1)} color={base._statcast.projBarrelAgainst<=6?C.green:base._statcast.projBarrelAgainst<=8?C.blue:C.red}/>}
-            {base._statcast.projEVAgainst!=null&&<Stat label="EV vs" value={base._statcast.projEVAgainst.toFixed(1)} color={base._statcast.projEVAgainst<=86?C.green:base._statcast.projEVAgainst<=88?C.blue:C.red} sub="mph"/>}
-            {base._statcast.swStr!=null&&<Stat label="SwStr%" value={base._statcast.swStr.toFixed(1)} color={base._statcast.swStr>=12?C.green:base._statcast.swStr>=10?C.blue:C.text}/>}
+        <Panel title="STATCAST PROFILE" sub="Projected pitching metrics from weighted Baseball Savant data. Percentiles are league-wide.">
+          <div style={{display:"flex",flexDirection:"column",gap:1}}>
+            {[
+              {label:"xwOBA vs",   val:base._statcast.xwoba,   fmt:v=>v.toFixed(3), min:.250, max:.370, avg:.310, higher:false},
+              {label:"xERA",       val:base._statcast.xera,    fmt:v=>v.toFixed(2), min:2.0, max:5.5, avg:4.10, higher:false},
+              {label:"FB Velo",    val:base._statcast.fbVelo,  fmt:v=>v.toFixed(1)+" mph", min:88, max:100, avg:93.5, higher:true},
+              {label:"Barrel% vs", val:base._statcast.projBarrelAgainst, fmt:v=>v.toFixed(1)+"%", min:3, max:14, avg:7.5, higher:false},
+              {label:"EV vs",      val:base._statcast.projEVAgainst, fmt:v=>v.toFixed(1)+" mph", min:84, max:92, avg:88.5, higher:false},
+              {label:"SwStr%",     val:base._statcast.swStr,   fmt:v=>v.toFixed(1)+"%", min:6, max:16, avg:11, higher:true},
+            ].filter(m=>m.val!=null).map(m=>{
+              const pct = m.higher
+                ? Math.max(1, Math.min(99, Math.round(((m.val - m.min) / (m.max - m.min)) * 100)))
+                : Math.max(1, Math.min(99, Math.round(((m.max - m.val) / (m.max - m.min)) * 100)));
+              const barColor = pct >= 90 ? C.red : pct >= 75 ? "#e17726" : pct >= 60 ? "#eab308" : pct >= 40 ? "#94a3b8" : pct >= 25 ? "#3b82f6" : "#2563eb";
+              return (
+                <div key={m.label} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:`1px solid ${C.border}20`}}>
+                  <div style={{width:72,fontSize:10,fontWeight:600,color:C.dim,fontFamily:F,textAlign:"right",flexShrink:0}}>{m.label}</div>
+                  <div style={{flex:1,height:8,background:`${C.border}30`,borderRadius:4,position:"relative",overflow:"hidden"}}>
+                    <div style={{width:`${pct}%`,height:"100%",background:barColor,borderRadius:4,transition:"width 0.5s ease"}}/>
+                  </div>
+                  <div style={{width:40,fontSize:11,fontWeight:700,color:barColor,fontFamily:F,textAlign:"center",flexShrink:0}}>{pct}</div>
+                  <div style={{width:72,fontSize:10,fontWeight:600,color:C.text,fontFamily:F,textAlign:"left",flexShrink:0}}>{m.fmt(m.val)}</div>
+                </div>
+              );
+            })}
           </div>
           {base._statcast.veloTrend!=null&&base._statcast.veloTrend!==0&&(
-            <div style={{marginTop:10,textAlign:"center",fontSize:10,color:base._statcast.veloTrend>0?C.green:C.red,fontFamily:F}}>
+            <div style={{marginTop:8,textAlign:"center",fontSize:10,color:base._statcast.veloTrend>0?C.green:C.red,fontFamily:F}}>
               {base._statcast.veloTrend>0?"▲":"▼"} Velo trend: {base._statcast.veloTrend>0?"+":""}{base._statcast.veloTrend.toFixed(1)} mph
             </div>
           )}
