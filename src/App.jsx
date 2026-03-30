@@ -18,6 +18,36 @@ import precomputedLeaderboard from "./precomputed_leaderboard.json";
 const XWOBA_DATA = xwobaDataJson.default || xwobaDataJson;
 const SAVANT_DATA = savantDataJson.default || savantDataJson;
 const PITCHER_SAVANT = pitcherSavantJson.default || pitcherSavantJson;
+
+// ── MiLB STATCAST OVERLAY ────────────────────────────────────────────────────
+// Prospect Savant data for top prospects without MLB Statcast profiles.
+// Source: baseballsavant.mlb.com/prospect → individual player pages.
+// Tagged milb_source: true so the engine/UI can flag these as MiLB metrics.
+// Key: MLBAM player ID. Season key = year of MiLB data.
+const MILB_STATCAST = {
+  "804606": {  // Konnor Griffin — 2025 A (Pirates)
+    name: "Konnor Griffin", mlbam_id: 804606, milb_source: true,
+    seasons: {
+      "2025": {
+        pa: 500, xwoba: 0.334, xba: 0.277, xslg: 0.419,
+        avg_ev: 90.7, max_ev: 114.2, ev50: 94.3,
+        barrel_pct: 7.2, hard_hit_pct: 48.7,
+        k_pct: 22.9, bb_pct: 6.5,
+        chase_pct: 26.68, whiff_pct: 25.5,
+        swing_pct: 48.47, swstr_pct: 12.35,
+        bbe: 380
+      }
+    },
+    sprint_speed: 28.6,  // 97th percentile per Prospect Savant
+    milb_level: "A",
+  },
+};
+// Merge MiLB Statcast into main SAVANT_DATA so getSavantPlayer() finds them.
+// These will be picked up by the Statcast engine if the player has enough data.
+Object.entries(MILB_STATCAST).forEach(([id, data]) => {
+  if (!SAVANT_DATA[id]) SAVANT_DATA[id] = data;
+});
+
 const PRECOMPUTED = precomputedLeaderboard.default || precomputedLeaderboard;
 
 // Reverse map: team abbreviation → MLB team ID (for logo URLs)
@@ -752,7 +782,8 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
   const fv=getPlayerFV(playerId,playerName);let fW=rW;
   if(fv){const b=FV_BENCHMARKS[Math.min(70,Math.max(40,fv))]||FV_BENCHMARKS[50];
-    fW=Math.max(b.war*.50,Math.min(b.war*2.0,rW))}
+    const _flPct = 0.30 + Math.min(0.20, Math.min(0.85, tPA/1200) * 0.25);
+    fW=Math.max(b.war*_flPct,Math.min(b.war*2.0,rW))}
   fW=Math.round(fW*10)/10;
   const tPA=yrs.reduce((s,yr)=>s+(S[yr]?.pa||0),0);
   return{ops:Math.round(ops*1e3)/1e3,obp:Math.round(obp*1e3)/1e3,
@@ -771,7 +802,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
 
 function projectPlayer(splits, age, posCode, name, id) {
   const savP = getSavantPlayer(id, name);
-  if (savP && Object.keys(savP.seasons || {}).length > 0) {
+  if (savP && Object.keys(savP.seasons || {}).length > 0 && !savP.milb_source) {
     // Only use Statcast if meaningful MLB sample exists
     // Below 250 PA, MiLB-inclusive Marcel is more reliable
     const totalMLBPA = Object.values(savP.seasons || {}).reduce((s, yr) => s + (yr.pa || 0), 0);
@@ -990,11 +1021,10 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   }
 
 
-  // Batting runs: use wRC+ scale (consistent with FV benchmarks and aging curves)
-  const batRuns = ((finalWRC - 100) / 100) * estPA * LG_R_PER_PA;
+  // Batting runs: computed AFTER final wRC+ (below) to stay in sync with displayed stats
+  // Placeholder — actual WAR computed after slash line regression
   const posAdj = ap.pa * (estPA / 600);
   const repl = 20 * (estPA / 600);
-  const baseWAR = (batRuns + defRuns + bsrRuns + posAdj + repl) / 9.5;
 
 
 
@@ -1002,12 +1032,6 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
 
 
 
-
-  let clampedWAR = baseWAR;
-  if (fv) {
-    const bench = FV_BENCHMARKS[Math.min(70, Math.max(40, fv))] || FV_BENCHMARKS[50];
-    clampedWAR = Math.max(bench.war * 0.50, Math.min(bench.war * 2.0, baseWAR));
-  }
 
   const rawOBP = (wOBP/tw) * ageBoost * performanceBoost;
   const rawSLG = (wSLG/tw) * ageBoost * performanceBoost;
@@ -1041,6 +1065,48 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
     finalWRC = Math.min(120, finalWRC);
   }
 
+  // ── FINAL WAR COMPUTATION (uses displayed wRC+, not intermediate) ──────────
+  const batRuns = ((finalWRC - 100) / 100) * estPA * LG_R_PER_PA;
+  const baseWAR = (batRuns + defRuns + bsrRuns + posAdj + repl) / 9.5;
+
+  let clampedWAR = baseWAR;
+  if (fv) {
+    const bench = FV_BENCHMARKS[Math.min(70, Math.max(40, fv))] || FV_BENCHMARKS[50];
+    // WAR floor scales with PA reliability — prospects with no MLB data get
+    // a softer floor (30% of benchmark) vs those with some MLB track record (50%)
+    const floorPct = 0.30 + Math.min(0.20, paRel * 0.25);
+    clampedWAR = Math.max(bench.war * floorPct, Math.min(bench.war * 2.0, baseWAR));
+  }
+
+  // If MiLB Statcast data exists (from MILB_STATCAST overlay), attach it for the
+  // Statcast Profile panel. This lets top prospects show percentile bars even though
+  // they route through Marcel for projections.
+  let milbStatcast = null;
+  const milbSav = getSavantPlayer(playerId, playerName);
+  if (milbSav && milbSav.milb_source) {
+    const latestYr = Object.keys(milbSav.seasons || {}).sort().pop();
+    const ms = milbSav.seasons[latestYr];
+    if (ms) {
+      milbStatcast = {
+        xwoba: ms.xwoba || null,
+        projEV: ms.avg_ev || null,
+        projBarrel: ms.barrel_pct || null,
+        projK: ms.k_pct || null,
+        projBB: ms.bb_pct || null,
+        sprintSpeed: milbSav.sprint_speed || null,
+        oaa: null,  // no OAA for MiLB
+        trendBoost: null,
+        milb_source: true,
+        milb_level: milbSav.milb_level || highestLevel,
+        maxEV: ms.max_ev || null,
+        ev50: ms.ev50 || null,
+        hardHit: ms.hard_hit_pct || null,
+        chase: ms.chase_pct || null,
+        whiff: ms.whiff_pct || null,
+      };
+    }
+  }
+
   return {
     obp: projOBP,
     slg: projSLG,
@@ -1058,6 +1124,7 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
     translationNote: highestLevel !== "MLB"
       ? `Stats translated from ${trans.label} (${Math.round(trans.factor*100)}% factor)${ageAdvantage > 0 ? ` · ${ageAdvantage.toFixed(1)}yr young for level` : ""}` 
       : null,
+    _statcast: milbStatcast,
   };
 }
 
@@ -1792,14 +1859,19 @@ function PlayerCard({player}) {
 
       {/* Statcast Batted Ball Data — Savant-style percentile bars */}
       {base && !isPitcher && base._statcast && (
-        <Panel title="STATCAST PROFILE" sub="Projected metrics from 3-year weighted Baseball Savant data. Percentiles are league-wide.">
+        <Panel title={base._statcast.milb_source ? `MiLB STATCAST PROFILE (${base._statcast.milb_level})` : "STATCAST PROFILE"} sub={base._statcast.milb_source ? "Prospect Savant data. Percentiles compared to MLB league-wide averages." : "Projected metrics from 3-year weighted Baseball Savant data. Percentiles are league-wide."}>
           <div style={{display:"flex",flexDirection:"column",gap:1}}>
             {[
               {label:"xwOBA",      val:base._statcast.xwoba,   fmt:v=>v.toFixed(3), min:.240, max:.420, avg:.310, higher:true},
               {label:"Avg EV",     val:base._statcast.projEV,  fmt:v=>v.toFixed(1)+" mph", min:83, max:94, avg:88.5, higher:true},
+              {label:"Max EV",     val:base._statcast.maxEV,   fmt:v=>v.toFixed(1)+" mph", min:102, max:118, avg:110, higher:true},
+              {label:"EV50",       val:base._statcast.ev50,    fmt:v=>v.toFixed(1)+" mph", min:82, max:100, avg:90, higher:true},
               {label:"Barrel%",    val:base._statcast.projBarrel, fmt:v=>v.toFixed(1)+"%", min:2, max:18, avg:7.5, higher:true},
+              {label:"Hard Hit%",  val:base._statcast.hardHit,  fmt:v=>v.toFixed(1)+"%", min:25, max:55, avg:38, higher:true},
               {label:"K%",         val:base._statcast.projK,   fmt:v=>v.toFixed(1)+"%", min:10, max:35, avg:22.5, higher:false},
               {label:"BB%",        val:base._statcast.projBB,  fmt:v=>v.toFixed(1)+"%", min:3, max:18, avg:8.5, higher:true},
+              {label:"Chase%",     val:base._statcast.chase,   fmt:v=>v.toFixed(1)+"%", min:18, max:38, avg:28, higher:false},
+              {label:"Whiff%",     val:base._statcast.whiff,   fmt:v=>v.toFixed(1)+"%", min:15, max:40, avg:25, higher:false},
               {label:"Sprint Spd", val:base._statcast.sprintSpeed, fmt:v=>v.toFixed(1)+" ft/s", min:23, max:31, avg:27, higher:true},
               {label:"OAA",        val:base._statcast.oaa,     fmt:v=>String(v), min:-15, max:20, avg:0, higher:true},
             ].filter(m=>m.val!=null).map(m=>{
@@ -3436,9 +3508,9 @@ function MethodPanel() {
       <p style={{margin:"10px 0 0",fontSize:11,color:C.dim,lineHeight:1.6,fontFamily:F}}>Projected WAR per $1M salary. Pre-arb players at league minimum ($0.8M) naturally receive top grades. Salary data from Spotrac, MLB Trade Rumors, and Cot{"\u2019"}s Baseball Contracts.</p>
     </Panel>
 
-    {/* 3. PROJECTION METHODOLOGY \u2014 two columns */}
+    {/* 3. PROJECTION METHODOLOGY — two columns */}
     <Panel title="PROJECTION METHODOLOGY">
-      <p style={{margin:"0 0 14px",fontSize:12,color:C.dim,lineHeight:1.6,fontFamily:F}}>VIAcast projects hitters and pitchers through separate Statcast-powered engines. Both use 3 years of data (2023{"\u2013"}2025) weighted 55/30/15% with sample-size reliability scaling. Players below the Statcast threshold use the Marcel fallback with MiLB translation.</p>
+      <p style={{margin:"0 0 14px",fontSize:12,color:C.dim,lineHeight:1.6,fontFamily:F}}>VIAcast projects hitters and pitchers through separate Statcast-powered engines, calibrated against FanGraphs Depth Charts (ZiPS/Steamer blend) as a benchmark. Both use 3 years of data (2023{"\u2013"}2025) weighted 55/30/15% with sample-size reliability scaling. Players below the Statcast threshold (250 MLB PA) use the Marcel fallback with MiLB translation. Projected WAR is displayed as fWAR for direct comparability with industry-standard systems.</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:16}}>
 
         {/* HITTER COLUMN */}
@@ -3446,28 +3518,33 @@ function MethodPanel() {
           <div style={{fontSize:11,fontWeight:800,color:C.accent,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10,paddingBottom:6,borderBottom:`2px solid ${C.accent}20`,fontFamily:F}}>HITTER ENGINE (7 LAYERS)</div>
 
           {h4(C.blue,"L1: Contact Quality (40%)")}
-          {pp("xwOBA anchor weighted across 3 seasons. Supported by avg exit velocity, EV50, barrel rate, and hard-hit rate from Statcast.")}
+          {pp("xwOBA anchor weighted across 3 seasons. Supported by avg exit velocity, EV50, barrel rate, and hard-hit rate from Statcast. xSLG is deflated 5% before regression to correct for Statcast\u2019s systematic overestimation of realized slugging (~5% gap league-wide).")}
 
           {h4(C.purple,"L2: Plate Discipline (25%)")}
-          {pp("K% and BB% from FanGraphs. Chase rate, zone contact, and swinging-strike rate feed a selectivity index for pitch recognition.")}
+          {pp("K% and BB% from FanGraphs. Chase rate, zone contact, and swinging-strike rate feed a selectivity index (Z-Swing/O-Swing) for pitch recognition. Discipline bonus of up to \u00b15 wRC+ points for elite/poor selectivity.")}
 
           {h4("#ec4899","L3: Swing Mechanics (10%)")}
-          {pp("Bat speed and squared-up rate from Statcast bat tracking. YoY bat speed trends detect early aging signals.")}
+          {pp("Bat speed and squared-up rate from Statcast bat tracking. YoY bat speed trends detect early aging signals before traditional stats reflect it.")}
 
           {h4(C.green,"L4: Baserunning (10%)")}
-          {pp("Statcast BsR (Baserunning Run Value) for 252 MLB players. Measures actual runs from SB, extra bases taken, and decisions. Fallback: sprint speed tiers.")}
+          {pp("Statcast BsR (Baserunning Run Value) for MLB players, regressed 25% toward league average to dampen single-season volatility. Fallback: sprint speed tiers for MLB, SB/CS rates for MiLB.")}
 
           {h4(C.orange,"L5: Defense")}
-          {pp("OAA at 0.5 runs per OAA. Defensive peaks: SS/CF at 26, corners at 28. Decays 6%/yr past peak.")}
+          {pp("OAA (Outs Above Average) at 0.85 runs per OAA (standard Statcast methodology), blended 80/20 with DRS directional (\u00b13 runs). Defensive peaks: SS/CF at 26, corners at 28. Decays 6%/yr past peak.")}
 
           {h4(C.text,"L6: Aging Curves")}
-          {pp("Additive wRC+ adjustment. Pre-peak: +1.5/yr. Peak\u201332: \u22121.5/yr. 33+: \u22123.0/yr. Peaks: SS/2B/3B 28, CF 27, C 27, 1B 29, DH 30.")}
+          {pp("Pre-peak development boost: +0.8% AVG and +1.0% SLG per year to peak (capped at 4%/6%). Post-peak: AVG declines 0.8%/yr past 32, SLG declines 1.5%/yr past 30. Position-specific peaks: SS/2B/3B 28, CF/C 27, 1B 29, DH 30.")}
 
           {h4(C.blue,"L7: Trend Weighting")}
-          {pp("Multi-year improvers get +30% trend credit. Chase rate improvements, EV50 breakouts, and bat speed declines feed momentum adjustments.")}
+          {pp("Consistent multi-year improvers get +30% trend credit. Chase rate improvements, EV50 breakouts, and bat speed declines feed momentum adjustments.")}
 
-          {h4(C.green,"WAR Construction")}
-          {pp("xwOBA \u2192 wRC+ (4.5 pts per .010 xwOBA). Batting runs + defense (OAA \u00d7 0.5) + BsR + positional adj + replacement (20 runs/600 PA) \u00f7 9.5 RPW. HR: barrel% \u00d7 BBE \u00d7 0.45 + PA \u00d7 0.010 baseline.")}
+          {h4(C.green,"fWAR Construction")}
+          {pp("Slash line projected from xBA/xSLG with PA-aware regression (15\u201350% toward league avg). xSLG deflated 5% before regression. wOBA estimated via FanGraphs quick formula: (1.7\u00d7OBP + SLG) / 3. wRC+ derived from wOBA \u2192 wRAA \u2192 wRC+ (league avg calibrated to 100). Batting runs = ((wRC+ \u2212 100) / 100) \u00d7 PA \u00d7 0.115. Total: batting + defense + BsR + positional adj + replacement (20 runs/600 PA) \u00f7 9.5 RPW.")}
+
+          <div style={{marginTop:8,padding:"10px 14px",background:`${C.blue}06`,border:`1px solid ${C.blue}15`,borderRadius:8}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.blue,fontFamily:F,marginBottom:4}}>NON-FV PROSPECT CEILING</div>
+            <div style={{fontSize:11,color:C.dim,lineHeight:1.6,fontFamily:F}}>Players without FV grades and fewer than 200 MLB PA are capped at 120 wRC+ and .800 OPS. This prevents unconstrained MiLB projections from producing unrealistic star-level projections for ungraded prospects.</div>
+          </div>
         </div>
 
         {/* PITCHER COLUMN */}
@@ -3475,26 +3552,34 @@ function MethodPanel() {
           <div style={{fontSize:11,fontWeight:800,color:C.accent,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10,paddingBottom:6,borderBottom:`2px solid ${C.accent}20`,fontFamily:F}}>PITCHER ENGINE (5 LAYERS)</div>
 
           {h4(C.blue,"L1: ERA Anchor \u2014 Layered (35%)")}
-          {pp("Falls through in order of predictive accuracy: SIERA \u2192 xFIP \u2192 xERA \u2192 FIP \u2192 K-BB \u2192 ERA. SIERA from FanGraphs is primary for 815 pitchers, accounting for K/BB/GB interactions. Pitchers without FG data fall back to xERA from Statcast.")}
+          {pp("Falls through in order of predictive accuracy: SIERA \u2192 xFIP \u2192 xERA \u2192 FIP \u2192 K-BB \u2192 ERA. SIERA from FanGraphs is primary, accounting for K/BB/GB interactions. Pitchers without FG data fall back to xERA from Statcast.")}
 
           {h4(C.purple,"L2: Command (25%)")}
-          {pp("K% and BB% sourced from FanGraphs for 815 pitchers. Fallback: whiff% \u00d7 1.05. FIP computed with HR allowed estimated from IP \u00d7 1.2 HR/9 scaled by barrel% allowed.")}
+          {pp("K% and BB% sourced from FanGraphs. Fallback: whiff% \u00d7 1.05. FIP computed from projected K, BB, and HR allowed (HR rate derived from barrel% against).")}
 
           {h4(C.orange,"L3: Velocity (15%)")}
-          {pp("Fastball velocity trends across seasons. Velocity loss is the strongest predictor of pitcher decline. Arsenal mix effectiveness weights pitch-type performance.")}
+          {pp("Fastball velocity trends across seasons. Velocity loss >1.5 mph adds 0.15 ERA points. Velocity gain >1.0 mph subtracts 0.10.")}
 
           {h4(C.text,"L4: Aging Curves")}
           {pp("Pre-peak: \u22121.5% ERA/yr. Peak\u201333: +1.5%/yr. 33+: +3%/yr. SP peak at 27, RP peak at 28.")}
 
           {h4(C.green,"L5: IP Projection")}
-          {pp("Best full season (100+ IP) from FanGraphs data with age adjustment: \u226427 \u00d7 1.03, 28\u201330 \u00d7 1.00, 31\u201333 \u00d7 0.97, 34+ \u00d7 0.93. Capped at 210 IP. Reliever IP capped at 75.")}
+          {pp("Best full season (100+ IP) from FanGraphs data with age adjustment. Injury detection: if most recent season was <80 IP (checked in both Savant and FG data), projection capped at 150 IP. Manual IP overrides for known injured pitchers returning from surgery (e.g. Wheeler 120 IP, McClanahan 130 IP).")}
 
-          {h4(C.green,"WAR Construction")}
-          {pp("(Replacement level \u2212 projected ERA) \u00f7 9.5 RPW \u00d7 IP/9. SP replacement: 5.34, RP replacement: 4.49. Starter detection checks entire career history for injury returns.")}
+          {h4(C.green,"fWAR Construction \u2014 Blended")}
+          {pp("60% xERA-based + 40% FIP-based WAR. xERA captures contact quality (barrel%, hard-hit%) that FIP ignores. FIP captures K/BB/HR skill that xERA can miss in small samples. SP replacement level: 5.34, RP: 4.49, divided by 9.5 RPW.")}
+
+          {h4(C.blue,"Starter Detection")}
+          {pp("Pitchers are classified as SP if: career max IP >100, or season BFP >450, or FV grade \u226550. This ensures top pitcher prospects (McLean, Yesavage) project as starters even with limited MLB innings.")}
 
           <div style={{marginTop:8,padding:"10px 14px",background:`${C.accent}06`,border:`1px solid ${C.accent}15`,borderRadius:8}}>
             <div style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:F,marginBottom:4}}>MARCEL FALLBACK</div>
-            <div style={{fontSize:11,color:C.dim,lineHeight:1.6,fontFamily:F}}>Players below 250 Statcast PA use Marcel with MiLB translation (AAA 0.82x, AA 0.68x, A+ 0.58x, A 0.50x). HR translated by level factor, projected via games-based rate. Prospect PA: projected games {"\u00d7"} 4.0 PA/G.</div>
+            <div style={{fontSize:11,color:C.dim,lineHeight:1.6,fontFamily:F}}>Players below 250 Statcast PA use Marcel with MiLB translation (AAA 0.82x, AA 0.68x, A+ 0.58x, A 0.50x). wRC+ computed from wOBA via (1.7{"\u00d7"}OBP + SLG) / 3. Established MLB threshold: 250 PA.</div>
+          </div>
+
+          <div style={{marginTop:8,padding:"10px 14px",background:`${C.purple}06`,border:`1px solid ${C.purple}15`,borderRadius:8}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.purple,fontFamily:F,marginBottom:4}}>TWO-WAY PLAYERS</div>
+            <div style={{fontSize:11,color:C.dim,lineHeight:1.6,fontFamily:F}}>Two-way players (Ohtani) receive a workload discount: 92% of projected hitting PA, 72% of projected pitching IP. Based on Ohtani{"\u2019"}s 2023 actuals (599 PA + 132 IP). Combined fWAR is synced across player card, leaderboard, and landing page.</div>
           </div>
         </div>
       </div>
