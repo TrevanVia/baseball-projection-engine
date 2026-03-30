@@ -230,6 +230,33 @@ const FV_BY_NAME = {
   "Dalton Rushing": 45,
   "Tyler Soderstrom": 45,
   "Noelvi Marte": 45,
+  // ── 2026 FV refresh: 40-man roster prospects missing from original list ────
+  "Junior Caminero": 50,
+  "Jackson Holliday": 50,
+  "Matt McLain": 50,
+  "Luis De León": 50,
+  "Luis De Leon": 50,
+  "Daylen Lile": 45,
+  "Emmanuel Rodriguez": 45,
+  "Nelson Rada": 45,
+  "Starlyn Caba": 45,
+  "Jasson Dominguez": 45,
+  "Alejandro Rosario": 45,
+  "Coby Mayo": 45,
+  "Colt Keith": 45,
+  "Termarr Johnson": 45,
+  "Blaze Jordan": 45,
+  "Andy Pages": 45,
+  "Jonny Farmelo": 45,
+  "Alfredo Velásquez": 45,
+  "Alfredo Velazquez": 45,
+  "Payton Eeles": 45,
+  "Luis Matos": 45,
+  "Thayron Liranzo": 45,
+  "Cam Collier": 45,
+  "Victor Scott II": 45,
+  "Tre' Morgan": 45,
+  "Tre Morgan": 45,
 };
 
 // FV badge styles
@@ -343,7 +370,7 @@ function getXwoba(playerName) {
 
 
 // ── DEFENSIVE LOOKUP (OAA 2023-2025 avg, DRS directional) ──────────────────
-// OAA = Outs Above Average (Baseball Savant). Runs = OAA * 0.5
+// OAA = Outs Above Average (Baseball Savant). Runs = OAA * 0.85
 // DRS = Defensive Runs Saved directional: +/0/- (above/avg/below)
 const DEFENSIVE_DATA = {
   "Bobby Witt Jr.":      { oaa: 8,  drs: 1 },
@@ -654,7 +681,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const oaa=sP.oaa!=null?sP.oaa:null;
   const dPk=(posCode==="6"||posCode==="8")?26:(posCode==="4"||posCode==="5")?27:28;
   const dAg=Math.max(.3,1-Math.max(0,age-dPk)*.06);
-  let dR=0; if(oaa!==null)dR=oaa*.5*dAg;
+  let dR=0; if(oaa!==null)dR=oaa*0.85*dAg;
   const ap=getAP(posCode), pk=ap.peak;
   // Trend detection (before aging)
   let tb=0;
@@ -887,6 +914,14 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   finalOPS = Math.max(0.560, Math.min(1.150, finalOPS));
   finalWRC = Math.max(65, Math.min(195, finalWRC));
 
+  // Non-FV prospect ceiling: players without scouting grades and limited MLB data
+  // should not project as stars based on MiLB stats alone. Cap at 120 wRC+.
+  // Players WITH FV grades are already constrained by the FV blend above.
+  if (!fv && mlbPA < 200 && highestLevel !== "MLB") {
+    finalWRC = Math.min(120, finalWRC);
+    finalOPS = Math.min(0.800, finalOPS);
+  }
+
   const ap = getAP(posCode);
   // Project games first, then derive PA
   // Use prospect formula for players with < 400 MLB PA (brief callups shouldn't get MLB treatment)
@@ -902,14 +937,15 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   const def = getDefense(playerName);
   const spd = getSprintSpeed(playerName);
 
-  // Defensive runs: OAA * 1.75 (primary) blended with DRS direction (secondary)
+  // Defensive runs: OAA * 0.85 runs (primary) blended with DRS direction (secondary)
+  // Standard conversion: ~0.8-0.9 runs per OAA (Baseball Savant methodology)
   // Decays with age past defensive peak (pos-specific)
   const defPeak = posCode === "6" || posCode === "8" ? 26 : 28;
   const defAge = Math.max(0, 1 - Math.max(0, age - defPeak) * 0.06);
   let defRuns = 0;
   if (def) {
-    const oaaRuns = def.oaa * 0.5;
-    const drsAdj = def.drs * 0.5;
+    const oaaRuns = def.oaa * 0.85;
+    const drsAdj = def.drs * 3.0;  // DRS directional: +1/0/-1 → ~+3/0/-3 runs
     defRuns = (oaaRuns * 0.80 + drsAdj * 0.20) * defAge * (estPA / 600);
   }
 
@@ -997,6 +1033,10 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
   // wRC+ from proper wOBA estimation using final projected slash line
   const projAVG = Math.max(0.210, Math.min(0.330, (wAVG/tw) * ageBoost * paRel + 0.248 * (1 - paRel)));
   finalWRC = Math.max(65, Math.min(195, wRCPlusFromSlash(projOBP, projSLG)));
+  // Re-apply non-FV prospect ceiling to display wRC+
+  if (!fv && mlbPA < 200 && highestLevel !== "MLB") {
+    finalWRC = Math.min(120, finalWRC);
+  }
 
   return {
     obp: projOBP,
@@ -1154,23 +1194,26 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
     estIP = Math.min(75, Math.max(30, latIP * 0.95));
   }
 
-  // WAR: use projected ERA (derived from xERA) vs replacement level
-  // xERA is more reliable than FIP when K%/BB% data may be incomplete
-  // FG replacement: 0.12 wins/game for SP, 0.03 for RP
+  // vWAR: blend xERA-based (60%) and FIP-based (40%) WAR
+  // xERA captures contact quality that FIP ignores (barrel%, hard-hit%)
+  // FIP captures K/BB/HR skill that xERA can miss in small samples
   const replLevel = 5.34;
   const rpw = 9.5;
-  const rpReplLevel = isStarter ? 5.34 : 4.49; // RP: 0.03*9.5+4.20=4.49
+  const rpReplLevel = isStarter ? 5.34 : 4.49;
   const useRepl = isStarter ? replLevel : rpReplLevel;
-  const rawWAR = ((useRepl - projERA) / rpw) * (estIP / 9);
+  const eraBasedWAR = ((useRepl - projERA) / rpw) * (estIP / 9);
 
-  // Also compute FIP for display (even if not used for WAR)
+  // Also compute FIP for display AND for blended WAR
   const estK = projK9 * estIP / 9;
   const estBB = projBB9 * estIP / 9;
-  // HR allowed: league avg 1.2 HR/9 scaled by barrel% allowed
   const hrRate = 1.2 * (0.5 + pBrl / 10);
   const estHR = Math.max(3, Math.round(estIP / 9 * hrRate));
   const fip = Math.max(1.80, Math.min(6.50,
     ((13 * estHR) + (3 * estBB) - (2 * estK)) / estIP + 3.10));
+  const fipBasedWAR = ((useRepl - fip) / rpw) * (estIP / 9);
+
+  // Blended vWAR: 60% xERA-based + 40% FIP-based
+  const rawWAR = eraBasedWAR * 0.60 + fipBasedWAR * 0.40;
 
   // FV clamp
   const fv = getPlayerFV(playerId, playerName);
