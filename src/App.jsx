@@ -3873,6 +3873,153 @@ function ComparePanel({ onSelect }) {
   );
 }
 
+// ── LANDING PAGE TOP LISTS (live from engine) ───────────────────────────────
+// Projects a curated set of star players on mount so landing page numbers
+// always match the player card and leaderboard engine.
+const LANDING_HITTERS = [
+  {name:"Shohei Ohtani",pos:"Y"},{name:"Bobby Witt Jr.",pos:"6"},{name:"Juan Soto",pos:"9"},
+  {name:"Aaron Judge",pos:"9"},{name:"Gunnar Henderson",pos:"6"},{name:"Fernando Tatis Jr.",pos:"9"},
+  {name:"Ronald Acuna Jr.",pos:"9"},{name:"Elly De La Cruz",pos:"6"},{name:"Francisco Lindor",pos:"6"},
+  {name:"Corbin Carroll",pos:"9"},{name:"Julio Rodriguez",pos:"8"},{name:"Mookie Betts",pos:"6"},
+  {name:"Freddie Freeman",pos:"3"},{name:"Kyle Tucker",pos:"9"},{name:"Corey Seager",pos:"6"},
+];
+const LANDING_PITCHERS = [
+  {name:"Paul Skenes"},{name:"Tarik Skubal"},{name:"Garrett Crochet"},
+  {name:"Logan Webb"},{name:"Zack Wheeler"},{name:"Cole Ragans"},
+  {name:"Cristopher Sanchez"},{name:"Chris Sale"},{name:"Bryan Woo"},
+  {name:"Corbin Burnes"},{name:"Seth Lugo"},{name:"Framber Valdez"},
+];
+
+function LandingTopLists({onSelect}) {
+  const [topHitters, setTopHitters] = useState([]);
+  const [topPitchers, setTopPitchers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      // Project hitters
+      const hResults = [];
+      for (const h of LANDING_HITTERS) {
+        try {
+          const results = await searchPlayers(h.name);
+          if (!results?.[0]) continue;
+          const p = results[0];
+          const isPitcher = p.primaryPosition?.code === "1";
+          const isTwoWay = p.primaryPosition?.code === "Y";
+          const career = await getPlayerCareer(p.id, isPitcher ? "pitching" : "hitting");
+          let base;
+          if (isPitcher) {
+            base = projectPitcher(career, p.currentAge, p.fullName, p.id);
+          } else {
+            const splits = career.filter(s => s.stat?.plateAppearances > 0);
+            base = projectPlayer(splits, p.currentAge, isTwoWay ? "10" : p.primaryPosition?.code, p.fullName, p.id);
+            // Two-way: add pitching WAR
+            if (isTwoWay) {
+              const pitchCareer = await getPlayerCareer(p.id, "pitching");
+              const pProj = projectPitcher(pitchCareer, p.currentAge, p.fullName, p.id);
+              if (pProj && pProj.baseWAR > 0) {
+                base._hitWAR = Math.round(base.baseWAR * 0.92 * 10) / 10;
+                base._pitchWAR = Math.round(pProj.baseWAR * 0.72 * 10) / 10;
+                base.baseWAR = Math.round((base._hitWAR + base._pitchWAR) * 10) / 10;
+              }
+            }
+          }
+          if (base) {
+            hResults.push({
+              name: p.fullName, team: p.currentTeam?.abbreviation || "FA",
+              pos: posLabel(isTwoWay ? "Y" : p.primaryPosition?.code),
+              war: base.baseWAR, wrc: base.wRCPlus, _player: p,
+            });
+          }
+        } catch {}
+      }
+      if (!cancelled) setTopHitters(hResults.sort((a,b) => b.war - a.war).slice(0,8));
+
+      // Project pitchers
+      const pResults = [];
+      for (const h of LANDING_PITCHERS) {
+        try {
+          const results = await searchPlayers(h.name);
+          if (!results?.[0]) continue;
+          const p = results[0];
+          const career = await getPlayerCareer(p.id, "pitching");
+          const base = projectPitcher(career, p.currentAge, p.fullName, p.id);
+          if (base) {
+            pResults.push({
+              name: p.fullName, team: p.currentTeam?.abbreviation || "FA",
+              pos: base.isReliever ? "RP" : "SP",
+              war: base.baseWAR, era: base.era, _player: p,
+            });
+          }
+        } catch {}
+      }
+      if (!cancelled) { setTopPitchers(pResults.sort((a,b) => b.war - a.war).slice(0,8)); setLoading(false); }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  // While loading, show skeleton from precomputed as placeholder
+  const displayHitters = topHitters.length > 0 ? topHitters : (PRECOMPUTED.hitters||[]).sort((a,b)=>b.projWAR-a.projWAR).slice(0,8).map(p=>({name:p.name,team:p.team,pos:p.pos,war:p.projWAR,wrc:p.projWRC}));
+  const displayPitchers = topPitchers.length > 0 ? topPitchers : (PRECOMPUTED.pitchers||[]).sort((a,b)=>b.projWAR-a.projWAR).slice(0,8).map(p=>({name:p.name,team:p.team,pos:p.pos,war:p.projWAR,era:p.projERA}));
+
+  return (
+    <div className="via-landing-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+      <Panel title="TOP HITTERS" sub={`2026 projected vWAR leaders.${loading?" (updating...)":""}`} style={{borderTop:`3px solid ${C.green}`}}>
+        <div style={{display:"flex",flexDirection:"column",gap:2}}>
+          {displayHitters.map((p,i)=>(
+            <div key={p.name} onClick={()=>p._player?onSelect(p._player):searchPlayers(p.name).then(r=>{if(r[0])onSelect(r[0]);})}
+              style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
+              onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
+              <img src={`https://www.mlbstatic.com/team-logos/${TEAM_ID_BY_ABBREV[p.team]||0}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.name}</div>
+                <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.team}</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:13,fontWeight:800,color:p.war>=6?C.green:p.war>=4?C.blue:C.text,fontFamily:F}}>{p.war.toFixed(1)}</div>
+                <div style={{fontSize:8,color:C.muted,fontFamily:F}}>vWAR</div>
+              </div>
+              <div style={{textAlign:"right",minWidth:32}}>
+                <div style={{fontSize:11,fontWeight:600,color:C.dim,fontFamily:F}}>{p.wrc||"—"}</div>
+                <div style={{fontSize:8,color:C.muted,fontFamily:F}}>wRC+</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+      <Panel title="TOP PITCHERS" sub={`2026 projected vWAR leaders.${loading?" (updating...)":""}`} style={{borderTop:`3px solid ${C.blue}`}}>
+        <div style={{display:"flex",flexDirection:"column",gap:2}}>
+          {displayPitchers.map((p,i)=>(
+            <div key={p.name} onClick={()=>p._player?onSelect(p._player):searchPlayers(p.name).then(r=>{if(r[0])onSelect(r[0]);})}
+              style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
+              onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
+              <img src={`https://www.mlbstatic.com/team-logos/${TEAM_ID_BY_ABBREV[p.team]||0}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.name}</div>
+                <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.team}</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:13,fontWeight:800,color:p.war>=5?C.green:p.war>=4?C.blue:C.text,fontFamily:F}}>{p.war.toFixed(1)}</div>
+                <div style={{fontSize:8,color:C.muted,fontFamily:F}}>vWAR</div>
+              </div>
+              <div style={{textAlign:"right",minWidth:32}}>
+                <div style={{fontSize:11,fontWeight:600,color:p.era<=2.80?C.green:p.era<=3.20?C.blue:C.dim,fontFamily:F}}>{p.era?.toFixed(2)||"—"}</div>
+                <div style={{fontSize:8,color:C.muted,fontFamily:F}}>ERA</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
 export default function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   useEffect(() => {
@@ -4276,59 +4423,8 @@ export default function App() {
               ))}
             </div>
 
-            {/* Top Projections Grid */}
-            <div className="via-landing-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-              <Panel title="TOP HITTERS" sub="2026 projected vWAR leaders." style={{borderTop:`3px solid ${C.green}`}}>
-                <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                  {(PRECOMPUTED.hitters||[]).sort((a,b)=>b.projWAR-a.projWAR).slice(0,8).map((p,i)=>(
-                    <div key={p.name} onClick={()=>searchPlayers(p.name).then(r=>{if(r[0])pick(r[0]);})}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
-                      onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
-                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
-                      <img src={`https://www.mlbstatic.com/team-logos/${TEAM_ID_BY_ABBREV[p.team]||0}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.name}</div>
-                        <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.team}</div>
-                      </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:13,fontWeight:800,color:p.projWAR>=6?C.green:p.projWAR>=4?C.blue:C.text,fontFamily:F}}>{p.projWAR.toFixed(1)}</div>
-                        <div style={{fontSize:8,color:C.muted,fontFamily:F}}>vWAR</div>
-                      </div>
-                      <div style={{textAlign:"right",minWidth:32}}>
-                        <div style={{fontSize:11,fontWeight:600,color:C.dim,fontFamily:F}}>{p.projWRC||"—"}</div>
-                        <div style={{fontSize:8,color:C.muted,fontFamily:F}}>wRC+</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Panel>
-              <Panel title="TOP PITCHERS" sub="2026 projected vWAR leaders." style={{borderTop:`3px solid ${C.blue}`}}>
-                <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                  {(PRECOMPUTED.pitchers||[]).sort((a,b)=>b.projWAR-a.projWAR).slice(0,8).map((p,i)=>(
-                    <div key={p.name} onClick={()=>searchPlayers(p.name).then(r=>{if(r[0])pick(r[0]);})}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
-                      onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
-                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
-                      <img src={`https://www.mlbstatic.com/team-logos/${TEAM_ID_BY_ABBREV[p.team]||0}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.name}</div>
-                        <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.team}</div>
-                      </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:13,fontWeight:800,color:p.projWAR>=5?C.green:p.projWAR>=4?C.blue:C.text,fontFamily:F}}>{p.projWAR.toFixed(1)}</div>
-                        <div style={{fontSize:8,color:C.muted,fontFamily:F}}>vWAR</div>
-                      </div>
-                      <div style={{textAlign:"right",minWidth:32}}>
-                        <div style={{fontSize:11,fontWeight:600,color:p.projERA<=2.80?C.green:p.projERA<=3.20?C.blue:C.dim,fontFamily:F}}>{p.projERA.toFixed(2)}</div>
-                        <div style={{fontSize:8,color:C.muted,fontFamily:F}}>ERA</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Panel>
-            </div>
+            {/* Top Projections Grid — live from engine */}
+            <LandingTopLists onSelect={pick}/>
 
             {/* Live fWAR Leaderboard */}
             <LiveWARBoard onSelect={pick}/>
