@@ -646,9 +646,10 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const bsT=yrs.length>=2&&S[yrs[0]]?.bat_speed&&S[yrs[1]]?.bat_speed?S[yrs[0]].bat_speed-S[yrs[1]].bat_speed:0;
   const spd=sP.sprint_speed||null; let bsr=0;
   // Prefer Statcast BsR (already in runs) over sprint speed tiers
+  // Regress 25% toward 0 (league avg) — single-season BsR is noisy
   const statcastBsR = getBaserunningValue(playerId, playerName);
   if (statcastBsR !== null) {
-    bsr = statcastBsR; // Already a seasonal run value, scale by PA later
+    bsr = statcastBsR * 0.75; // Regressed seasonal run value, scale by PA later
   } else if(spd){let a2=spd;if(age>28)a2-=(age-28)*.15;bsr=a2>=30?5:a2>=29?3.5:a2>=28?2:a2>=27?0:a2>=25.5?-2:-4}
   const oaa=sP.oaa!=null?sP.oaa:null;
   const dPk=(posCode==="6"||posCode==="8")?26:(posCode==="4"||posCode==="5")?27:28;
@@ -680,22 +681,27 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   // Project slash line from Statcast expected stats
   // AVG from xBA, OBP from xBA+BB%, SLG from xSLG, OPS = OBP+SLG
   // Small-sample regression: regress xBA/xSLG toward league avg based on PA
+  // Even full-season hitters (600+ PA) get ~15% regression (Marcel standard)
   const _tPA = yrs.reduce((s,yr) => s + (S[yr]?.pa || 0), 0);
-  const _paReg = Math.min(1.0, _tPA / 400);
+  const _paReg = Math.min(0.85, _tPA / 600);
   if (pXba != null) pXba = pXba * _paReg + 0.248 * (1 - _paReg);
   if (pXslg != null) pXslg = pXslg * _paReg + 0.405 * (1 - _paReg);
   // Pre-peak development boost: young hitters projected to improve toward peak
+  // Conservative: ~0.8% AVG and ~1.0% SLG per year to peak, capped at 4%/6%
   const yrsToPeak = Math.max(0, pk - age);
-  const devBoostAVG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.012, 0.08) : 1.0;
-  const devBoostSLG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.018, 0.12) : 1.0;
+  const devBoostAVG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.008, 0.04) : 1.0;
+  const devBoostSLG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.010, 0.06) : 1.0;
   if (pXba != null) pXba = pXba * devBoostAVG;
   if (pXslg != null) pXslg = pXslg * devBoostSLG;
   // Post-peak aging for AVG (contact, mild decline) and SLG (power, steeper decline)
   const avgAgeF = age > 32 ? Math.max(0.95, 1 - (age - 32) * 0.008) : 1.0;
   const slgAgeF = age > 30 ? Math.max(0.88, 1 - (age - 30) * 0.015) : 1.0;
   const avg = pXba != null ? Math.max(.18, Math.min(.34, pXba * avgAgeF)) : Math.max(.2, Math.min(.32, .248));
-  const obp = Math.max(.26, Math.min(.45, avg + pBB * .65 + .015));
-  const slg = pXslg != null ? Math.max(.3, Math.min(.7, (pXslg * 0.80 + 0.405 * 0.20) * slgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
+  const obp = Math.max(.26, Math.min(.43, avg + pBB * .60 + .012));
+  // SLG regression: scales with sample size. 1200+ PA across 3 years = 25% regression.
+  // Smaller samples regress more heavily (up to 45%).
+  const slgRegPct = Math.max(0.25, Math.min(0.45, 0.50 - _paReg * 0.25));
+  const slg = pXslg != null ? Math.max(.3, Math.min(.65, (pXslg * (1 - slgRegPct) + 0.405 * slgRegPct) * slgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
   const ops = Math.max(.52, Math.min(1.15, obp + slg));
   // PA estimate: use best full season from last 3 yrs (handles injury-shortened seasons)
   const bestPA = Math.max(...yrs.slice(0,3).map(yr => S[yr]?.pa || 0));
