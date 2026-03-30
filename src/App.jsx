@@ -532,7 +532,7 @@ async function getMiLBAffiliate(mlbTeamId) {
 // This is more accurate than event-rate decomposition from slash lines
 // because AVG/SLG are per-AB while wOBA is per-PA, making direct
 // decomposition error-prone without full event counts.
-const LG_WOBA = 0.310;       // league-average wOBA (2024-2025)
+const LG_WOBA = 0.314;       // calibrated to match estimateWOBA(.315, .405) for league avg
 const WOBA_SCALE = 1.25;     // wOBA-to-runs-above-avg conversion factor
 const LG_R_PER_PA = 0.115;   // league runs per PA
 
@@ -709,7 +709,7 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const hr=Math.round(Math.max(0,(pBrl*slgAgeF)/100*(ePA*.75)*.38+ePA*.010));
   // wRC+ from proper wOBA estimation (linear weights → wRAA → wRC+)
   const projWOBA = estimateWOBA(obp, slg);
-  const wrc = Math.max(60, Math.min(195, wRCPlusFromWOBA(projWOBA) + db));
+  const wrc = Math.max(60, Math.min(195, Math.round(wRCPlusFromWOBA(projWOBA) + db)));
   // Batting runs: use wRC+ scale (consistent with FV benchmarks and aging curves)
   const bat = ((wrc - 100) / 100) * ePA * LG_R_PER_PA;
   const pos=ap.pa*(ePA/600), rep=20*(ePA/600);
@@ -1608,18 +1608,22 @@ function PlayerCard({player}) {
       : null;
     if (!hitProj) return null;
 
-    // Two-way: add pitching WAR
+    // Two-way: add pitching WAR with workload discount
+    // A two-way player can't play full-time hitting AND pitch full-time.
+    // Ohtani 2023 (best two-way season): 599 PA + 132 IP = ~92% hitting, ~73% pitching.
+    // Discount both sides to reflect realistic two-way workload.
     if (isTwoWay) {
       let pitchWAR = 0;
       const pProj = projectPitcher(pitchCareer, player.currentAge, player.fullName, player.id);
       if (pProj) {
-        pitchWAR = pProj.baseWAR;
+        pitchWAR = pProj.baseWAR * 0.72;  // ~130 IP vs 180 IP full-season
         hitProj._pitchProj = pProj;
       }
       if (pitchWAR > 0) {
-        hitProj._hitWAR = hitProj.baseWAR;
-        hitProj._pitchWAR = pitchWAR;
-        hitProj.baseWAR = Math.round((hitProj.baseWAR + pitchWAR) * 10) / 10;
+        const hitDiscount = 0.92;  // ~600 PA vs 650 full-season DH
+        hitProj._hitWAR = Math.round(hitProj.baseWAR * hitDiscount * 10) / 10;
+        hitProj._pitchWAR = Math.round(pitchWAR * 10) / 10;
+        hitProj.baseWAR = Math.round((hitProj._hitWAR + hitProj._pitchWAR) * 10) / 10;
         hitProj._isTwoWay = true;
       }
     }
