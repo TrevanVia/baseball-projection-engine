@@ -318,7 +318,7 @@ function getPlayerSalary(name) { return _contractCache ? (_contractCache[name]||
 // avgEV (mph), maxEV (mph), barrelPct (%)
 const STATCAST_DATA = {
   "Konnor Griffin":   { avgEV: 90.2, maxEV: 107.9, barrelPct: 12.5 },
-  "Kevin McGonigle":  { avgEV: 88.8, maxEV: 105.1, barrelPct: 10.8 },
+  "Kevin McGonigle":  { avgEV: 88.8, maxEV: 105.1, barrelPct: 5.5 },
   "Carter Jensen":    { avgEV: 89.5, maxEV: 107.3, barrelPct: 14.2 },
   "JJ Wetherholt":    { avgEV: 88.1, maxEV: 105.8, barrelPct: 9.5 },
   "Jesus Made":       { avgEV: 87.5, maxEV: 104.2, barrelPct: 6.8 },
@@ -559,7 +559,7 @@ async function getMiLBAffiliate(mlbTeamId) {
 // This is more accurate than event-rate decomposition from slash lines
 // because AVG/SLG are per-AB while wOBA is per-PA, making direct
 // decomposition error-prone without full event counts.
-const LG_WOBA = 0.314;       // calibrated to match estimateWOBA(.315, .405) for league avg
+const LG_WOBA = 0.305;       // calibrated to match estimateWOBA output for league avg slash (.300/.405)
 const WOBA_SCALE = 1.25;     // wOBA-to-runs-above-avg conversion factor
 const LG_R_PER_PA = 0.115;   // league runs per PA
 
@@ -724,10 +724,10 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const avgAgeF = age > 32 ? Math.max(0.95, 1 - (age - 32) * 0.008) : 1.0;
   const slgAgeF = age > 30 ? Math.max(0.88, 1 - (age - 30) * 0.015) : 1.0;
   const avg = pXba != null ? Math.max(.18, Math.min(.34, pXba * avgAgeF)) : Math.max(.2, Math.min(.32, .248));
-  const obp = Math.max(.26, Math.min(.43, avg + pBB * .60 + .012));
+  const obp = Math.max(.26, Math.min(.43, avg + pBB * .65));
   // SLG regression: scales with sample size. 1200+ PA across 3 years = 25% regression.
   // Smaller samples regress more heavily (up to 45%).
-  const slgRegPct = Math.max(0.25, Math.min(0.45, 0.50 - _paReg * 0.25));
+  const slgRegPct = Math.max(0.32, Math.min(0.50, 0.55 - _paReg * 0.25));
   const slg = pXslg != null ? Math.max(.3, Math.min(.65, (pXslg * (1 - slgRegPct) + 0.405 * slgRegPct) * slgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
   const ops = Math.max(.52, Math.min(1.15, obp + slg));
   // PA estimate: use best full season from last 3 yrs (handles injury-shortened seasons)
@@ -2264,10 +2264,15 @@ function Leaderboard({ onSelect }) {
             pos: posLabel(p.primaryPosition?.code),
             age: p.currentAge,
             projWAR: base.baseWAR + (() => {
-              // Add pitching WAR for two-way players
+              // Add pitching WAR for two-way players (with workload discount)
               if (p.primaryPosition?.code === "Y") {
                 const pp = projectPitcher(splits, p.currentAge, p.fullName, p.id);
-                if (pp) return pp.baseWAR;
+                if (pp && pp.baseWAR > 0) {
+                  // Apply same discount as player card: 92% hitting, 72% pitching
+                  const hitDiscount = base.baseWAR * 0.92;
+                  const pitchDiscount = pp.baseWAR * 0.72;
+                  return Math.round((hitDiscount + pitchDiscount) * 10) / 10 - base.baseWAR;
+                }
               }
               return 0;
             })(),
