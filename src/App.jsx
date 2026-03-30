@@ -3296,6 +3296,78 @@ function MethodPanel() {
 
 
 
+
+// ── DYNAMIC TOP 8 PROJECTED LEADERS ───────────────────────────────────────────
+function DynamicTop8({onSelect, isPitcher}) {
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      try {
+        // Fetch active players from MLB API
+        const yr = new Date().getFullYear();
+        const res = await fetch(`https://statsapi.mlb.com/api/v1/sports/1/players?season=${yr}&gameType=R`);
+        const data = await res.json();
+        const allP = (data.people || []).filter(p => p.active);
+        const projected = [];
+        for (const p of allP) {
+          try {
+            const base = isPitcher ? projectPitcher(p) : projectFromStatcast(p.id, p.fullName, p);
+            if (!base || (isPitcher && !base.era) || (!isPitcher && !base.baseWAR && !base.war)) continue;
+            const war = isPitcher ? (base.baseWAR ?? base.war ?? 0) : (base.baseWAR ?? base.war ?? 0);
+            if (war < 0.5) continue;
+            projected.push({
+              name: p.fullName,
+              team: p.currentTeam?.abbreviation || '',
+              teamId: p.currentTeam?.id || 147,
+              pos: p.primaryPosition?.abbreviation || (isPitcher ? 'SP' : 'DH'),
+              war: Math.round(war * 10) / 10,
+              wrc: isPitcher ? null : (base.wRCPlus || base.wrc || 100),
+              era: isPitcher ? (base.era || base.projERA || 4.50) : null,
+            });
+          } catch(e) {}
+        }
+        projected.sort((a,b) => b.war - a.war);
+        setPlayers(projected.slice(0, 8));
+      } catch(e) { console.error('Top8 error:', e); }
+      setLoading(false);
+    })();
+  }, []);
+  const TM_IDS = {ARI:109,ATL:144,BAL:110,BOS:111,CHC:112,CWS:145,CHW:145,CIN:113,CLE:114,COL:115,DET:116,HOU:117,KC:118,LAA:108,LAD:119,MIA:146,MIL:158,MIN:142,NYM:121,NYY:147,OAK:133,ATH:133,PHI:143,PIT:134,SD:135,SDP:135,SF:137,SFG:137,SEA:136,STL:138,TB:139,TBR:139,TEX:140,TOR:141,WSH:120,WSN:120};
+  if (loading) return <div style={{fontSize:10,color:C.muted,fontFamily:F,padding:16,textAlign:"center"}}>Loading projections...</div>;
+  if (!players.length) return null;
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:2}}>
+      {players.map((p,i)=>(
+        <div key={p.name} onClick={()=>searchPlayers(p.name).then(r=>{if(r[0])onSelect(r[0]);})}
+          style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
+          onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
+          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+          <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
+          <img src={`https://www.mlbstatic.com/team-logos/${TM_IDS[p.team]||p.teamId}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.name}</div>
+            <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.team}</div>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:13,fontWeight:800,color:p.war>=(isPitcher?5:6)?C.green:p.war>=(isPitcher?4:4)?C.blue:C.text,fontFamily:F}}>{p.war.toFixed(1)}</div>
+            <div style={{fontSize:8,color:C.muted,fontFamily:F}}>WAR</div>
+          </div>
+          <div style={{textAlign:"right",minWidth:32}}>
+            {isPitcher ? (
+              <><div style={{fontSize:11,fontWeight:600,color:p.era<=2.80?C.green:p.era<=3.20?C.blue:C.dim,fontFamily:F}}>{typeof p.era==='number'?p.era.toFixed(2):p.era}</div>
+              <div style={{fontSize:8,color:C.muted,fontFamily:F}}>ERA</div></>
+            ) : (
+              <><div style={{fontSize:11,fontWeight:600,color:C.dim,fontFamily:F}}>{p.wrc}</div>
+              <div style={{fontSize:8,color:C.muted,fontFamily:F}}>wRC+</div></>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── LIVE fWAR LEADERBOARD ─────────────────────────────────────────────────────
 const FG_TEAM_IDS = {ARI:109,ATL:144,BAL:110,BOS:111,CHC:112,CHW:145,CIN:113,CLE:114,COL:115,DET:116,HOU:117,KC:118,LAA:108,LAD:119,MIA:146,MIL:158,MIN:142,NYM:121,NYY:147,ATH:133,PHI:143,PIT:134,SD:135,SF:137,SEA:136,STL:138,TB:139,TEX:140,TOR:141,WSN:120,KCR:118,SDP:135,SFG:137,TBR:139};
 function LiveWARBoard({onSelect}) {
@@ -3349,7 +3421,7 @@ function LiveWARBoard({onSelect}) {
         </div>
         <div style={{fontSize:8,color:C.muted,fontFamily:F,marginTop:6,textAlign:"right"}}>via FanGraphs</div>
       </Panel>
-      <Panel title="LIVE fWAR LEADERS" style={{borderTop:`3px solid ${C.green}`}}>
+      <Panel title="LIVE fWAR LEADERS" sub="Top 8 Pitchers" style={{borderTop:`3px solid ${C.green}`}}>
         <div style={{display:"flex",flexDirection:"column",gap:0}}>
           <div style={{display:"grid",gridTemplateColumns:"20px 22px 1fr 44px 40px 40px 44px",gap:4,padding:"4px 6px",borderBottom:`1px solid ${C.border}33`}}>
             <span style={{fontSize:8,color:C.muted,fontFamily:F}}>#</span>
@@ -4171,72 +4243,10 @@ export default function App() {
             {/* Top Projections Grid */}
             <div className="via-landing-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
               <Panel title="TOP HITTERS" sub="2026 projected WAR leaders." style={{borderTop:`3px solid ${C.green}`}}>
-                <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                  {[
-                    {n:"Shohei Ohtani",t:"LAD",war:8.5,wrc:152,pos:"DH"},
-                    {n:"Bobby Witt Jr.",t:"KC",war:7.8,wrc:130,pos:"SS"},
-                    {n:"Aaron Judge",t:"NYY",war:6.7,wrc:167,pos:"RF"},
-                    {n:"Juan Soto",t:"NYM",war:6.6,wrc:158,pos:"RF"},
-                    {n:"Francisco Lindor",t:"NYM",war:5.5,wrc:116,pos:"SS"},
-                    {n:"Gunnar Henderson",t:"BAL",war:5.1,wrc:119,pos:"SS"},
-                    {n:"Elly De La Cruz",t:"CIN",war:5.0,wrc:105,pos:"SS"},
-                    {n:"Fernando Tatis Jr.",t:"SD",war:5.0,wrc:129,pos:"RF"},
-                  ].map((p,i)=>(
-                    <div key={p.n} onClick={()=>searchPlayers(p.n).then(r=>{if(r[0])pick(r[0]);})}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
-                      onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
-                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
-                      <img src={`https://www.mlbstatic.com/team-logos/${({NYY:147,LAD:119,NYM:121,KC:118,PHI:143,BAL:110,CIN:113,SD:135})[p.t]||147}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.n}</div>
-                        <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.t}</div>
-                      </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:13,fontWeight:800,color:p.war>=6?C.green:p.war>=4?C.blue:C.text,fontFamily:F}}>{p.war.toFixed(1)}</div>
-                        <div style={{fontSize:8,color:C.muted,fontFamily:F}}>WAR</div>
-                      </div>
-                      <div style={{textAlign:"right",minWidth:32}}>
-                        <div style={{fontSize:11,fontWeight:600,color:C.dim,fontFamily:F}}>{p.wrc}</div>
-                        <div style={{fontSize:8,color:C.muted,fontFamily:F}}>wRC+</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <DynamicTop8 onSelect={pick} isPitcher={false}/>
               </Panel>
               <Panel title="TOP PITCHERS" sub="2026 projected WAR leaders." style={{borderTop:`3px solid ${C.blue}`}}>
-                <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                  {[
-                    {n:"Garrett Crochet",t:"BOS",war:6.5,era:2.70,pos:"SP"},
-                    {n:"Paul Skenes",t:"PIT",war:5.8,era:2.79,pos:"SP"},
-                    {n:"Tarik Skubal",t:"DET",war:5.7,era:2.86,pos:"SP"},
-                    {n:"Logan Webb",t:"SF",war:4.8,era:3.38,pos:"SP"},
-                    {n:"Cole Ragans",t:"KC",war:4.7,era:3.19,pos:"SP"},
-                    {n:"Yoshinobu Yamamoto",t:"LAD",war:4.3,era:3.26,pos:"SP"},
-                    {n:"Bryan Woo",t:"SEA",war:4.1,era:3.50,pos:"SP"},
-                    {n:"Zack Wheeler",t:"PHI",war:4.0,era:3.51,pos:"SP"},
-                  ].map((p,i)=>(
-                    <div key={p.n} onClick={()=>searchPlayers(p.n).then(r=>{if(r[0])pick(r[0]);})}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",borderRadius:6,cursor:"pointer",borderBottom:i<7?`1px solid ${C.border}22`:"none",transition:"background 0.1s"}}
-                      onMouseEnter={e=>e.currentTarget.style.background=`${C.accent}06`}
-                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <span style={{fontSize:10,fontWeight:800,color:C.muted,fontFamily:F,minWidth:16}}>{i+1}</span>
-                      <img src={`https://www.mlbstatic.com/team-logos/${({PIT:134,DET:116,BOS:111,SEA:136,LAD:119,PHI:143,SF:137,KC:118})[p.t]||134}.svg`} alt="" style={{width:20,height:20,objectFit:"contain"}} onError={e=>{e.target.style.display="none"}}/>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:11,fontWeight:700,color:C.text,fontFamily:F}}>{p.n}</div>
-                        <div style={{fontSize:9,color:C.muted,fontFamily:F}}>{p.pos} · {p.t}</div>
-                      </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:13,fontWeight:800,color:p.war>=5?C.green:p.war>=4?C.blue:C.text,fontFamily:F}}>{p.war.toFixed(1)}</div>
-                        <div style={{fontSize:8,color:C.muted,fontFamily:F}}>WAR</div>
-                      </div>
-                      <div style={{textAlign:"right",minWidth:32}}>
-                        <div style={{fontSize:11,fontWeight:600,color:p.era<=2.80?C.green:p.era<=3.20?C.blue:C.dim,fontFamily:F}}>{p.era.toFixed(2)}</div>
-                        <div style={{fontSize:8,color:C.muted,fontFamily:F}}>ERA</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <DynamicTop8 onSelect={pick} isPitcher={true}/>
               </Panel>
             </div>
 
