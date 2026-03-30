@@ -642,6 +642,11 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   else ageAdj = -3.0;
   // Project slash line from Statcast expected stats
   // AVG from xBA, OBP from xBA+BB%, SLG from xSLG, OPS = OBP+SLG
+  // Small-sample regression: regress xBA/xSLG toward league avg based on PA
+  const _tPA = yrs.reduce((s,yr) => s + (S[yr]?.pa || 0), 0);
+  const _paReg = Math.min(1.0, _tPA / 400);
+  if (pXba != null) pXba = pXba * _paReg + 0.248 * (1 - _paReg);
+  if (pXslg != null) pXslg = pXslg * _paReg + 0.405 * (1 - _paReg);
   // Pre-peak development boost: young hitters projected to improve toward peak
   const yrsToPeak = Math.max(0, pk - age);
   const devBoostAVG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.012, 0.08) : 1.0;
@@ -657,12 +662,18 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const ops = Math.max(.52, Math.min(1.15, obp + slg));
   // PA estimate: use best full season from last 3 yrs (handles injury-shortened seasons)
   const bestPA = Math.max(...yrs.slice(0,3).map(yr => S[yr]?.pa || 0));
-  const ePA=Math.min(700,Math.max(200,Math.max(pa0, bestPA * 0.90) * 0.97));
+  let ePA=Math.min(700,Math.max(200,Math.max(pa0, bestPA * 0.90) * 0.97));
+  // FV-based PA override for prospects with small MLB samples
+  const _fvPA = getPlayerFV(playerId, playerName);
+  if (_fvPA && ePA < 400) {
+    const _fvFloor = {70:600,65:550,60:550,55:500,50:450,45:350,40:250}[Math.min(70,Math.max(40,_fvPA))] || 300;
+    ePA = Math.max(ePA, _fvFloor);
+  }
   const hr=Math.round(Math.max(0,(pBrl*slgAgeF)/100*(ePA*.75)*.38+ePA*.010));
   // wRC+ from wOBA approximation (OBP weighted 2.3x more than SLG)
   const _rawWrc = ((obp * 0.70 + slg * 0.30) / 0.342) * 100;
   const wrc = Math.max(60, Math.min(195, Math.round(100 + (_rawWrc - 100) * 2.0 + db)));
-  const bat=((wrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
+  const bat=((_rawWrc-100)/100)*ePA*.115, pos=ap.pa*(ePA/600), rep=20*(ePA/600);
   const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
   const fv=getPlayerFV(playerId,playerName);let fW=rW;
   if(fv){const b=FV_BENCHMARKS[Math.min(70,Math.max(40,fv))]||FV_BENCHMARKS[50];
