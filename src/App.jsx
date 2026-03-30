@@ -317,8 +317,8 @@ function getPlayerSalary(name) { return _contractCache ? (_contractCache[name]||
 // ── STATCAST LOOKUP (batted ball data for top prospects) ────────────────────
 // avgEV (mph), maxEV (mph), barrelPct (%)
 const STATCAST_DATA = {
-  "Konnor Griffin":   { avgEV: 90.2, maxEV: 107.9, barrelPct: 12.5 },
-  "Kevin McGonigle":  { avgEV: 88.8, maxEV: 105.1, barrelPct: 5.5 },
+  "Konnor Griffin":   { avgEV: 90.2, maxEV: 108.8, barrelPct: 12.5 },
+  "Kevin McGonigle":  { avgEV: 88.8, maxEV: 105.1, barrelPct: 15.8 },
   "Carter Jensen":    { avgEV: 89.5, maxEV: 107.3, barrelPct: 14.2 },
   "JJ Wetherholt":    { avgEV: 88.1, maxEV: 105.8, barrelPct: 9.5 },
   "Jesus Made":       { avgEV: 87.5, maxEV: 104.2, barrelPct: 6.8 },
@@ -924,13 +924,13 @@ function projectFromSeasons(splits, age, posCode, playerName, playerId) {
 
   const ap = getAP(posCode);
   // Project games first, then derive PA
-  // Use prospect formula for players with < 400 MLB PA (brief callups shouldn't get MLB treatment)
+  // Use prospect formula for players with < 250 MLB PA (brief callups shouldn't get MLB treatment)
   const avgG = wG > 0 ? wG / tw : 100;
-  const isEstablishedMLB = highestLevel === "MLB" && mlbPA >= 400;
+  const isEstablishedMLB = highestLevel === "MLB" && mlbPA >= 250;
   const projGames = isEstablishedMLB
     ? Math.min(162, Math.max(100, Math.round(avgG * 0.97)))
     : posCode === "2" ? Math.min(130, Math.max(90, 120))
-    : Math.min(155, Math.max(100, 140));
+    : Math.min(155, Math.max(110, 148));
   const estPA = isEstablishedMLB
     ? Math.min(700, Math.round(rawPA * 0.97))
     : Math.round(projGames * 4.0);
