@@ -1,0 +1,41 @@
+name: Scheduled VIAcast Tweets
+
+on:
+  schedule:
+    # 3x daily: 9am ET, 1pm ET, 7pm ET
+    - cron: '0 13 * * *'  # 9am ET (13 UTC)
+    - cron: '0 17 * * *'  # 1pm ET (17 UTC) 
+    - cron: '0 23 * * *'  # 7pm ET (23 UTC)
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  post-tweet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install twitter-api-v2
+      
+      - name: Post scheduled tweet
+        env:
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+        run: node scripts/post-scheduled-tweet.js
+      
+      - name: Commit tweet state
+        run: |
+          git config user.name "VIAcast Bot"
+          git config user.email "bot@viacastbaseball.com"
+          git add .tweet-state.json
+          git diff --staged --quiet || git commit -m "bot: update tweet state [skip ci]"
+          git push
