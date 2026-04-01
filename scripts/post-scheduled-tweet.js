@@ -1,102 +1,60 @@
 /**
  * VIAcast Scheduled Tweet Poster
  * 
- * Picks the next unposted tweet from scheduled-tweets.js and posts it.
- * Tracks which tweets have been posted via a simple JSON state file.
+ * Uses date-based rotation to pick the next tweet — no state file needed.
+ * Each calendar day picks a different tweet from the pool.
+ * Multiple runs on the same day post the same tweet (cron dedup via Twitter API).
  * 
  * Usage:
- *   node scripts/post-scheduled-tweet.js          # Post next tweet
+ *   node scripts/post-scheduled-tweet.js          # Post today's tweet
  *   node scripts/post-scheduled-tweet.js --dry-run # Preview without posting
- *   node scripts/post-scheduled-tweet.js --list    # Show all tweets and status
- *   node scripts/post-scheduled-tweet.js --reset   # Reset posted state
- * 
- * GitHub Actions runs this on a cron schedule (see .github/workflows/scheduled-tweets.yml)
- * 
- * Required env vars (GitHub Secrets):
- *   TWITTER_APP_KEY, TWITTER_APP_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
+ *   node scripts/post-scheduled-tweet.js --list    # Show all tweets with schedule
  */
 
 const { TwitterApi } = require('twitter-api-v2');
-const fs = require('fs');
-const path = require('path');
-
 const TWEETS = require('./scheduled-tweets.js');
-const STATE_FILE = path.join(__dirname, '..', '.tweet-state.json');
 const args = process.argv.slice(2);
 
-// ── STATE MANAGEMENT ─────────────────────────────────────────────────────────
-function loadState() {
-  try {
-    return JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
-  } catch {
-    return { posted: [], lastPostedAt: null };
-  }
-}
-
-function saveState(state) {
-  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+// ── DATE-BASED ROTATION ─────────────────────────────────────────────────────
+function getTodaysTweet() {
+  const now = new Date();
+  // Days since a fixed epoch — rotates through tweets
+  const daysSinceEpoch = Math.floor(now.getTime() / 86400000);
+  const idx = daysSinceEpoch % TWEETS.length;
+  return { tweet: TWEETS[idx], idx, total: TWEETS.length };
 }
 
 // ── LIST MODE ────────────────────────────────────────────────────────────────
 if (args.includes('--list')) {
-  const state = loadState();
-  console.log(`\n📋 Scheduled Tweets (${TWEETS.length} total, ${state.posted.length} posted)\n`);
+  const { idx } = getTodaysTweet();
+  console.log(`\n📋 Scheduled Tweets (${TWEETS.length} total)\n`);
   TWEETS.forEach((t, i) => {
-    const posted = state.posted.includes(t.id);
-    const status = posted ? '✅' : '⏳';
-    const preview = t.text.split('\n')[0].substring(0, 80);
-    console.log(`${status} ${String(i + 1).padStart(2)}. [${t.category}] ${t.id}`);
-    console.log(`      ${preview}...`);
+    const marker = i === idx ? '👉 TODAY' : `   day ${i}`;
+    const preview = t.text.split('\n')[0].substring(0, 70);
+    console.log(`${marker}  [${t.category}] ${t.id}`);
+    console.log(`          ${preview}...`);
   });
-  console.log(`\nNext up: ${TWEETS.find(t => !state.posted.includes(t.id))?.id || 'ALL POSTED'}`);
-  process.exit(0);
-}
-
-// ── RESET MODE ───────────────────────────────────────────────────────────────
-if (args.includes('--reset')) {
-  saveState({ posted: [], lastPostedAt: null });
-  console.log('🔄 Tweet state reset. All tweets will be re-queued.');
+  console.log(`\nToday's index: ${idx} — rotates daily`);
   process.exit(0);
 }
 
 // ── POST MODE ────────────────────────────────────────────────────────────────
 async function main() {
-  const state = loadState();
+  const { tweet, idx, total } = getTodaysTweet();
   const DRY_RUN = args.includes('--dry-run');
 
-  // Find next unposted tweet
-  const next = TWEETS.find(t => !state.posted.includes(t.id));
-  if (!next) {
-    console.log('✅ All scheduled tweets have been posted!');
-    // Reset and loop — start over
-    console.log('🔄 Resetting queue for next cycle...');
-    saveState({ posted: [], lastPostedAt: state.lastPostedAt });
-    return;
-  }
-
-  console.log(`\n📝 Next tweet: [${next.category}] ${next.id}`);
+  console.log(`\n📅 Day index: ${idx} of ${total}`);
+  console.log(`📝 Tweet: [${tweet.category}] ${tweet.id}`);
   console.log(`─────────────────────────────────────`);
-  console.log(next.text);
+  console.log(tweet.text);
   console.log(`─────────────────────────────────────`);
-  console.log(`Characters: ${next.text.length}/280`);
-
-  // X Premium allows up to 4,000 characters. Standard accounts: 280.
-  // Set TWEET_CHAR_LIMIT env var to 280 if not on Premium.
-  const charLimit = parseInt(process.env.TWEET_CHAR_LIMIT || '4000');
-  
-  if (next.text.length > charLimit) {
-    console.log(`⚠️  Tweet exceeds ${charLimit} characters! Skipping.`);
-    state.posted.push(next.id); // Skip it
-    saveState(state);
-    return;
-  }
+  console.log(`Characters: ${tweet.text.length}`);
 
   if (DRY_RUN) {
     console.log(`\n🔍 Dry run — not posting.`);
     return;
   }
 
-  // Post to Twitter
   const {
     TWITTER_API_KEY,
     TWITTER_API_SECRET,
@@ -105,7 +63,7 @@ async function main() {
   } = process.env;
 
   if (!TWITTER_API_KEY || !TWITTER_API_SECRET || !TWITTER_ACCESS_TOKEN || !TWITTER_ACCESS_TOKEN_SECRET) {
-    console.error('❌ Missing Twitter API credentials. Set TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET.');
+    console.error('❌ Missing Twitter API credentials.');
     process.exit(1);
   }
 
@@ -117,15 +75,15 @@ async function main() {
   });
 
   try {
-    const result = await client.v2.tweet(next.text);
-    console.log(`\n✅ Posted! Tweet ID: ${result.data.id}`);
-    console.log(`   https://x.com/trevanvia/status/${result.data.id}`);
-
-    state.posted.push(next.id);
-    state.lastPostedAt = new Date().toISOString();
-    saveState(state);
+    const result = await client.v2.tweet(tweet.text);
+    console.log(`\n✅ Posted! https://x.com/trevanvia/status/${result.data.id}`);
   } catch (err) {
-    console.error(`❌ Failed to post: ${err.message}`);
+    // Twitter returns 403 if duplicate tweet — that's fine, means it already posted today
+    if (err.code === 403 || err.data?.detail?.includes('duplicate')) {
+      console.log(`\n⏭️  Already posted today (duplicate detected). Skipping.`);
+      return;
+    }
+    console.error(`❌ Failed: ${err.message}`);
     if (err.data) console.error(JSON.stringify(err.data, null, 2));
     process.exit(1);
   }
