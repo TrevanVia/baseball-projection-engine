@@ -1115,8 +1115,19 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   if(pK<.15)db+=3;else if(pK>.30)db-=2; if(pBB>.12)db+=2;
 
   // ── NEW: xwOBA-first projection (wRC+ is the source of truth) ──────────────
-  // Step 1: Regress xwOBA toward league mean (Statcast xwOBA runs ~5-8% optimistic)
-  const regXwOBA = axw * 0.88 + LG_WOBA * 0.12;
+  // Step 1: Progressive regression of xwOBA toward league mean
+  // Below .320: 12% regression (below-avg hitters, light touch)
+  // .320-.340: 15% regression (average hitters)
+  // Above .340: progressive regression (elite xwOBA is systematically optimistic)
+  let regXwOBA;
+  if (axw <= 0.320) regXwOBA = axw * 0.88 + LG_WOBA * 0.12;
+  else if (axw <= 0.340) regXwOBA = axw * 0.85 + LG_WOBA * 0.15;
+  else {
+    const excess = axw - 0.340;
+    const extraReg = (excess / 0.010) * 0.008;
+    const keep = Math.max(0.72, 0.85 - extraReg);
+    regXwOBA = axw * keep + LG_WOBA * (1 - keep);
+  }
 
   // Step 2: wRC+ directly from regressed xwOBA + discipline bonus + aging
   const yrsToPeak = Math.max(0, pk - age);
