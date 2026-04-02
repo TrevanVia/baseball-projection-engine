@@ -1114,75 +1114,84 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   if(selI!=null){if(selI>3.5)db=Math.min(5,(selI-3.5)*3);else if(selI<2)db=Math.max(-4,(selI-2)*3)}
   if(pK<.15)db+=3;else if(pK>.30)db-=2; if(pBB>.12)db+=2;
 
-  // Aging adjustment (applied to wRC+ after OPS is computed)
-  let ageAdj = 0;
-  if (age < pk) ageAdj = 1.5;
-  else if (age === pk) ageAdj = 0;
-  else if (age <= 32) ageAdj = -1.5;
-  else ageAdj = -3.0;
-  // Project slash line from Statcast expected stats
-  // AVG from xBA, OBP from xBA+BB%, SLG from xSLG, OPS = OBP+SLG
-  // Small-sample regression: regress xBA/xSLG toward league avg based on PA
-  // Even full-season hitters (600+ PA) get ~15% regression (Marcel standard)
-  const _tPA = yrs.reduce((s,yr) => s + (S[yr]?.pa || 0), 0);
-  const _paReg = Math.min(0.85, _tPA / 600);
-  // xSLG deflation: Statcast expected SLG overestimates realized SLG by ~5%
-  // due to park factors, shifts, and contextual effects not captured in xStats
-  if (pXslg != null) pXslg = pXslg * 0.95;
-  if (pXba != null) pXba = pXba * _paReg + 0.248 * (1 - _paReg);
-  if (pXslg != null) pXslg = pXslg * _paReg + 0.405 * (1 - _paReg);
-  // Pre-peak development boost: young hitters projected to improve toward peak
-  // Conservative: ~0.8% AVG and ~1.0% SLG per year to peak, capped at 4%/6%
+  // ── NEW: xwOBA-first projection (wRC+ is the source of truth) ──────────────
+  // Step 1: Regress xwOBA toward league mean (Statcast xwOBA runs ~5-8% optimistic)
+  const regXwOBA = axw * 0.88 + LG_WOBA * 0.12;
+
+  // Step 2: wRC+ directly from regressed xwOBA + discipline bonus + aging
   const yrsToPeak = Math.max(0, pk - age);
-  const devBoostAVG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.008, 0.04) : 1.0;
-  const devBoostSLG = yrsToPeak > 0 ? 1 + Math.min(yrsToPeak * 0.010, 0.06) : 1.0;
-  if (pXba != null) pXba = pXba * devBoostAVG;
-  if (pXslg != null) pXslg = pXslg * devBoostSLG;
-  // Post-peak aging for AVG (contact, mild decline) and SLG (power, steeper decline)
-  const avgAgeF = age > 32 ? Math.max(0.95, 1 - (age - 32) * 0.008) : 1.0;
-  const slgAgeF = age > 30 ? Math.max(0.88, 1 - (age - 30) * 0.015) : 1.0;
-  const avg = pXba != null ? Math.max(.18, Math.min(.34, pXba * avgAgeF)) : Math.max(.2, Math.min(.32, .248));
-  const obp = Math.max(.26, Math.min(.43, avg + pBB * .65));
-  // SLG regression: scales with sample size. 1200+ PA across 3 years = 25% regression.
-  // Smaller samples regress more heavily (up to 45%).
-  const slgRegPct = Math.max(0.32, Math.min(0.50, 0.55 - _paReg * 0.25));
-  const slg = pXslg != null ? Math.max(.3, Math.min(.65, (pXslg * (1 - slgRegPct) + 0.405 * slgRegPct) * slgAgeF)) : Math.max(.3, Math.min(.65, obp + .120));
-  const ops = Math.max(.52, Math.min(1.15, obp + slg));
-  // PA estimate: use best full season from last 3 yrs (handles injury-shortened seasons)
-  const bestPA = Math.max(...yrs.slice(0,3).map(yr => S[yr]?.pa || 0));
-  let ePA=Math.min(700,Math.max(200,Math.max(pa0, bestPA * 0.90) * 0.97));
+  let wrc = Math.round(wRCPlusFromWOBA(regXwOBA) + db);
+  if (yrsToPeak > 0) wrc = Math.round(wrc * (1 + Math.min(yrsToPeak * 0.005, 0.025)));
+  else if (age > 32) wrc = Math.round(wrc * Math.max(0.92, 1 - (age - 32) * 0.015));
+  wrc = Math.max(60, Math.min(200, wrc));
+
+  // Step 3: AVG from xBA with PA regression
+  const tPA = yrs.reduce((s, yr) => s + (S[yr]?.pa || 0), 0);
+  const paReg = Math.min(0.85, tPA / 600);
+  let projXba = pXba != null ? pXba * paReg + 0.248 * (1 - paReg) : 0.248;
+  // Mild age adjustment to AVG
+  if (age > 32) projXba *= Math.max(0.95, 1 - (age - 32) * 0.008);
+  const avg = Math.max(.190, Math.min(.330, projXba));
+
+  // Step 4: OBP from AVG + BB%
+  const obp = Math.max(.270, Math.min(.440, avg + pBB * 0.82 + 0.012));
+
+  // Step 5: SLG back-solved from wRC+ target (guarantees consistency)
+  const targetWOBA = LG_WOBA + (((wrc / 100) - 1) * LG_R_PER_PA) * WOBA_SCALE;
+  let slg = Math.max(.310, Math.min(.700, 3 * targetWOBA - 1.7 * obp));
+  slg = Math.max(slg, avg + 0.100); // minimum ISO from doubles
+  const ops = obp + slg;
+
+  // Step 6: HR from ISO (derived from SLG, so perfectly consistent)
+  // League calibration: .155 ISO = 22 HR per 600 PA
+  const iso = slg - avg;
+  // PA estimate: use best full season from last 3 yrs
+  const bestPA = Math.max(...yrs.slice(0, 3).map(yr => S[yr]?.pa || 0));
+  let ePA = Math.min(700, Math.max(200, Math.max(pa0, bestPA * 0.90) * 0.97));
   // FV-based PA override for prospects with small MLB samples
-  const _fvPA = getPlayerFV(playerId, playerName);
-  if (_fvPA && ePA < 400) {
-    const _fvFloor = {70:600,65:550,60:550,55:500,50:450,45:350,40:250}[Math.min(70,Math.max(40,_fvPA))] || 300;
-    ePA = Math.max(ePA, _fvFloor);
+  const fvForPA = getPlayerFV(playerId, playerName);
+  if (fvForPA && ePA < 400) {
+    const fvFloor = {70:600,65:550,60:550,55:500,50:450,45:350,40:250}[Math.min(70,Math.max(40,fvForPA))] || 300;
+    ePA = Math.max(ePA, fvFloor);
   }
-  const hr=Math.round(Math.max(0,(pBrl*slgAgeF)/100*(ePA*.75)*.38+ePA*.010));
-  // wRC+ from proper wOBA estimation (linear weights → wRAA → wRC+)
-  const projWOBA = estimateWOBA(obp, slg);
-  const wrc = Math.max(60, Math.min(195, Math.round(wRCPlusFromWOBA(projWOBA) + db)));
-  // Batting runs: use wRC+ scale (consistent with FV benchmarks and aging curves)
+  const hr = Math.round(Math.max(0, (iso / 0.155) * 22 * (ePA / 600)));
+
+  // Step 7: Batting runs from wRC+ (single source)
   const bat = ((wrc - 100) / 100) * ePA * LG_R_PER_PA;
-  const pos=ap.pa*(ePA/600), rep=20*(ePA/600);
-  const rW=(bat+dR*(ePA/600)+bsr*(ePA/600)+pos+rep)/9.5;
-  const fv=getPlayerFV(playerId,playerName);let fW=rW;
-  if(fv){const b=FV_BENCHMARKS[Math.min(70,Math.max(40,fv))]||FV_BENCHMARKS[50];
-    const _flPct = 0.30 + Math.min(0.20, Math.min(0.85, tPA/1200) * 0.25);
-    fW=Math.max(b.war*_flPct,Math.min(b.war*2.0,rW))}
-  fW=Math.round(fW*10)/10;
-  const tPA=yrs.reduce((s,yr)=>s+(S[yr]?.pa||0),0);
-  return{ops:Math.round(ops*1e3)/1e3,obp:Math.round(obp*1e3)/1e3,
-    slg:Math.round(slg*1e3)/1e3,avg:Math.round(avg*1e3)/1e3,
-    wRCPlus:wrc,baseWAR:fW,estPA:Math.round(ePA),hr:hr,projGames:Math.round(ePA/4.1),
-    paReliability:Math.min(95,Math.round((tPA/1200)*95)),
-    highestLevel:"MLB",peakAge:pk,ageForLevel:0,translationNote:null,
-    _statcast:{xwoba:Math.round(axw*1e3)/1e3,projEV:Math.round(pEV*10)/10,
-      projBarrel:Math.round(pBrl*10)/10,
-      projK:pK!=null?Math.round(pK*1e3)/10:null,
-      projBB:pBB!=null?Math.round(pBB*1e3)/10:null,
-      sprintSpeed:spd,oaa:oaa,
-      trendBoost:Math.round(tb*1e3)/1e3,
-      selectivityIndex:selI?Math.round(selI*100)/100:null}};
+  const pos = ap.pa * (ePA / 600), rep = 20 * (ePA / 600);
+  const rW = (bat + dR * (ePA / 600) + bsr * (ePA / 600) + pos + rep) / 9.5;
+
+  // FV floor/ceiling
+  const fv = getPlayerFV(playerId, playerName);
+  let fW = rW;
+  if (fv) {
+    const b = FV_BENCHMARKS[Math.min(70, Math.max(40, fv))] || FV_BENCHMARKS[50];
+    const flPct = 0.30 + Math.min(0.20, Math.min(0.85, tPA / 1200) * 0.25);
+    fW = Math.max(b.war * flPct, Math.min(b.war * 2.0, rW));
+  }
+  fW = Math.round(fW * 10) / 10;
+
+  return {
+    ops: Math.round(ops * 1e3) / 1e3, obp: Math.round(obp * 1e3) / 1e3,
+    slg: Math.round(slg * 1e3) / 1e3, avg: Math.round(avg * 1e3) / 1e3,
+    wRCPlus: wrc, baseWAR: fW, estPA: Math.round(ePA), hr, projGames: Math.round(ePA / 4.1),
+    paReliability: Math.min(95, Math.round((tPA / 1200) * 95)),
+    highestLevel: "MLB", peakAge: pk, ageForLevel: 0, translationNote: null,
+    _statcast: {
+      xwoba: Math.round(axw * 1e3) / 1e3, projEV: Math.round(pEV * 10) / 10,
+      projBarrel: Math.round(pBrl * 10) / 10,
+      projK: pK != null ? Math.round(pK * 1e3) / 10 : null,
+      projBB: pBB != null ? Math.round(pBB * 1e3) / 10 : null,
+      sprintSpeed: spd, oaa: oaa,
+      trendBoost: Math.round(tb * 1e3) / 1e3,
+      selectivityIndex: selI ? Math.round(selI * 100) / 100 : null,
+      maxEV: sP.max_ev || lat.max_ev || null,
+      ev50: lat.ev50 || null,
+      hardHit: lat.hard_hit_pct || null,
+      chase: lat.chase_rate || lat.o_swing_pct ? Math.round((lat.chase_rate || lat.o_swing_pct) * (lat.chase_rate ? 1 : 100) * 10) / 10 : null,
+      whiff: lat.whiff_pct ? Math.round(lat.whiff_pct * 10) / 10 : null,
+    },
+  };
 }
 
 function projectPlayer(splits, age, posCode, name, id) {
