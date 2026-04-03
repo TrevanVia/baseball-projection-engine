@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // scripts/scrape-fwar.mjs
-// Scrapes FanGraphs fWAR leaderboard via Playwright
+// Scrapes FanGraphs fWAR leaderboard via Capsolver + Playwright
 // Runs daily at 2am ET via GitHub Actions
 // Writes to src/live_leaderboard.json
 
@@ -18,49 +18,89 @@ function fgUrl(stats, qual) {
   return `https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=${stats}&lg=all&qual=${qual}&season=${YEAR}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`;
 }
 
-// Solve Cloudflare Turnstile via Capsolver REST API (no browser extension needed)
-async function solveTurnstile(pageUrl, siteKey) {
-  if (!CAPSOLVER_KEY) return null;
-  console.log("  Calling Capsolver API for Turnstile...");
+// ── CAPSOLVER: Solve Cloudflare challenge and get cf_clearance cookie ────────
+async function solveCloudflare(targetUrl) {
+  if (!CAPSOLVER_KEY) {
+    console.log("  No CAPSOLVER_API_KEY set, skipping");
+    return null;
+  }
+
+  console.log("  Calling Capsolver AntiCloudflareTask...");
   const createRes = await fetch("https://api.capsolver.com/createTask", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       clientKey: CAPSOLVER_KEY,
-      task: { type: "AntiTurnstileTaskProxyLess", websiteURL: pageUrl, websiteKey: siteKey },
+      task: {
+        type: "AntiCloudflareTask",
+        websiteURL: targetUrl,
+        proxy: "",  // proxyless
+      },
     }),
   }).then((r) => r.json());
 
+  // If AntiCloudflareTask isn't supported, try AntiTurnstileTaskProxyLess
+  if (createRes.errorId && createRes.errorDescription) {
+    console.log(`  AntiCloudflareTask failed: ${createRes.errorDescription}`);
+    console.log("  Trying AntiTurnstileTaskProxyLess...");
+    
+    const fallbackRes = await fetch("https://api.capsolver.com/createTask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clientKey: CAPSOLVER_KEY,
+        task: {
+          type: "AntiTurnstileTaskProxyLess",
+          websiteURL: targetUrl,
+          websiteKey: "0x4AAAAAAAA",  // generic Cloudflare key
+          metadata: { action: "managed", type: "challenge" },
+        },
+      }),
+    }).then((r) => r.json());
+    
+    if (fallbackRes.errorId) {
+      console.error(`  Fallback also failed: ${fallbackRes.errorDescription}`);
+      return null;
+    }
+    return await pollTask(fallbackRes.taskId);
+  }
+
   if (!createRes.taskId) {
-    console.error("  Capsolver task creation failed:", createRes.errorDescription);
+    console.error("  No taskId returned");
     return null;
   }
 
-  for (let i = 0; i < 30; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
+  return await pollTask(createRes.taskId);
+}
+
+async function pollTask(taskId) {
+  for (let i = 0; i < 60; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
     const result = await fetch("https://api.capsolver.com/getTaskResult", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientKey: CAPSOLVER_KEY, taskId: createRes.taskId }),
+      body: JSON.stringify({ clientKey: CAPSOLVER_KEY, taskId }),
     }).then((r) => r.json());
 
     if (result.status === "ready") {
-      console.log("  Capsolver solved Turnstile");
-      return result.solution?.token;
+      console.log("  ✓ Capsolver solved challenge");
+      return result.solution;
     }
+    if (result.status === "failed") {
+      console.error("  Capsolver task failed:", result.errorDescription);
+      return null;
+    }
+    if (i % 5 === 0) console.log(`  Polling... (${i * 3}s)`);
   }
-  console.error("  Capsolver timeout");
+  console.error("  Capsolver timeout (180s)");
   return null;
 }
 
+// ── MAIN SCRAPE LOGIC ───────────────────────────────────────────────────────
 async function scrape() {
   const browser = await chromium.launch({
     headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-blink-features=AutomationControlled",
-      "--disable-dev-shm-usage",
-    ],
+    args: ["--no-sandbox", "--disable-blink-features=AutomationControlled", "--disable-dev-shm-usage"],
   });
 
   const context = await browser.newContext({
@@ -69,7 +109,6 @@ async function scrape() {
     locale: "en-US",
   });
 
-  // Mask webdriver property to avoid detection
   await context.addInitScript(() => {
     Object.defineProperty(navigator, "webdriver", { get: () => false });
   });
@@ -77,8 +116,53 @@ async function scrape() {
   const results = { hitters: null, pitchers: null };
 
   try {
-    results.hitters = await fetchLeaderboard(context, "bat");
-    results.pitchers = await fetchLeaderboard(context, "pit");
+    // Step 1: Try direct navigation first (might work without challenge)
+    console.log("→ Attempting direct fetch...");
+    results.hitters = await tryDirectFetch(context, "bat");
+    results.pitchers = await tryDirectFetch(context, "pit");
+
+    // Step 2: If blocked, solve Cloudflare and retry with cookies
+    if (!results.hitters) {
+      console.log("\n→ Direct fetch blocked. Solving Cloudflare challenge...");
+      const solution = await solveCloudflare("https://www.fangraphs.com/leaders/major-league");
+
+      if (solution) {
+        // Apply cookies from solution
+        if (solution.cookies) {
+          const cookies = parseCookies(solution.cookies, ".fangraphs.com");
+          if (cookies.length > 0) {
+            await context.addCookies(cookies);
+            console.log(`  Applied ${cookies.length} cookies from Capsolver`);
+          }
+        }
+        // Also try cf_clearance directly
+        if (solution.cf_clearance) {
+          await context.addCookies([{
+            name: "cf_clearance",
+            value: solution.cf_clearance,
+            domain: ".fangraphs.com",
+            path: "/",
+          }]);
+          console.log("  Applied cf_clearance cookie");
+        }
+        if (solution.token) {
+          console.log("  Got solution token (will use in-page)");
+        }
+      }
+
+      // Retry fetches with new cookies
+      console.log("\n→ Retrying with Capsolver cookies...");
+      results.hitters = await tryDirectFetch(context, "bat");
+      results.pitchers = await tryDirectFetch(context, "pit");
+    }
+
+    // Step 3: If still blocked, try full page navigation with cookies set
+    if (!results.hitters) {
+      console.log("\n→ Trying full page navigation...");
+      results.hitters = await tryPageNavigation(context, "bat");
+      results.pitchers = await tryPageNavigation(context, "pit");
+    }
+
   } finally {
     await context.close();
     await browser.close();
@@ -87,120 +171,88 @@ async function scrape() {
   return results;
 }
 
-async function fetchLeaderboard(context, stats) {
+// Strategy A: Direct API fetch in a page context
+async function tryDirectFetch(context, stats) {
   const page = await context.newPage();
+  try {
+    for (const qual of ["y", "0"]) {
+      const url = fgUrl(stats, qual);
+      const data = await page.evaluate(async (u) => {
+        try {
+          const r = await fetch(u, { credentials: "include" });
+          if (!r.ok) return { error: r.status };
+          const text = await r.text();
+          try { return JSON.parse(text); } catch { return { error: "not json", body: text.slice(0, 200) }; }
+        } catch (e) { return { error: e.message }; }
+      }, url);
 
-  // Intercept API response
+      if (data?.data?.length > 0) {
+        console.log(`  ✓ Direct fetch ${stats} (qual=${qual}): ${data.data.length} rows`);
+        return data;
+      }
+      if (data?.error) console.log(`  Direct fetch ${stats} qual=${qual}: ${data.error}`);
+    }
+  } finally {
+    await page.close();
+  }
+  return null;
+}
+
+// Strategy B: Full page navigation with API response intercept
+async function tryPageNavigation(context, stats) {
+  const page = await context.newPage();
   let apiData = null;
+
   page.on("response", async (response) => {
-    const url = response.url();
-    if (url.includes("fangraphs.com/api/leaders") && url.includes(`stats=${stats}`) && response.status() === 200) {
+    if (response.url().includes("fangraphs.com/api/leaders") &&
+        response.url().includes(`stats=${stats}`) &&
+        response.status() === 200) {
       try { apiData = await response.json(); } catch {}
     }
   });
 
-  const leaderboardUrl = `https://www.fangraphs.com/leaders/major-league?pos=all&stats=${stats}&lg=all&qual=0&type=8&season=${YEAR}&month=0&season1=${YEAR}&ind=0&team=0&rost=0&age=0&filter=&players=0&startdate=&enddate=&sort=21,d&page=1_8`;
-
-  console.log(`→ Navigating to FanGraphs ${stats} leaderboard...`);
+  const url = `https://www.fangraphs.com/leaders/major-league?pos=all&stats=${stats}&lg=all&qual=0&type=8&season=${YEAR}&month=0&season1=${YEAR}&ind=0&team=0&rost=0&age=0&filter=&players=0&sort=21,d&page=1_8`;
 
   try {
-    await page.goto(leaderboardUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
-  } catch (e) {
-    console.log(`  Navigation error: ${e.message}`);
-  }
+    await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+    await page.waitForTimeout(5000);
+  } catch {}
 
-  // Check for Cloudflare challenge
-  await page.waitForTimeout(3000);
-  const title = await page.title();
-
-  if (title.includes("Just a moment") || title.includes("Attention")) {
-    console.log("  Cloudflare challenge detected");
-
-    // Try to find Turnstile sitekey and solve via Capsolver API
-    const siteKey = await page.evaluate(() => {
-      const el = document.querySelector("[data-sitekey], .cf-turnstile");
-      return el?.getAttribute("data-sitekey") || null;
-    });
-
-    if (siteKey && CAPSOLVER_KEY) {
-      const token = await solveTurnstile(leaderboardUrl, siteKey);
-      if (token) {
-        await page.evaluate((t) => {
-          const input = document.querySelector('[name="cf-turnstile-response"]');
-          if (input) { input.value = t; input.dispatchEvent(new Event("change", { bubbles: true })); }
-          const form = document.querySelector("#challenge-form, form");
-          if (form) form.submit();
-        }, token);
-        await page.waitForTimeout(5000);
-      }
-    } else {
-      // Wait for JS challenge to auto-resolve
-      console.log("  Waiting for JS challenge to auto-resolve...");
-      try {
-        await page.waitForFunction(
-          () => !document.title.includes("Just a moment") && !document.title.includes("Attention"),
-          { timeout: 20000 }
-        );
-      } catch {
-        console.log("  Challenge did not resolve");
-      }
-    }
-    await page.waitForTimeout(3000);
-  }
-
-  // Check if API intercept caught data
   if (apiData?.data?.length > 0) {
-    console.log(`  ✓ API intercept: ${apiData.data.length} ${stats} rows`);
+    console.log(`  ✓ Page navigation ${stats}: ${apiData.data.length} rows`);
     await page.close();
     return apiData;
   }
 
-  // Strategy 2: Direct fetch inside browser (cookies set by navigation)
-  console.log("  Trying in-browser fetch...");
-  for (const qual of ["y", "0"]) {
-    const url = fgUrl(stats, qual);
-    const directData = await page.evaluate(async (u) => {
-      try { const r = await fetch(u); if (!r.ok) return null; return await r.json(); }
-      catch { return null; }
-    }, url);
-
-    if (directData?.data?.length > 0) {
-      console.log(`  ✓ In-browser fetch (qual=${qual}): ${directData.data.length} rows`);
-      await page.close();
-      return directData;
-    }
-  }
-
-  // Strategy 3: Scrape HTML table
-  console.log("  Trying HTML table scrape...");
-  const rows = await page.evaluate(() => {
-    const trs = document.querySelectorAll("table tbody tr, .leaders-major__table tbody tr");
-    if (!trs.length) return null;
-    return Array.from(trs).slice(0, 8).map(row => {
-      const name = row.querySelector("a[href*='/players/']")?.textContent?.trim();
-      const team = row.querySelector("a[href*='/teams/']")?.textContent?.trim() ||
-                   row.querySelector("td:nth-child(3)")?.textContent?.trim();
-      if (!name) return null;
-      const cells = Array.from(row.querySelectorAll("td")).map(c => c.textContent.trim());
-      return { name, team, cells };
-    }).filter(Boolean);
-  });
-
-  if (rows?.length > 0) {
-    console.log(`  ✓ HTML scrape: ${rows.length} rows`);
-    await page.close();
-    return { data: rows, scraped: true };
-  }
-
-  // Debug: screenshot + page text on failure
+  // Debug output
+  const title = await page.title();
+  const bodyText = await page.evaluate(() => document.body?.innerText?.slice(0, 300));
+  console.log(`  ✗ Page nav ${stats} failed. Title: "${title}"`);
+  console.log(`  Page text: ${bodyText}`);
+  
   const ssPath = path.join(__dirname, `debug-${stats}.png`);
   await page.screenshot({ path: ssPath, fullPage: true });
-  console.log(`  ✗ No data. Screenshot saved: ${ssPath}`);
-  const bodyText = await page.evaluate(() => document.body?.innerText?.slice(0, 500));
-  console.log(`  Page text: ${bodyText}`);
+  console.log(`  Screenshot: ${ssPath}`);
 
   await page.close();
   return null;
+}
+
+function parseCookies(cookieStr, domain) {
+  if (!cookieStr) return [];
+  // Handle both string and object formats from Capsolver
+  if (typeof cookieStr === "object" && !Array.isArray(cookieStr)) {
+    return Object.entries(cookieStr).map(([name, value]) => ({
+      name, value: String(value), domain, path: "/",
+    }));
+  }
+  if (typeof cookieStr === "string") {
+    return cookieStr.split(";").map(c => c.trim()).filter(Boolean).map(c => {
+      const [name, ...rest] = c.split("=");
+      return { name: name.trim(), value: rest.join("=").trim(), domain, path: "/" };
+    });
+  }
+  return [];
 }
 
 function formatOutput(raw) {
