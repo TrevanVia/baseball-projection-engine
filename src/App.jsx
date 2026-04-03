@@ -4051,8 +4051,8 @@ function LiveWARBoard({onSelect}) {
   useEffect(() => {
     const yr = new Date().getFullYear();
     Promise.all([
-      fetch(`https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=bat&lg=all&qual=y&season=${yr}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`).then(r=>r.json()),
-      fetch(`https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=pit&lg=all&qual=y&season=${yr}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`).then(r=>r.json()),
+      fetch(`https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=bat&lg=all&qual=0&season=${yr}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`).then(r=>r.json()),
+      fetch(`https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=pit&lg=all&qual=0&season=${yr}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`).then(r=>r.json()),
     ]).then(([batData, pitData]) => {
       const parseTm = t => (t||'').replace(/<[^>]+>/g,'').trim();
       setHitters((batData.data||[]).slice(0,8).map(p=>({name:p.PlayerName,tm:parseTm(p.Team),war:p.WAR?.toFixed(1),hr:Math.round(p.HR||0),wrc:Math.round(p['wRC+']||0)})));
