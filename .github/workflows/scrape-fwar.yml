@@ -24,7 +24,7 @@ jobs:
       - name: Scrape FanGraphs leaderboard
         env:
           CAPSOLVER_API_KEY: ${{ secrets.CAPSOLVER_API_KEY }}
-        run: node scripts/scrape-fwar.mjs
+        run: xvfb-run --auto-servernum node scripts/scrape-fwar.mjs
 
       - name: Commit updated leaderboard
         run: |
