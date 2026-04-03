@@ -15,6 +15,7 @@ import xwobaDataJson from "./xwoba_data.json";
 import savantDataJson from "./savant_data.json";
 import pitcherSavantJson from "./pitcher_savant_data.json";
 import precomputedLeaderboard from "./precomputed_leaderboard.json";
+import liveLeaderboard from "./live_leaderboard.json";
 const XWOBA_DATA = xwobaDataJson.default || xwobaDataJson;
 const SAVANT_DATA = savantDataJson.default || savantDataJson;
 const PITCHER_SAVANT = pitcherSavantJson.default || pitcherSavantJson;
@@ -385,6 +386,7 @@ Object.entries(MILB_STATCAST).forEach(([id, data]) => {
 });
 
 const PRECOMPUTED = precomputedLeaderboard.default || precomputedLeaderboard;
+const LIVE_LB = liveLeaderboard.default || liveLeaderboard;
 
 // Reverse map: team abbreviation → MLB team ID (for logo URLs)
 const TEAM_ID_BY_ABBREV = {LAA:108,AZ:109,BAL:110,BOS:111,CHC:112,CIN:113,CLE:114,COL:115,DET:116,HOU:117,KC:118,LAD:119,WSH:120,NYM:121,OAK:133,PIT:134,SD:135,SEA:136,SF:137,STL:138,TB:139,TEX:140,TOR:141,MIN:142,PHI:143,ATL:144,CWS:145,MIA:146,NYY:147,MIL:158};
@@ -1052,13 +1054,13 @@ function detectLevel(split) {
 // Historical MLB outcome benchmarks by FV tier (peak season OPS / WAR / wRC+)
 // Based on FanGraphs research on prospect outcome distributions
 const FV_BENCHMARKS = {
-  70: { ops: .960, war: 8.0, wrc: 160, floor_ops: .860, ceil_ops: 1.100 },
-  65: { ops: .880, war: 5.5, wrc: 140, floor_ops: .790, ceil_ops: .980 },
-  60: { ops: .830, war: 4.0, wrc: 128, floor_ops: .730, ceil_ops: .920 },
-  55: { ops: .785, war: 2.8, wrc: 118, floor_ops: .695, ceil_ops: .870 },
-  50: { ops: .740, war: 1.8, wrc: 105, floor_ops: .660, ceil_ops: .820 },
-  45: { ops: .710, war: 1.0, wrc: 98,  floor_ops: .640, ceil_ops: .780 },
-  40: { ops: .680, war: 0.5, wrc: 90,  floor_ops: .620, ceil_ops: .750 },
+  70: { ops: .900, war: 6.5, wrc: 150, floor_ops: .820, ceil_ops: 1.050 },
+  65: { ops: .850, war: 5.0, wrc: 135, floor_ops: .760, ceil_ops: .960 },
+  60: { ops: .810, war: 3.8, wrc: 125, floor_ops: .720, ceil_ops: .900 },
+  55: { ops: .775, war: 2.6, wrc: 115, floor_ops: .690, ceil_ops: .860 },
+  50: { ops: .735, war: 1.8, wrc: 105, floor_ops: .660, ceil_ops: .820 },
+  45: { ops: .705, war: 1.0, wrc: 97,  floor_ops: .640, ceil_ops: .780 },
+  40: { ops: .675, war: 0.5, wrc: 90,  floor_ops: .620, ceil_ops: .750 },
 };
 
 const AVG_AGE_AT_LEVEL = { ROK: 18.5, A: 20.5, "A+": 22, AA: 23, AAA: 24.5, MLB: 27 };
@@ -4049,16 +4051,43 @@ function LiveWARBoard({onSelect}) {
   const [pitchers, setPitchers] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const yr = new Date().getFullYear();
-    Promise.all([
-      fetch(`https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=bat&lg=all&qual=0&season=${yr}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`).then(r=>r.json()),
-      fetch(`https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=pit&lg=all&qual=0&season=${yr}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`).then(r=>r.json()),
-    ]).then(([batData, pitData]) => {
-      const parseTm = t => (t||'').replace(/<[^>]+>/g,'').trim();
-      setHitters((batData.data||[]).slice(0,8).map(p=>({name:p.PlayerName,tm:parseTm(p.Team),war:p.WAR?.toFixed(1),hr:Math.round(p.HR||0),wrc:Math.round(p['wRC+']||0)})));
-      setPitchers((pitData.data||[]).slice(0,8).map(p=>({name:p.PlayerName,tm:parseTm(p.Team),war:p.WAR?.toFixed(1),era:(p.ERA||0).toFixed(2),k9:(p['K/9']||0).toFixed(1),ip:(p.IP||0).toFixed(1)})));
+    const parseTm = t => (t||'').replace(/<[^>]+>/g,'').trim();
+
+    // Priority 1: Pre-scraped live data (updated daily at 2am via Playwright)
+    if (LIVE_LB?.hitters?.length > 0) {
+      setHitters(LIVE_LB.hitters.slice(0,8));
+      setPitchers((LIVE_LB.pitchers||[]).slice(0,8));
       setLoading(false);
-    }).catch(()=>setLoading(false));
+      return;
+    }
+
+    // Priority 2: Client-side FanGraphs fetch (works when not blocked by Cloudflare)
+    const yr = new Date().getFullYear();
+    const fetchLeaders = (qual) => Promise.all([
+      fetch(`https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=bat&lg=all&qual=${qual}&season=${yr}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}),
+      fetch(`https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=pit&lg=all&qual=${qual}&season=${yr}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}),
+    ]);
+    const applyData = (batData, pitData) => {
+      const h = (batData.data||[]).slice(0,8).map(p=>({name:p.PlayerName,tm:parseTm(p.Team),war:p.WAR?.toFixed(1),hr:Math.round(p.HR||0),wrc:Math.round(p['wRC+']||0)}));
+      const pt = (pitData.data||[]).slice(0,8).map(p=>({name:p.PlayerName,tm:parseTm(p.Team),war:p.WAR?.toFixed(1),era:(p.ERA||0).toFixed(2),k9:(p['K/9']||0).toFixed(1),ip:(p.IP||0).toFixed(1)}));
+      if (h.length > 0) { setHitters(h); setPitchers(pt); setLoading(false); return true; }
+      return false;
+    };
+    fetchLeaders('y')
+      .then(([b,p]) => { if (!applyData(b,p)) return fetchLeaders('0').then(([b2,p2]) => applyData(b2,p2)); })
+      .catch(() => fetchLeaders('0').then(([b,p]) => applyData(b,p)).catch(() => {}))
+      .finally(() => {
+        // Priority 3: Precomputed projections as last resort
+        setHitters(prev => {
+          if (prev.length > 0) return prev;
+          if (PRECOMPUTED?.hitters?.length > 0) {
+            setPitchers((PRECOMPUTED.pitchers||[]).slice(0,8).map(p=>({name:p.name,tm:parseTm(p.team),war:(p.projWAR||0).toFixed(1),era:(p.projERA||0).toFixed(2),k9:(p.projK9||0).toFixed(1),ip:(p.projIP||0).toFixed(1)})));
+            return PRECOMPUTED.hitters.slice(0,8).map(p=>({name:p.name,tm:parseTm(p.team),war:(p.projWAR||0).toFixed(1),hr:Math.round(p.projHR||0),wrc:Math.round(p.projWRC||0)}));
+          }
+          return prev;
+        });
+        setLoading(false);
+      });
   }, []);
   const searchAndPick = (name) => { searchPlayers(name).then(r=>{if(r&&r[0])onSelect(r[0]);}); };
   if (loading) return null;
