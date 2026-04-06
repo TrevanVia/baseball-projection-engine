@@ -186,10 +186,17 @@ async function run() {
 
   const stats = isPitcher ? 'pit' : 'bat';
   console.log('Fetching projections...');
-  const [zips, steamer] = await Promise.all([
-    fetchJSON('https://www.fangraphs.com/api/projections?type=zips&stats=' + stats + '&pos=all&team=0&players=0&lg=all&season=2026'),
-    fetchJSON('https://www.fangraphs.com/api/projections?type=steamer&stats=' + stats + '&pos=all&team=0&players=0&lg=all&season=2026'),
-  ]);
+  let zips = [], steamer = [];
+  try {
+    [zips, steamer] = await Promise.all([
+      fetchJSON('https://www.fangraphs.com/api/projections?type=zips&stats=' + stats + '&pos=all&team=0&players=0&lg=all&season=2026').catch(() => []),
+      fetchJSON('https://www.fangraphs.com/api/projections?type=steamer&stats=' + stats + '&pos=all&team=0&players=0&lg=all&season=2026').catch(() => []),
+    ]);
+  } catch (e) {
+    console.log('FanGraphs API blocked (Cloudflare), using VIAcast only');
+  }
+  if (!Array.isArray(zips)) zips = [];
+  if (!Array.isArray(steamer)) steamer = [];
   const z = findPlayer(zips, playerName, 'ZiPS');
   const s = findPlayer(steamer, playerName, 'Steamer');
 
