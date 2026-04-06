@@ -57,6 +57,8 @@ engineSrc = engineSrc
   .replace(/let WAR_DATA = \{\};/, '')
   .replace(/precomputedLeaderboard\.default \|\| precomputedLeaderboard/g, '{}')
   .replace(/precomputedLeaderboard/g, '({})')
+  .replace(/liveLeaderboard\.default \|\| liveLeaderboard/g, '{}')
+  .replace(/liveLeaderboard/g, '({})')
   .replace(/baserunningDataJson\.default \|\| baserunningDataJson/g, 'BASERUNNING_DATA')
   .replace(/fgPitcherDataJson\.default \|\| fgPitcherDataJson/g, 'FG_PITCHER_DATA')
   .replace(/warDataJson\.default \|\| warDataJson/g, 'WAR_DATA')

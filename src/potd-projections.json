@@ -175,12 +175,12 @@
     "pos": "2",
     "isPitcher": false,
     "avg": 0.23232960000000002,
-    "obp": 0.3288415452255196,
-    "slg": 0.44986243205292065,
-    "ops": 0.7787039772784403,
-    "wRCPlus": 122,
+    "obp": 0.3241625609052612,
+    "slg": 0.4406809085333082,
+    "ops": 0.7648434694385694,
+    "wRCPlus": 118,
     "hr": 17,
-    "baseWAR": 2.9,
+    "baseWAR": 2.6,
     "estPA": 480
   },
   "Kyle Tucker": {
@@ -399,6 +399,20 @@
     "baseWAR": 4.9,
     "estPA": 684
   },
+  "Kevin McGonigle": {
+    "name": "Kevin McGonigle",
+    "age": 21,
+    "pos": "4",
+    "isPitcher": false,
+    "avg": 0.251432,
+    "obp": 0.34125146220001024,
+    "slg": 0.44567239956299065,
+    "ops": 0.7869238617630009,
+    "wRCPlus": 126,
+    "hr": 0,
+    "baseWAR": 4.2,
+    "estPA": 592
+  },
   "Vladimir Guerrero Jr.": {
     "name": "Vladimir Guerrero Jr.",
     "age": 27,
@@ -581,6 +595,20 @@
     "baseWAR": 4.1,
     "estPA": 500
   },
+  "JJ Wetherholt": {
+    "name": "JJ Wetherholt",
+    "age": 23,
+    "pos": "4",
+    "isPitcher": false,
+    "avg": 0.24956,
+    "obp": 0.3320698192345482,
+    "slg": 0.4296551713641778,
+    "ops": 0.761724990598726,
+    "wRCPlus": 118,
+    "hr": 17,
+    "baseWAR": 3.6,
+    "estPA": 592
+  },
   "Jackson Holliday": {
     "name": "Jackson Holliday",
     "age": 22,
@@ -592,7 +620,7 @@
     "ops": 0.72,
     "wRCPlus": 106,
     "hr": 26,
-    "baseWAR": 2.6,
+    "baseWAR": 2.4,
     "estPA": 630
   },
   "Dylan Crews": {
