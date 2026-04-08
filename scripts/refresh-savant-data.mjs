@@ -38,13 +38,15 @@ const SRC = resolve(__dirname, '..', 'src');
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
 const CURRENT_YEAR = new Date().getFullYear();
-// Default: pull 3 most recent FULL seasons. If we're early in the year (before June),
-// the current year won't have meaningful data yet, so use last 3 complete seasons.
+// Default: always include current year if April or later (season underway).
+// Pull current year + 2 prior complete seasons for weighted projections.
 const currentMonth = new Date().getMonth(); // 0-indexed
-const latestFullYear = currentMonth < 5 ? CURRENT_YEAR - 1 : CURRENT_YEAR;
+const includeCurrentYear = currentMonth >= 3; // April = month 3
 const YEARS = args.find(a => a.startsWith('--years='))
   ? args.find(a => a.startsWith('--years=')).split('=')[1].split(',').map(Number)
-  : [latestFullYear - 2, latestFullYear - 1, latestFullYear];
+  : includeCurrentYear
+    ? [CURRENT_YEAR - 2, CURRENT_YEAR - 1, CURRENT_YEAR]
+    : [CURRENT_YEAR - 3, CURRENT_YEAR - 2, CURRENT_YEAR - 1];
 
 console.log(`\n🔄 VIAcast Data Refresh Pipeline`);
 console.log(`   Years: ${YEARS.join(', ')}`);

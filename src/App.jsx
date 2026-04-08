@@ -923,7 +923,7 @@ async function searchPlayers(query) {
 
 async function getPlayerStats(playerId) {
   try {
-    const res = await fetch(`${API}/people/${playerId}?hydrate=currentTeam,team`);
+    const res = await fetch(`${API}/people/${playerId}?hydrate=currentTeam,team,draft,education`);
     const data = await res.json();
     return data.people?.[0] || null;
   } catch { return null; }
@@ -948,7 +948,7 @@ async function getPlayerCareer(playerId, group = "hitting") {
 
 async function getTeams(sportId = 1) {
   try {
-    const res = await fetch(`${API}/teams?sportId=${sportId}&season=2025`);
+    const res = await fetch(`${API}/teams?sportId=${sportId}&season=2026`);
     const data = await res.json();
     return (data.teams || []).sort((a, b) => a.name.localeCompare(b.name));
   } catch { return []; }
@@ -956,7 +956,7 @@ async function getTeams(sportId = 1) {
 
 async function getTeamRoster(teamId) {
   try {
-    const res = await fetch(`${API}/teams/${teamId}/roster/fullSeason?season=2025`);
+    const res = await fetch(`${API}/teams/${teamId}/roster/fullSeason?season=2026`);
     const data = await res.json();
     return data.roster || [];
   } catch { return []; }
@@ -964,7 +964,7 @@ async function getTeamRoster(teamId) {
 
 async function getMiLBAffiliate(mlbTeamId) {
   try {
-    const res = await fetch(`${API}/teams/affiliates?teamIds=${mlbTeamId}&season=2025&sportIds=11,12,13,14,16`);
+    const res = await fetch(`${API}/teams/affiliates?teamIds=${mlbTeamId}&season=2026&sportIds=11,12,13,14,16`);
     const data = await res.json();
     return (data.teams || []).sort((a, b) => (a.sport?.id || 99) - (b.sport?.id || 99));
   } catch { return []; }
@@ -1111,10 +1111,10 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   // xwOBA with trends (NO multiplicative age factor)
   const axw=Math.max(.2,Math.min(.5,pXw+tb));
 
-  // Discipline bonus
+  // Discipline bonus (scaled down since xwOBA already captures discipline outcomes)
   let db=0;
-  if(selI!=null){if(selI>3.5)db=Math.min(5,(selI-3.5)*3);else if(selI<2)db=Math.max(-4,(selI-2)*3)}
-  if(pK<.15)db+=3;else if(pK>.30)db-=2; if(pBB>.12)db+=2;
+  if(selI!=null){if(selI>4.0)db=Math.min(3,(selI-4.0)*2);else if(selI<1.5)db=Math.max(-3,(selI-1.5)*2)}
+  if(pK<.13)db+=2;else if(pK>.30)db-=2; if(pBB>.14)db+=1;
 
   // ── NEW: xwOBA-first projection (wRC+ is the source of truth) ──────────────
   // Step 1: Progressive regression of xwOBA toward league mean
@@ -2149,23 +2149,23 @@ function PlayerCard({player}) {
   const [salary, setSalary] = useState(null);
   useEffect(() => { getContractData().then(() => setSalary(getPlayerSalary(player.fullName))); }, [player.fullName]);
 
-  const seasons = useMemo(()=>career.filter(s=>s.stat?.plateAppearances>0).map(s=>{
+  const seasons = useMemo(()=>{const CUR_YR=new Date().getFullYear();return career.filter(s=>s.stat?.plateAppearances>0).map(s=>{
     const lvl = detectLevel(s);
     return {
-      season:s.season, age:player.currentAge-(2025-parseInt(s.season)),
+      season:s.season, age:player.currentAge-(CUR_YR-parseInt(s.season)),
       avg:parseFloat(s.stat.avg||0), obp:parseFloat(s.stat.obp||0), slg:parseFloat(s.stat.slg||0), ops:parseFloat(s.stat.ops||0),
       hr:s.stat.homeRuns||0, pa:s.stat.plateAppearances||0, r:s.stat.runs||0, rbi:s.stat.rbi||0,
       bb:s.stat.baseOnBalls||0, so:s.stat.strikeOuts||0, sb:s.stat.stolenBases||0,
       team:s.team?.abbreviation||"", level:lvl,
     };
-  }).sort((a,b)=>{const sy=parseInt(a.season)-parseInt(b.season);if(sy!==0)return sy;return LEVEL_ORDER.indexOf(a.level)-LEVEL_ORDER.indexOf(b.level);}),[career,player]);
+  }).sort((a,b)=>{const sy=parseInt(a.season)-parseInt(b.season);if(sy!==0)return sy;return LEVEL_ORDER.indexOf(a.level)-LEVEL_ORDER.indexOf(b.level);});},[career,player]);
 
   
-  const pitchSeasons = useMemo(()=>pitchCareer.filter(s=>parseFloat(s.stat?.inningsPitched||0)>0).map(s=>{
+  const pitchSeasons = useMemo(()=>{const CUR_YR=new Date().getFullYear();return pitchCareer.filter(s=>parseFloat(s.stat?.inningsPitched||0)>0).map(s=>{
     const lvl = detectLevel(s);
     const st = s.stat;
     return {
-      season:s.season, age:player.currentAge-(2025-parseInt(s.season)),
+      season:s.season, age:player.currentAge-(CUR_YR-parseInt(s.season)),
       era:parseFloat(st.era||0), ip:parseFloat(st.inningsPitched||0),
       k9:parseFloat(st.strikeoutsPer9Inn||0), bb9:parseFloat(st.walksPer9Inn||0),
       whip:parseFloat(st.whip||0), fip:parseFloat(st.era||0),
@@ -2174,7 +2174,7 @@ function PlayerCard({player}) {
       hr:parseInt(st.homeRuns||0), gs:parseInt(st.gamesStarted||0), g:parseInt(st.gamesPlayed||0),
       team:s.team?.abbreviation||"", level:lvl,
     };
-  }).sort((a,b)=>{const sy=parseInt(a.season)-parseInt(b.season);if(sy!==0)return sy;return LEVEL_ORDER.indexOf(a.level)-LEVEL_ORDER.indexOf(b.level);}),[pitchCareer,player]);
+  }).sort((a,b)=>{const sy=parseInt(a.season)-parseInt(b.season);if(sy!==0)return sy;return LEVEL_ORDER.indexOf(a.level)-LEVEL_ORDER.indexOf(b.level);});},[pitchCareer,player]);
 
   const isPitcher = player.primaryPosition?.code === "1";
   const isTwoWay = player.primaryPosition?.code === "Y";
@@ -2255,6 +2255,13 @@ function PlayerCard({player}) {
               {player.height?` \u00b7 ${player.height}`:""}
               {player.weight?` / ${player.weight} lbs`:""}
             </p>
+            {(player.draftYear || player.education) && (
+              <p style={{margin:"2px 0 0",fontSize:11,color:C.muted,fontFamily:F}}>
+                {player.draftYear ? `Draft: ${player.draftYear}${player.draftRound ? `, Rd. ${player.draftRound}` : ""}${player.draftPickNumber ? `, No. ${player.draftPickNumber}` : ""}${player.draftTeam?.abbreviation ? `, ${player.draftTeam.abbreviation}` : ""}` : ""}
+                {player.draftYear && player.education ? " \u00b7 " : ""}
+                {player.education?.school?.name || player.education?.highSchool?.name || ""}
+              </p>
+            )}
           </div>
           <div className="via-stat-row" style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {base&&isPitcher&&<>
@@ -2270,6 +2277,73 @@ function PlayerCard({player}) {
           </div>
         </div>
       </Panel>
+
+      {/* 2026 Current Season Stats */}
+      {(() => {
+        const cur26 = seasons.find(s => s.season === "2026" && s.level === "MLB");
+        const pit26 = pitchSeasons.find(s => s.season === "2026" && s.level === "MLB");
+        if (!cur26 && !pit26) return null;
+        return (
+          <Panel title="2026 SEASON" sub="Current stats via MLB Stats API." style={{borderTop:`3px solid ${C.green}`}}>
+            {cur26 && (
+              <div className="via-table-wrap" style={{overflowX:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,fontFamily:F}}>
+                  <thead>
+                    <tr style={{borderBottom:`2px solid ${C.green}20`}}>
+                      {["G","PA","AVG","OBP","SLG","OPS","HR","RBI","SB","BB","SO"].map(h=>(
+                        <th key={h} style={{padding:"6px 10px",fontSize:10,fontWeight:700,color:C.green,textAlign:"right",fontFamily:F,letterSpacing:".04em"}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{Math.round(cur26.pa / 4.1) || "—"}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{cur26.pa}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:cur26.avg>=.300?C.green:C.text,fontFamily:F}}>{cur26.avg.toFixed(3)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:cur26.obp>=.370?C.green:C.text,fontFamily:F}}>{cur26.obp.toFixed(3)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:cur26.slg>=.500?C.green:C.text,fontFamily:F}}>{cur26.slg.toFixed(3)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:800,color:cur26.ops>=.900?C.green:cur26.ops>=.750?C.accent:C.text,fontFamily:F}}>{cur26.ops.toFixed(3)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:cur26.hr>=5?C.accent:C.text,fontFamily:F}}>{cur26.hr}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{cur26.rbi}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:cur26.sb>=5?C.cyan:C.text,fontFamily:F}}>{cur26.sb}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.dim,fontFamily:F}}>{cur26.bb}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.dim,fontFamily:F}}>{cur26.so}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {pit26 && (
+              <div className="via-table-wrap" style={{overflowX:"auto",marginTop:cur26?8:0}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,fontFamily:F}}>
+                  <thead>
+                    <tr style={{borderBottom:`2px solid ${C.green}20`}}>
+                      {["W-L","ERA","IP","SO","BB","WHIP","K/9","BB/9","GS",pit26.sv>0?"SV":null,"HR"].filter(Boolean).map(h=>(
+                        <th key={h} style={{padding:"6px 10px",fontSize:10,fontWeight:700,color:C.green,textAlign:"right",fontFamily:F,letterSpacing:".04em"}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{pit26.w}-{pit26.l}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:pit26.era<=3.00?C.green:pit26.era<=4.00?C.accent:C.text,fontFamily:F}}>{pit26.era.toFixed(2)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{pit26.ip.toFixed(1)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:pit26.so>=20?C.accent:C.text,fontFamily:F}}>{pit26.so}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.dim,fontFamily:F}}>{pit26.bb}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:pit26.whip<=1.10?C.green:C.text,fontFamily:F}}>{pit26.whip.toFixed(2)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:pit26.k9>=10?C.green:C.text,fontFamily:F}}>{pit26.k9.toFixed(1)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:pit26.bb9<=2.5?C.green:C.dim,fontFamily:F}}>{pit26.bb9.toFixed(1)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.text,fontFamily:F}}>{pit26.gs}</td>
+                      {pit26.sv>0&&<td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.accent,fontFamily:F}}>{pit26.sv}</td>}
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:C.dim,fontFamily:F}}>{pit26.hr}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Panel>
+        );
+      })()}
 
       {/* Season Projection Table */}
       {base && !isPitcher && (
@@ -2334,7 +2408,7 @@ function PlayerCard({player}) {
 
             {/* Statcast Batted Ball Data — Savant-style percentile bars */}
       {base && !isPitcher && base._statcast && (
-        <Panel title={base._statcast.milb_source ? `MiLB STATCAST PROFILE (${base._statcast.milb_level})` : "STATCAST PROFILE"} sub={base._statcast.milb_source ? "Prospect Savant data. Percentiles compared to MLB league-wide averages." : "Three years of weighted Baseball Savant data (2023\u20132025). Percentiles are league-wide."}>
+        <Panel title={base._statcast.milb_source ? `MiLB STATCAST PROFILE (${base._statcast.milb_level})` : "STATCAST PROFILE"} sub={base._statcast.milb_source ? "Prospect Savant data. Percentiles compared to MLB league-wide averages." : "Weighted Baseball Savant data (2024\u20132026). Updated nightly. Percentiles are league-wide."}>
           <div style={{display:"flex",flexDirection:"column",gap:1}}>
             {[
               {label:"xwOBA",      val:base._statcast.xwoba,   fmt:v=>v.toFixed(3), min:.240, max:.420, avg:.310, higher:true},
@@ -5186,6 +5260,8 @@ export default function App() {
                   {n:"Walker Jenkins",fv:55,t:"MIN",pos:"OF",note:"Top 5 pick in the 2023 draft. Plus-plus speed, above-average arm, plus contact skills, above-average raw power. Five-tool profile.",war:"11.7"},
                   {n:"Bryce Eldridge",fv:55,t:"SF",pos:"1B",note:"95.7 mph avg exit velo, 63.5% hard hit rate, 16.8% barrel rate. Enormous raw power but 30.8% K rate is the swing-and-miss concern.",war:"9.9"},
                   {n:"Travis Bazzana",fv:55,t:"CLE",pos:"2B",note:"#1 overall pick in 2024. Very selective with power to pull/lift. Plus runner who steals bags and plays solid 2B defense.",war:"12.0"},
+                  {n:"Drake Baldwin",fv:50,t:"ATL",pos:"C",note:".353 xwOBA with elite 15.2% K rate and 83.3% contact rate. Plus bat speed (75.3 mph) with surprising pop. Could be a catcher who hits.",war:"6.6"},
+                  {n:"Tyler Soderstrom",fv:45,t:"OAK",pos:"LF",note:".341 xwOBA over 624 PA. Strong exit velo profile (91.6 avg, 114 max) with 11.4% barrel rate. Moved from catcher to corner OF.",war:"5.4"},
                 ].map((p,i)=>(
                   <div key={p.n} onClick={()=>searchPlayers(p.n).then(r=>{if(r[0])pick(r[0]);})}
                     style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",cursor:"pointer",borderBottom:`1px solid ${C.border}15`,transition:"background 0.1s"}}
