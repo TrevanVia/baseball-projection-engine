@@ -1,6 +1,128 @@
 {
-  "generated": null,
+  "generated": "2026-04-08T16:06:21.481Z",
   "season": 2026,
-  "hitters": [],
-  "pitchers": []
+  "hitters": [
+    {
+      "name": "Cam Smith",
+      "tm": "HOU",
+      "war": 1,
+      "hr": 3,
+      "wrc": 189
+    },
+    {
+      "name": "Andy Pages",
+      "tm": "LAD",
+      "war": 1,
+      "hr": 3,
+      "wrc": 242
+    },
+    {
+      "name": "Yordan Alvarez",
+      "tm": "HOU",
+      "war": 1,
+      "hr": 4,
+      "wrc": 239
+    },
+    {
+      "name": "Wilyer Abreu",
+      "tm": "BOS",
+      "war": 0.9,
+      "hr": 3,
+      "wrc": 218
+    },
+    {
+      "name": "Ben Rice",
+      "tm": "NYY",
+      "war": 0.9,
+      "hr": 3,
+      "wrc": 284
+    },
+    {
+      "name": "Chandler Simpson",
+      "tm": "TBR",
+      "war": 0.8,
+      "hr": 0,
+      "wrc": 166
+    },
+    {
+      "name": "Drake Baldwin",
+      "tm": "ATL",
+      "war": 0.8,
+      "hr": 5,
+      "wrc": 190
+    },
+    {
+      "name": "Nico Hoerner",
+      "tm": "CHC",
+      "war": 0.8,
+      "hr": 0,
+      "wrc": 154
+    }
+  ],
+  "pitchers": [
+    {
+      "name": "Cam Schlittler",
+      "tm": "NYY",
+      "war": 1,
+      "era": 1.62,
+      "k9": 11.9,
+      "ip": 16.2
+    },
+    {
+      "name": "Sandy Alcantara",
+      "tm": "MIA",
+      "war": 0.9,
+      "era": 0.74,
+      "k9": 6.7,
+      "ip": 24.1
+    },
+    {
+      "name": "Cristopher Sánchez",
+      "tm": "PHI",
+      "war": 0.8,
+      "era": 1.65,
+      "k9": 12.7,
+      "ip": 16.1
+    },
+    {
+      "name": "Kevin Gausman",
+      "tm": "TOR",
+      "war": 0.8,
+      "era": 2.08,
+      "k9": 13.5,
+      "ip": 17.1
+    },
+    {
+      "name": "Taj Bradley",
+      "tm": "MIN",
+      "war": 0.7,
+      "era": 1.08,
+      "k9": 11.9,
+      "ip": 16.2
+    },
+    {
+      "name": "Nick Pivetta",
+      "tm": "SDP",
+      "war": 0.6,
+      "era": 5.54,
+      "k9": 13.8,
+      "ip": 13
+    },
+    {
+      "name": "Trevor Rogers",
+      "tm": "BAL",
+      "war": 0.6,
+      "era": 1.89,
+      "k9": 6.6,
+      "ip": 19
+    },
+    {
+      "name": "Bryan Woo",
+      "tm": "SEA",
+      "war": 0.6,
+      "era": 1.38,
+      "k9": 10.4,
+      "ip": 13
+    }
+  ]
 }
