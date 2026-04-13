@@ -1093,12 +1093,20 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   // Regress 25% toward 0 (league avg) — single-season BsR is noisy
   const statcastBsR = getBaserunningValue(playerId, playerName);
   if (statcastBsR !== null) {
-    bsr = statcastBsR * 0.75; // Regressed seasonal run value, scale by PA later
+    // Regress 40% toward 0 and cap at ±5 — single-season BsR is noisy and
+    // elite outliers shouldn't compound with elite OAA + elite bat
+    bsr = Math.max(-5, Math.min(5, statcastBsR * 0.60));
   } else if(spd){let a2=spd;if(age>28)a2-=(age-28)*.15;bsr=a2>=30?5:a2>=29?3.5:a2>=28?2:a2>=27?0:a2>=25.5?-2:-4}
-  const oaa=sP.oaa!=null?sP.oaa:null;
+  // OAA: prefer Savant payload, fall back to manual DEFENSIVE_DATA override
+  // (covers DHs and bad-defense corner bats whose Savant oaa is null/0)
+  let oaa = sP.oaa != null ? sP.oaa : null;
+  if (oaa === null || oaa === 0) {
+    const manualDef = getDefense(playerName);
+    if (manualDef && manualDef.oaa != null) oaa = manualDef.oaa;
+  }
   const dPk=(posCode==="6"||posCode==="8")?26:(posCode==="4"||posCode==="5")?27:28;
   const dAg=Math.max(.3,1-Math.max(0,age-dPk)*.06);
-  let dR=0; if(oaa!==null)dR=oaa*0.85*dAg;
+  let dR=0; if(oaa!==null)dR=Math.max(-10, Math.min(10, oaa*0.70*dAg));
   const ap=getAP(posCode), pk=ap.peak;
   // Trend detection (before aging)
   let tb=0;
@@ -1108,8 +1116,8 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
       if(d2!=null&&Math.sign(d1)===Math.sign(d2)&&d1>0)tb+=d1*.3;else tb+=d1*.15}}
   if(chT>.02)tb+=chT*.15; if(ev5T>1.5)tb+=.005; if(bsT<-1.5)tb-=.008;
 
-  // xwOBA with trends (NO multiplicative age factor)
-  const axw=Math.max(.2,Math.min(.5,pXw+tb));
+  // xwOBA with trends (dampened 50% — single-direction trends are noisy)
+  const axw=Math.max(.2,Math.min(.5,pXw+tb*0.5));
 
   // Discipline bonus (scaled down since xwOBA already captures discipline outcomes)
   let db=0;
@@ -1118,16 +1126,17 @@ function projectFromStatcast(sP, age, posCode, playerName, playerId) {
 
   // ── NEW: xwOBA-first projection (wRC+ is the source of truth) ──────────────
   // Step 1: Progressive regression of xwOBA toward league mean
-  // Below .320: 12% regression (below-avg hitters, light touch)
-  // .320-.340: 15% regression (average hitters)
-  // Above .340: progressive regression (elite xwOBA is systematically optimistic)
+  // Below .320: 15% regression (below-avg hitters)
+  // .320-.340: 20% regression (average hitters)
+  // Above .340: aggressive progressive regression — elite xwOBA is heavily
+  // optimistic relative to true talent (sample-size + ABIP variance)
   let regXwOBA;
-  if (axw <= 0.320) regXwOBA = axw * 0.88 + LG_WOBA * 0.12;
-  else if (axw <= 0.340) regXwOBA = axw * 0.85 + LG_WOBA * 0.15;
+  if (axw <= 0.320) regXwOBA = axw * 0.85 + LG_WOBA * 0.15;
+  else if (axw <= 0.340) regXwOBA = axw * 0.80 + LG_WOBA * 0.20;
   else {
     const excess = axw - 0.340;
-    const extraReg = (excess / 0.010) * 0.008;
-    const keep = Math.max(0.72, 0.85 - extraReg);
+    const extraReg = (excess / 0.010) * 0.018;
+    const keep = Math.max(0.55, 0.78 - extraReg);
     regXwOBA = axw * keep + LG_WOBA * (1 - keep);
   }
 
@@ -1722,8 +1731,9 @@ function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
     ((13 * estHR) + (3 * estBB) - (2 * estK)) / estIP + 3.10));
   const fipBasedWAR = ((useRepl - fip) / rpw) * (estIP / 9);
 
-  // Blended fWAR: 60% xERA-based + 40% FIP-based
-  const rawWAR = eraBasedWAR * 0.60 + fipBasedWAR * 0.40;
+  // Blended fWAR: 30% xERA-based + 70% FIP-based (FanGraphs fWAR is FIP-only;
+  // xERA systematically over-penalizes elite K pitchers, so we under-weight it)
+  const rawWAR = eraBasedWAR * 0.30 + fipBasedWAR * 0.70;
 
   // FV clamp
   const fv = getPlayerFV(playerId, playerName);
@@ -1820,14 +1830,17 @@ function projectPitcherFromSeasons(splits, age, playerName, playerId) {
       : ageAdv * 0.04));
 
   const rawIP = totalRawIP / valid.length;
-  const paRel = Math.min(highestLevel === "MLB" ? 0.93 : 0.82, (totalRawIP / (valid.length * 150)) * (PITCHER_TRANSLATION[highestLevel]?.reliability || 0.9));
+  // Cap divisor at 380 IP (≈ 2.5 full seasons) so established starters with
+  // an injury year still get high reliability instead of being dragged down
+  const paRelDivisor = Math.min(valid.length * 150, 380);
+  const paRel = Math.min(highestLevel === "MLB" ? 0.96 : 0.82, (totalRawIP / paRelDivisor) * (PITCHER_TRANSLATION[highestLevel]?.reliability || 0.9));
 
-  // Regress toward league average with recency weighting
-  const regERA = (wERA / tw) * paRel + 4.20 * (1 - paRel);
-  const regK9 = (wK9 / tw) * paRel + 8.5 * (1 - paRel);
-  const regBB9 = (wBB9 / tw) * paRel + 3.2 * (1 - paRel);
-  const regWHIP = (wWHIP / tw) * paRel + 1.28 * (1 - paRel);
-  const regHR9 = (wHR9 / tw) * paRel + 1.20 * (1 - paRel);
+  // Regress toward modern MLB averages (higher K9, lower BB9/HR9 than legacy values)
+  const regERA = (wERA / tw) * paRel + 4.10 * (1 - paRel);
+  const regK9 = (wK9 / tw) * paRel + 8.8 * (1 - paRel);
+  const regBB9 = (wBB9 / tw) * paRel + 3.0 * (1 - paRel);
+  const regWHIP = (wWHIP / tw) * paRel + 1.26 * (1 - paRel);
+  const regHR9 = (wHR9 / tw) * paRel + 1.10 * (1 - paRel);
 
   // Apply age factor correctly: young = lower ERA (better)
   const finalERA = Math.max(1.50, Math.min(6.50, regERA * ageERAMult));

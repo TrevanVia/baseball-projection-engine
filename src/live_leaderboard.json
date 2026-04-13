@@ -1,62 +1,62 @@
 {
-  "generated": "2026-04-08T16:06:21.481Z",
+  "generated": "2026-04-10T15:22:45.662Z",
   "season": 2026,
   "hitters": [
     {
-      "name": "Cam Smith",
-      "tm": "HOU",
-      "war": 1,
+      "name": "Wilyer Abreu",
+      "tm": "BOS",
+      "war": 1.1,
       "hr": 3,
-      "wrc": 189
+      "wrc": 221
     },
     {
-      "name": "Andy Pages",
-      "tm": "LAD",
+      "name": "Nico Hoerner",
+      "tm": "CHC",
       "war": 1,
-      "hr": 3,
-      "wrc": 242
+      "hr": 1,
+      "wrc": 183
     },
     {
       "name": "Yordan Alvarez",
       "tm": "HOU",
-      "war": 1,
+      "war": 0.9,
       "hr": 4,
-      "wrc": 239
+      "wrc": 230
     },
     {
-      "name": "Wilyer Abreu",
-      "tm": "BOS",
+      "name": "Sal Stewart",
+      "tm": "CIN",
+      "war": 0.9,
+      "hr": 4,
+      "wrc": 219
+    },
+    {
+      "name": "Cam Smith",
+      "tm": "HOU",
       "war": 0.9,
       "hr": 3,
-      "wrc": 218
+      "wrc": 170
     },
     {
-      "name": "Ben Rice",
-      "tm": "NYY",
+      "name": "Andy Pages",
+      "tm": "LAD",
       "war": 0.9,
       "hr": 3,
-      "wrc": 284
+      "wrc": 214
     },
     {
-      "name": "Chandler Simpson",
-      "tm": "TBR",
-      "war": 0.8,
-      "hr": 0,
-      "wrc": 166
+      "name": "Maikel Garcia",
+      "tm": "KCR",
+      "war": 0.9,
+      "hr": 1,
+      "wrc": 151
     },
     {
       "name": "Drake Baldwin",
       "tm": "ATL",
       "war": 0.8,
       "hr": 5,
-      "wrc": 190
-    },
-    {
-      "name": "Nico Hoerner",
-      "tm": "CHC",
-      "war": 0.8,
-      "hr": 0,
-      "wrc": 154
+      "wrc": 184
     }
   ],
   "pitchers": [
@@ -101,27 +101,27 @@
       "ip": 16.2
     },
     {
-      "name": "Nick Pivetta",
-      "tm": "SDP",
-      "war": 0.6,
-      "era": 5.54,
-      "k9": 13.8,
-      "ip": 13
-    },
-    {
-      "name": "Trevor Rogers",
-      "tm": "BAL",
-      "war": 0.6,
-      "era": 1.89,
-      "k9": 6.6,
-      "ip": 19
+      "name": "Ryan Weathers",
+      "tm": "NYY",
+      "war": 0.7,
+      "era": 2.81,
+      "k9": 10.1,
+      "ip": 16
     },
     {
       "name": "Bryan Woo",
       "tm": "SEA",
       "war": 0.6,
-      "era": 1.38,
-      "k9": 10.4,
+      "era": 1.5,
+      "k9": 8.5,
+      "ip": 18
+    },
+    {
+      "name": "Nick Pivetta",
+      "tm": "SDP",
+      "war": 0.6,
+      "era": 5.54,
+      "k9": 13.8,
       "ip": 13
     }
   ]
