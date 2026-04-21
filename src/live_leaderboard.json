@@ -1,128 +1,128 @@
 {
-  "generated": "2026-04-10T15:22:45.662Z",
-  "season": 2026,
-  "hitters": [
-    {
-      "name": "Wilyer Abreu",
-      "tm": "BOS",
-      "war": 1.1,
-      "hr": 3,
-      "wrc": 221
-    },
-    {
-      "name": "Nico Hoerner",
-      "tm": "CHC",
-      "war": 1,
-      "hr": 1,
-      "wrc": 183
-    },
-    {
-      "name": "Yordan Alvarez",
-      "tm": "HOU",
-      "war": 0.9,
-      "hr": 4,
-      "wrc": 230
-    },
-    {
-      "name": "Sal Stewart",
-      "tm": "CIN",
-      "war": 0.9,
-      "hr": 4,
-      "wrc": 219
-    },
-    {
-      "name": "Cam Smith",
-      "tm": "HOU",
-      "war": 0.9,
-      "hr": 3,
-      "wrc": 170
-    },
-    {
-      "name": "Andy Pages",
-      "tm": "LAD",
-      "war": 0.9,
-      "hr": 3,
-      "wrc": 214
-    },
-    {
-      "name": "Maikel Garcia",
-      "tm": "KCR",
-      "war": 0.9,
-      "hr": 1,
-      "wrc": 151
-    },
-    {
-      "name": "Drake Baldwin",
-      "tm": "ATL",
-      "war": 0.8,
-      "hr": 5,
-      "wrc": 184
-    }
-  ],
-  "pitchers": [
-    {
-      "name": "Cam Schlittler",
-      "tm": "NYY",
-      "war": 1,
-      "era": 1.62,
-      "k9": 11.9,
-      "ip": 16.2
-    },
-    {
-      "name": "Sandy Alcantara",
-      "tm": "MIA",
-      "war": 0.9,
-      "era": 0.74,
-      "k9": 6.7,
-      "ip": 24.1
-    },
-    {
-      "name": "Cristopher Sánchez",
-      "tm": "PHI",
-      "war": 0.8,
-      "era": 1.65,
-      "k9": 12.7,
-      "ip": 16.1
-    },
-    {
-      "name": "Kevin Gausman",
-      "tm": "TOR",
-      "war": 0.8,
-      "era": 2.08,
-      "k9": 13.5,
-      "ip": 17.1
-    },
-    {
-      "name": "Taj Bradley",
-      "tm": "MIN",
-      "war": 0.7,
-      "era": 1.08,
-      "k9": 11.9,
-      "ip": 16.2
-    },
-    {
-      "name": "Ryan Weathers",
-      "tm": "NYY",
-      "war": 0.7,
-      "era": 2.81,
-      "k9": 10.1,
-      "ip": 16
-    },
-    {
-      "name": "Bryan Woo",
-      "tm": "SEA",
-      "war": 0.6,
-      "era": 1.5,
-      "k9": 8.5,
-      "ip": 18
-    },
-    {
-      "name": "Nick Pivetta",
-      "tm": "SDP",
-      "war": 0.6,
-      "era": 5.54,
-      "k9": 13.8,
-      "ip": 13
-    }
-  ]
+    "generated": "2026-04-21T21:09:11.501Z",
+    "season": 2026,
+    "hitters": [
+        {
+            "name": "Yordan Alvarez",
+            "tm": "HOU",
+            "war": 1.8,
+            "hr": 10,
+            "wrc": 225
+        },
+        {
+            "name": "Ben Rice",
+            "tm": "NYY",
+            "war": 1.4,
+            "hr": 8,
+            "wrc": 244
+        },
+        {
+            "name": "Andy Pages",
+            "tm": "LAD",
+            "war": 1.3,
+            "hr": 5,
+            "wrc": 185
+        },
+        {
+            "name": "Otto Lopez",
+            "tm": "MIA",
+            "war": 1.3,
+            "hr": 3,
+            "wrc": 161
+        },
+        {
+            "name": "Nico Hoerner",
+            "tm": "CHC",
+            "war": 1.3,
+            "hr": 3,
+            "wrc": 154
+        },
+        {
+            "name": "Max Muncy",
+            "tm": "LAD",
+            "war": 1.2,
+            "hr": 8,
+            "wrc": 177
+        },
+        {
+            "name": "Jordan Walker",
+            "tm": "STL",
+            "war": 1.2,
+            "hr": 8,
+            "wrc": 180
+        },
+        {
+            "name": "José Ramírez",
+            "tm": "CLE",
+            "war": 1.2,
+            "hr": 6,
+            "wrc": 140
+        }
+    ],
+    "pitchers": [
+        {
+            "name": "Cam Schlittler",
+            "tm": "NYY",
+            "war": 1.5,
+            "era": 1.95,
+            "k9": 11.7,
+            "ip": 27.2
+        },
+        {
+            "name": "Bryan Woo",
+            "tm": "SEA",
+            "war": 1.2,
+            "era": 2.25,
+            "k9": 7.3,
+            "ip": 32
+        },
+        {
+            "name": "Dylan Cease",
+            "tm": "TOR",
+            "war": 1.2,
+            "era": 2.1,
+            "k9": 15.4,
+            "ip": 25.2
+        },
+        {
+            "name": "José Soriano",
+            "tm": "LAA",
+            "war": 1.1,
+            "era": 0.28,
+            "k9": 10.7,
+            "ip": 32.2
+        },
+        {
+            "name": "Cristopher Sánchez",
+            "tm": "PHI",
+            "war": 1.1,
+            "era": 1.59,
+            "k9": 12.4,
+            "ip": 28.1
+        },
+        {
+            "name": "Seth Lugo",
+            "tm": "KCR",
+            "war": 1.1,
+            "era": 1.15,
+            "k9": 8,
+            "ip": 31.1
+        },
+        {
+            "name": "Tarik Skubal",
+            "tm": "DET",
+            "war": 1.1,
+            "era": 2.08,
+            "k9": 9.8,
+            "ip": 30.1
+        },
+        {
+            "name": "Taj Bradley",
+            "tm": "MIN",
+            "war": 1.1,
+            "era": 1.63,
+            "k9": 11.1,
+            "ip": 27.2
+        }
+    ]
 }
