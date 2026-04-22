@@ -1,5 +1,5 @@
 {
-    "generated": "2026-04-21T21:09:11.501Z",
+    "generated": "2026-04-22T13:29:16.433Z",
     "season": 2026,
     "hitters": [
         {
@@ -7,56 +7,56 @@
             "tm": "HOU",
             "war": 1.8,
             "hr": 10,
-            "wrc": 225
+            "wrc": 222
+        },
+        {
+            "name": "Nico Hoerner",
+            "tm": "CHC",
+            "war": 1.4,
+            "hr": 4,
+            "wrc": 163
         },
         {
             "name": "Ben Rice",
             "tm": "NYY",
             "war": 1.4,
             "hr": 8,
-            "wrc": 244
-        },
-        {
-            "name": "Andy Pages",
-            "tm": "LAD",
-            "war": 1.3,
-            "hr": 5,
-            "wrc": 185
-        },
-        {
-            "name": "Otto Lopez",
-            "tm": "MIA",
-            "war": 1.3,
-            "hr": 3,
-            "wrc": 161
-        },
-        {
-            "name": "Nico Hoerner",
-            "tm": "CHC",
-            "war": 1.3,
-            "hr": 3,
-            "wrc": 154
-        },
-        {
-            "name": "Max Muncy",
-            "tm": "LAD",
-            "war": 1.2,
-            "hr": 8,
-            "wrc": 177
-        },
-        {
-            "name": "Jordan Walker",
-            "tm": "STL",
-            "war": 1.2,
-            "hr": 8,
-            "wrc": 180
+            "wrc": 228
         },
         {
             "name": "José Ramírez",
             "tm": "CLE",
-            "war": 1.2,
+            "war": 1.3,
             "hr": 6,
             "wrc": 140
+        },
+        {
+            "name": "Andy Pages",
+            "tm": "LAD",
+            "war": 1.2,
+            "hr": 5,
+            "wrc": 181
+        },
+        {
+            "name": "Sal Stewart",
+            "tm": "CIN",
+            "war": 1.2,
+            "hr": 8,
+            "wrc": 173
+        },
+        {
+            "name": "Elly De La Cruz",
+            "tm": "CIN",
+            "war": 1.2,
+            "hr": 8,
+            "wrc": 148
+        },
+        {
+            "name": "Kevin McGonigle",
+            "tm": "DET",
+            "war": 1.2,
+            "hr": 1,
+            "wrc": 157
         }
     ],
     "pitchers": [
