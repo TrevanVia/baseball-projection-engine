@@ -125,6 +125,12 @@ const ENDPOINTS = {
   oaa: (year) =>
     `https://baseballsavant.mlb.com/leaderboard/outs_above_average?type=Fielder&year=${year}&team=&range=year&min=1&pos=&csv=true`,
   
+  evBarrelsPitcher: (year) =>
+    `https://baseballsavant.mlb.com/leaderboard/statcast?type=pitcher&year=${year}&position=&team=&min=1&csv=true`,
+
+  pitcherRates: (year) =>
+    `https://baseballsavant.mlb.com/leaderboard/custom?year=${year}&type=pitcher&filter=&min=1&selections=k_percent,bb_percent,whiff_percent,p_formatted_ip&csv=true`,
+
   expectedPitching: (year) =>
     `https://baseballsavant.mlb.com/leaderboard/expected_statistics?type=pitcher&year=${year}&position=&team=&min=1&csv=true`,
   
@@ -253,6 +259,40 @@ async function main() {
       s.ba = row.ba;
       s.slg = row.slg;
       s.pa = row.pa;
+      // The engine keys pitcher samples off batters faced (bfp) and anchors on
+      // ERA/xERA; without these, every new-season row made the Statcast pitcher
+      // engine return null and fall back to raw season stats.
+      s.bfp = row.pa;
+      if (row.era != null) s.era = parseFloat(row.era);
+      if (row.xera != null) s.xera = parseFloat(row.xera);
+    }
+
+    // 5b. Contact quality allowed (barrel%, EV, hard-hit%) for pitchers
+    const evPit = await fetchCSV(ENDPOINTS.evBarrelsPitcher(year), `EV/Barrels allowed ${year}`);
+    for (const row of evPit) {
+      const id = String(row.player_id);
+      if (!id || id === 'null' || !pitchers[id]?.seasons?.[year]) continue;
+      const s = pitchers[id].seasons[year];
+      s.avg_ev = row.avg_hit_speed;
+      s.ev50 = row.ev50;
+      s.barrel_pct = row.brl_percent;
+      s.hard_hit_pct = row.ev95percent;
+    }
+
+    // 5c. K%, BB%, whiff% and innings for pitchers (FanGraphs is blocked from CI,
+    // so this keeps the current season's strikeout and walk rates in the engine)
+    const rates = await fetchCSV(ENDPOINTS.pitcherRates(year), `Pitcher K/BB ${year}`);
+    for (const row of rates) {
+      const id = String(row.player_id);
+      if (!id || id === 'null' || !pitchers[id]?.seasons?.[year]) continue;
+      const s = pitchers[id].seasons[year];
+      if (row.k_percent != null) s.k_pct = parseFloat(row.k_percent);
+      if (row.bb_percent != null) s.bb_pct = parseFloat(row.bb_percent);
+      if (row.whiff_percent != null) s.whiff_pct = parseFloat(row.whiff_percent);
+      if (row.p_formatted_ip != null) {
+        const [w, f] = String(row.p_formatted_ip).split('.');
+        s.ip = (parseInt(w) || 0) + (parseInt(f) || 0) / 3;
+      }
     }
 
     // 6. Pitch Arsenal (per-pitch-type data for pitchers)
