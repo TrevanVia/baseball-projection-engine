@@ -21,6 +21,9 @@ jobs:
       - name: Refresh Savant data (2024-2026)
         run: node scripts/refresh-savant-data.mjs --years=2024,2025,2026
 
+      - name: Check the engine against the new data
+        run: node scripts/engine-check.mjs
+
       - name: Commit updated data
         run: |
           git config user.name "github-actions[bot]"
