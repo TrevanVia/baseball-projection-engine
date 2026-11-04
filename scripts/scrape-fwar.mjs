@@ -86,6 +86,11 @@ function formatOutput(rawHitters, rawPitchers) {
   return { generated: new Date().toISOString(), season: YEAR, hitters, pitchers };
 }
 
+function existingGenerated() {
+  try { return JSON.parse(fs.readFileSync(OUT_PATH, "utf8")).generated || "unknown date"; }
+  catch { return "unknown date"; }
+}
+
 // ── MAIN ────────────────────────────────────────────────────────────────
 (async () => {
   console.log(`\n🏟  Fetching FanGraphs ${YEAR} fWAR leaderboard...\n`);
@@ -103,8 +108,16 @@ function formatOutput(rawHitters, rawPitchers) {
   }
 
   if (!hitters && !pitchers) {
-    console.error("✗ No data fetched. FanGraphs may be blocking. Keeping existing file.");
-    process.exit(1);
+    // FanGraphs' Cloudflare returns 403 to GitHub-hosted runner IPs, so this is
+    // expected in CI. Don't fail the job (that emails every morning); leave the
+    // existing file in place and surface a warning annotation instead.
+    // Run `node scripts/scrape-fwar.mjs` from a home connection to refresh.
+    const msg = `FanGraphs blocked the request (HTTP 403). Kept existing leaderboard from ${existingGenerated()}.`;
+    console.log(`::warning title=fWAR not refreshed::${msg}`);
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### fWAR leaderboard not refreshed\n\n${msg}\n`);
+    }
+    process.exit(0);
   }
 
   const output = formatOutput(hitters, pitchers);

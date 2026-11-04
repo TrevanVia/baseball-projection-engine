@@ -2,18 +2,18 @@ name: Scrape fWAR Leaderboard
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # 2am ET (6am UTC)
+    - cron: '0 6 * 3-10 *'  # 2am ET (6am UTC), March–October only — no games, no new fWAR in the offseason
   workflow_dispatch:       # manual trigger
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Scrape FanGraphs leaderboard
         run: node scripts/scrape-fwar.mjs
@@ -24,4 +24,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add src/live_leaderboard.json
           git diff --cached --quiet || git commit -m "Update live fWAR leaderboard $(date -u +%Y-%m-%d)"
+          git pull --rebase --autostash
           git push
