@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // scripts/scrape-fwar.mjs
-// Fetches FanGraphs fWAR leaderboard via their API (no browser needed).
+// Fetches the fWAR leaderboard (FanGraphs WAR via the MLB Stats API).
 // Runs daily at 2am ET via GitHub Actions.
 // Writes to src/live_leaderboard.json
 
@@ -12,78 +12,46 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = path.join(__dirname, "..", "src", "live_leaderboard.json");
 const YEAR = new Date().getFullYear();
 
-// FanGraphs API: top 8 by fWAR
-function fgUrl(stats, qual) {
-  return `https://www.fangraphs.com/api/leaders/major-league/data?pos=all&stats=${stats}&lg=all&qual=${qual}&season=${YEAR}&month=0&hand=&team=0&pageItems=8&sortCol=WAR&sortDir=desc`;
-}
+// fWAR leaders come from the MLB Stats API "sabermetrics" feed, which serves
+// FanGraphs' own WAR (e.g. Crow-Armstrong 2026: 10.6192 on both). FanGraphs'
+// site blocks GitHub's servers; MLB's API doesn't.
+const API = "https://statsapi.mlb.com/api/v1/stats";
 
-// Headers that mimic a real browser — avoids most Cloudflare challenges
-const HEADERS = {
-  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-  "Accept": "application/json, text/plain, */*",
-  "Accept-Language": "en-US,en;q=0.9",
-  "Referer": "https://www.fangraphs.com/leaders/major-league",
-  "Origin": "https://www.fangraphs.com",
-};
-
-async function fetchFG(stats) {
-  // Try qualified first, then all players
-  for (const qual of ["y", "0"]) {
-    const url = fgUrl(stats, qual);
+async function getSplits(kind, group, pool = "ALL") {
+  const url = `${API}?stats=${kind}&group=${group}&season=${YEAR}&sportId=1&gameType=R&playerPool=${pool}&limit=3000`;
+  for (let i = 0; i < 3; i++) {
     try {
-      const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
-      if (!res.ok) {
-        console.log(`  ${stats} qual=${qual}: HTTP ${res.status}`);
-        continue;
-      }
-      const ct = res.headers.get("content-type") || "";
-      if (!ct.includes("json")) {
-        console.log(`  ${stats} qual=${qual}: not JSON (${ct.slice(0, 50)})`);
-        continue;
-      }
-      const data = await res.json();
-      if (data?.data?.length > 0) {
-        console.log(`  ✓ ${stats} qual=${qual}: ${data.data.length} rows`);
-        return data;
-      }
-    } catch (err) {
-      console.log(`  ${stats} qual=${qual}: ${err.code || err.cause?.code || err.message}`);
-    }
+      const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
+      if (res.ok) return (await res.json()).stats?.[0]?.splits || [];
+      console.log(`  ${group}/${kind}: HTTP ${res.status}`);
+    } catch (err) { console.log(`  ${group}/${kind}: ${err.message}`); }
+    await new Promise(r => setTimeout(r, 3000));
   }
   return null;
 }
 
-// Fallback: MLB Stats API for basic WAR-like data (less accurate but always available)
-async function fetchMLBFallback(group) {
-  const url = `https://statsapi.mlb.com/api/v1/stats?stats=season&season=${YEAR}&group=${group}&gameType=R&sortStat=wins&order=desc&limit=8`;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch { return null; }
+let TEAMS = null;
+async function teamAbbr(ids) {
+  if (!TEAMS) {
+    const t = await fetch("https://statsapi.mlb.com/api/v1/teams?sportId=1").then(r => r.json()).catch(() => ({}));
+    TEAMS = Object.fromEntries((t.teams || []).map(x => [x.id, x.abbreviation]));
+  }
+  const d = await fetch(`https://statsapi.mlb.com/api/v1/people?personIds=${ids.join(",")}&hydrate=currentTeam`).then(r => r.json()).catch(() => ({}));
+  return Object.fromEntries((d.people || []).map(p => [p.id, TEAMS[p.currentTeam?.id] || ""]));
 }
 
-function formatOutput(rawHitters, rawPitchers) {
-  const parseTm = (t) => (t || "").replace(/<[^>]+>/g, "").trim();
-
-  const hitters = (rawHitters?.data || []).slice(0, 8).map((p) => ({
-    name: p.PlayerName || p.playerName || p.name || "Unknown",
-    tm: parseTm(p.Team || p.team || p.TeamName || ""),
-    war: +(p.WAR ?? p.war ?? 0).toFixed?.(1) || 0,
-    hr: Math.round(p.HR || p.hr || 0),
-    wrc: Math.round(p["wRC+"] || p.wrc || 0),
-  }));
-
-  const pitchers = (rawPitchers?.data || []).slice(0, 8).map((p) => ({
-    name: p.PlayerName || p.playerName || p.name || "Unknown",
-    tm: parseTm(p.Team || p.team || p.TeamName || ""),
-    war: +(p.WAR ?? p.war ?? 0).toFixed?.(1) || 0,
-    ip: +(p.IP ?? p.ip ?? 0).toFixed?.(1) || 0,
-    k9: +(p["K/9"] ?? p.k9 ?? 0).toFixed?.(1) || 0,
-    era: +(p.ERA ?? p.era ?? 0).toFixed?.(2) || 0,
-  }));
-
-  return { generated: new Date().toISOString(), season: YEAR, hitters, pitchers };
+// Qualified players (like FanGraphs' default leaderboard); falls back to all
+// players early in the season when few have qualified.
+async function leaders(group) {
+  let [saber, season] = await Promise.all([getSplits("sabermetrics", group, "QUALIFIED"), getSplits("season", group, "ALL")]);
+  if (saber && saber.length < 8) saber = await getSplits("sabermetrics", group, "ALL");
+  if (!saber || !season) return null;
+  const stat = Object.fromEntries(season.map(s => [s.player.id, { ...s.stat, team: s.team?.abbreviation }]));
+  return saber
+    .filter(s => s.stat?.war != null && stat[s.player.id])
+    .sort((a, b) => b.stat.war - a.stat.war)
+    .slice(0, 8)
+    .map(s => ({ id: s.player.id, name: s.player.fullName, war: s.stat.war, wrc: s.stat.wRcPlus, ...stat[s.player.id] }));
 }
 
 function existingGenerated() {
@@ -91,45 +59,30 @@ function existingGenerated() {
   catch { return "unknown date"; }
 }
 
+function ipToNum(ip) { const x = parseFloat(ip || 0); const w = Math.floor(x); return w + Math.round((x - w) * 10) / 3; }
+
 // ── MAIN ────────────────────────────────────────────────────────────────
 (async () => {
-  console.log(`\n🏟  Fetching FanGraphs ${YEAR} fWAR leaderboard...\n`);
+  console.log(`\n🏟  Fetching ${YEAR} fWAR leaders (MLB Stats API)...\n`);
+  const [bat, pit] = await Promise.all([leaders("hitting"), leaders("pitching")]);
 
-  // Attempt 1: Direct FanGraphs API fetch (fast, no deps)
-  let hitters = await fetchFG("bat");
-  let pitchers = await fetchFG("pit");
-
-  // Attempt 2: Retry once after a short delay (Cloudflare rate limit)
-  if (!hitters || !pitchers) {
-    console.log("\n→ Retrying in 5s...");
-    await new Promise(r => setTimeout(r, 5000));
-    if (!hitters) hitters = await fetchFG("bat");
-    if (!pitchers) pitchers = await fetchFG("pit");
-  }
-
-  if (!hitters && !pitchers) {
-    // FanGraphs' Cloudflare returns 403 to GitHub-hosted runner IPs, so this is
-    // expected in CI. Don't fail the job (that emails every morning); leave the
-    // existing file in place and surface a warning annotation instead.
-    // Run `node scripts/scrape-fwar.mjs` from a home connection to refresh.
-    const msg = `FanGraphs blocked the request (HTTP 403). Kept existing leaderboard from ${existingGenerated()}.`;
+  if (!bat?.length || !pit?.length) {
+    const msg = `Couldn't fetch ${YEAR} leaders from the MLB Stats API. Kept existing leaderboard from ${existingGenerated()}.`;
     console.log(`::warning title=fWAR not refreshed::${msg}`);
-    if (process.env.GITHUB_STEP_SUMMARY) {
-      fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### fWAR leaderboard not refreshed\n\n${msg}\n`);
-    }
+    if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### fWAR leaderboard not refreshed\n\n${msg}\n`);
     process.exit(0);
   }
 
-  const output = formatOutput(hitters, pitchers);
-
-  if (output.hitters.length === 0 && output.pitchers.length === 0) {
-    console.error("✗ Formatted data empty. Keeping existing file.");
-    process.exit(1);
-  }
-
+  const tm = await teamAbbr([...bat, ...pit].map(p => p.id));
+  for (const p of [...bat, ...pit]) p.team = p.team || tm[p.id] || "";
+  const output = {
+    generated: new Date().toISOString(), season: YEAR,
+    hitters: bat.map(p => ({ name: p.name, tm: p.team || "", war: +p.war.toFixed(1), hr: p.homeRuns || 0, wrc: Math.round(p.wrc || 0) })),
+    pitchers: pit.map(p => ({ name: p.name, tm: p.team || "", war: +p.war.toFixed(1), ip: +parseFloat(p.inningsPitched || 0).toFixed(1),
+                              k9: +parseFloat(p.strikeoutsPer9Inn || 0).toFixed(1), era: +parseFloat(p.era || 0).toFixed(2) })),
+  };
   fs.writeFileSync(OUT_PATH, JSON.stringify(output, null, 2));
-  console.log(`\n✅ Wrote ${OUT_PATH}`);
-  console.log(`   ${output.hitters.length} hitters, ${output.pitchers.length} pitchers`);
-  if (output.hitters[0]) console.log(`   #1 hitter: ${output.hitters[0].name} — ${output.hitters[0].war} fWAR`);
-  if (output.pitchers[0]) console.log(`   #1 pitcher: ${output.pitchers[0].name} — ${output.pitchers[0].war} fWAR`);
+  console.log(`✅ Wrote ${OUT_PATH}`);
+  console.log(`   #1 hitter: ${output.hitters[0].name} — ${output.hitters[0].war} fWAR`);
+  console.log(`   #1 pitcher: ${output.pitchers[0].name} — ${output.pitchers[0].war} fWAR`);
 })();

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-04T14:39:09.572Z",
+  "generated": "2026-11-04T15:41:13.159Z",
   "season": 2026,
   "hitters": [
     {
@@ -11,7 +11,7 @@
     },
     {
       "name": "Bobby Witt Jr.",
-      "tm": "KCR",
+      "tm": "KC",
       "war": 7,
       "hr": 18,
       "wrc": 119
@@ -110,7 +110,7 @@
     },
     {
       "name": "Drew Rasmussen",
-      "tm": "TBR",
+      "tm": "TB",
       "war": 5,
       "ip": 172,
       "k9": 9.1,

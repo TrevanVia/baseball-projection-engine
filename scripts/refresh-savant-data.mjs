@@ -279,6 +279,26 @@ async function main() {
       });
     }
 
+    // 7. Walk / strikeout rates for every hitter (MLB Stats API — Savant's
+    //    custom leaderboard only covers qualified hitters). Fractions of PA.
+    try {
+      const res = await fetch(`https://statsapi.mlb.com/api/v1/stats?stats=season&group=hitting&season=${year}&sportId=1&gameType=R&playerPool=ALL&limit=5000`);
+      const splits = (await res.json()).stats?.[0]?.splits || [];
+      let n = 0;
+      for (const sp of splits) {
+        const id = String(sp.player?.id), st = sp.stat || {};
+        const pa = st.plateAppearances || 0;
+        if (!pa || !hitters[id]?.seasons?.[year]) continue;
+        const s = hitters[id].seasons[year];
+        s.bb_pct = st.baseOnBalls / pa;
+        s.k_pct = st.strikeOuts / pa;
+        n++;
+      }
+      console.log(`   ✅ BB%/K% (MLB API) ${year}: ${n} hitters`);
+    } catch (err) {
+      console.log(`   ❌ BB%/K% (MLB API) ${year}: ${err.message?.substring(0, 80)}`);
+    }
+
     // Rate limit: be nice to Savant servers
     await new Promise(r => setTimeout(r, 1500));
   }

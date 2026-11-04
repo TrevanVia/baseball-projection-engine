@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
 VIAcast Pitcher Data Pipeline
-Fetches pitcher Statcast data from Baseball Savant for 2023-2025.
-Output: src/pitcher_savant_data.json
+Fetches pitcher Statcast data from Baseball Savant, plus K%/BB%/IP and
+FIP/xFIP from the MLB Stats API (FanGraphs' own API is Cloudflare-blocked).
+
+  python3 build_pitcher_data.py            # refresh the last 3 seasons
+  python3 build_pitcher_data.py 2026       # refresh one season
+
+Merges into the existing files: seasons not being refreshed are kept as-is.
+Outputs: src/pitcher_savant_data.json, src/fg_pitcher_data.json (seasons missing only)
 """
 
 import csv
@@ -13,7 +19,9 @@ import sys
 import time
 import urllib.request
 
-YEARS = [2023, 2024, 2025]
+import datetime
+_cur = datetime.date.today().year if datetime.date.today().month >= 3 else datetime.date.today().year - 1
+YEARS = [int(a) for a in sys.argv[1:]] or [_cur - 2, _cur - 1, _cur]
 
 try:
     _create_unverified_https_context = ssl._create_unverified_context
@@ -186,41 +194,37 @@ print("STEP 5: FanGraphs Pitcher Discipline (3 years)")
 print("=" * 60)
 
 fg_by_year = {}
-for year in YEARS:
-    # FG pitching leaders with discipline stats
-    url = ("https://www.fangraphs.com/api/leaders?"
-           "pos=all&stats=pit&lg=all&qual=1&type=c,"
-           "6,42,43,44,45,46,47,48,36,37,38,39,40,41"
-           "&season=%d&month=0&season1=%d&ind=0"
-           "&team=0&rost=0&age=0&filter=&players=0"
-           "&startdate=&enddate=&page=1_5000" % (year, year))
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
+mlb_sab = {}
+def _ip(v):
     try:
-        raw = urllib.request.urlopen(req, timeout=30).read()
-        data = json.loads(raw)
-        rows = data.get("data", []) if isinstance(data, dict) else data
-        print("  %d FG pitching: %d rows" % (year, len(rows)))
-        fg_by_year[year] = {}
-        for r in rows:
-            pid = str(r.get("xMLBAMID", r.get("playerid", "")))
-            if not pid or pid == "0":
+        x = float(v); w = int(x); return w + round((x - w) * 10) / 3
+    except Exception:
+        return None
+for year in YEARS:
+    # MLB Stats API: season totals + FanGraphs-sourced sabermetrics (FIP, xFIP, WAR)
+    base = "https://statsapi.mlb.com/api/v1/stats?group=pitching&season=%d&sportId=1&gameType=R&playerPool=ALL&limit=5000&stats=" % year
+    fg_by_year[year] = {}
+    mlb_sab[year] = {}
+    try:
+        season = json.loads(urllib.request.urlopen(urllib.request.Request(base + "season", headers={"User-Agent": UA}), timeout=60).read())
+        saber = json.loads(urllib.request.urlopen(urllib.request.Request(base + "sabermetrics", headers={"User-Agent": UA}), timeout=60).read())
+        sab = {str(r["player"]["id"]): r["stat"] for r in saber["stats"][0]["splits"]}
+        for r in season["stats"][0]["splits"]:
+            pid = str(r["player"]["id"]); st = r["stat"]
+            bf = st.get("battersFaced") or 0
+            if not bf:
                 continue
-            fg_by_year[year][pid] = {
-                "k_pct": sf(r.get("K%", r.get("SO%"))),
-                "bb_pct": sf(r.get("BB%")),
-                "k_bb": sf(r.get("K-BB%")),
-                "o_swing": sf(r.get("O-Swing%")),
-                "z_swing": sf(r.get("Z-Swing%")),
-                "o_contact": sf(r.get("O-Contact%")),
-                "z_contact": sf(r.get("Z-Contact%")),
-                "swstr": sf(r.get("SwStr%")),
-                "csw": sf(r.get("CSW%")),
-                "ip": sf(r.get("IP")),
-            }
+            k = 100.0 * (st.get("strikeOuts") or 0) / bf
+            bb = 100.0 * (st.get("baseOnBalls") or 0) / bf
+            fg_by_year[year][pid] = {"k_pct": round(k, 1), "bb_pct": round(bb, 1), "k_bb": round(k - bb, 1), "ip": _ip(st.get("inningsPitched"))}
+            sb = sab.get(pid, {})
+            mlb_sab[year][pid] = {"name": r["player"]["fullName"], "xfip": sf(str(sb.get("xfip", ""))), "fip": sf(str(sb.get("fip", ""))),
+                                  "era": sf(st.get("era")), "k_pct": round(k, 1), "bb_pct": round(bb, 1), "kbb_pct": round(k - bb, 1),
+                                  "ip": _ip(st.get("inningsPitched")), "whip": sf(st.get("whip"))}
+        print("  %d MLB API pitching: %d pitchers" % (year, len(fg_by_year[year])))
     except Exception as e:
-        print("  %d FG pitching: SKIPPED (Cloudflare) - using Savant data only" % year)
-        fg_by_year[year] = {}
-    time.sleep(1.5)
+        print("  %d MLB API pitching: ERROR - %s" % (year, e))
+    time.sleep(1)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -304,8 +308,49 @@ print("  Full 3-year profiles: %d" % full_profiles)
 # STEP 7: Write output
 # ──────────────────────────────────────────────────────────────
 out_path = "src/pitcher_savant_data.json"
+# Merge: keep every season we did NOT refresh, replace the ones we did.
+try:
+    existing = json.load(open(out_path))
+except Exception:
+    existing = {}
+refreshed = {str(y) for y in YEARS}
+for pid, old in existing.items():
+    new = pitchers.get(pid)
+    if new is None:
+        old["seasons"] = {y: v for y, v in old.get("seasons", {}).items() if y not in refreshed}
+        if old["seasons"]:
+            pitchers[pid] = old
+        continue
+    keep = {y: v for y, v in old.get("seasons", {}).items() if y not in refreshed}
+    new["seasons"] = {**keep, **new["seasons"]}
+    for k, v in old.items():
+        if k not in new:
+            new[k] = v
 with open(out_path, "w") as f:
     json.dump(pitchers, f, separators=(",", ":"))
+
+# FanGraphs-style estimator table used for the engine's ERA anchor. Genuine
+# FanGraphs seasons (with SIERA) are never overwritten; missing seasons are
+# filled from the MLB API (FIP/xFIP, no SIERA). Keyed by player name.
+fg_path = "src/fg_pitcher_data.json"
+try:
+    fgd = json.load(open(fg_path))
+except Exception:
+    fgd = {}
+added = 0
+for year in YEARS:
+    for pid, row in mlb_sab.get(year, {}).items():
+        if not row.get("ip"):
+            continue
+        name = row.pop("name")
+        ent = fgd.setdefault(name, {"id": pid, "seasons": {}})
+        if str(year) in ent["seasons"] and ent["seasons"][str(year)].get("siera") is not None:
+            continue
+        ent["seasons"][str(year)] = {k: v for k, v in row.items() if v is not None}
+        added += 1
+with open(fg_path, "w") as f:
+    json.dump(fgd, f, separators=(",", ":"))
+print("fg_pitcher_data.json: %d pitcher-seasons filled from MLB API" % added)
 
 import os
 size_kb = os.path.getsize(out_path) / 1024
