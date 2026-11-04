@@ -32,15 +32,21 @@ export const TUNE = {
   paOffset: 125,           // flat PA lost to injury/platoon/demotion risk; backtests show a flat gap, not a %
   defMult: 1.0,            // scales OAA-based defensive runs
   bsrMult: 1.0,            // scales baserunning runs
+  hRegPA: 0,               // hitter sample-size regression: PA of league-average 'ballast'
   bbShrink: 0.7,           // BB% regressed toward 8.5% for OBP
+  fldKeep: 0.7,            // share of past fielding runs/600 PA carried forward
+  bsrKeep: 0.6,            // share of past baserunning runs/600 PA carried forward
   // Pitchers
   lgEra: 3.9,
   eraShrink: 0.8,          // ERA/FIP regressed toward lgEra
   fipShrink: 0.8,
   kShrink: 0.8,            // K% regressed toward 22.5%
   bfPerIp: 4.1,            // batters faced per inning (K/9, BB/9 conversion)
-  spIpMult: 0.75,
-  spIpMin: 140,
+  pRegBF: 100,             // pitcher sample-size regression: BF of league-average 'ballast'
+  whiffCoef: 0.04,         // ERA/FIP change per point of whiff% above league
+  lgWhiff: 25,             // league whiff% (batters-faced weighted)
+  spIpMult: 0.85,
+  spIpMin: 100,
   spIpMax: 210,
   spInjuryCap: 90,         // starters coming off a <80 IP season
   rpIpMult: 0.75,
@@ -1136,6 +1142,20 @@ export function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   const dPk=(posCode==="6"||posCode==="8")?26:(posCode==="4"||posCode==="5")?27:28;
   const dAg=Math.max(.3,1-Math.max(0,age-dPk)*.06);
   let dR=0; if(oaa!==null)dR=Math.max(-10, Math.min(10, oaa*0.70*dAg)) * TUNE.defMult;
+  // Preferred: FanGraphs fielding + baserunning runs by season (fWAR's own
+  // components, via the MLB Stats API). Weighted by recency x PA, scaled to
+  // per-600 PA, regressed toward zero. Uses only seasons the engine can see,
+  // unlike the single latest-season OAA / BsR values above.
+  {
+    let wf=0, wb=0, tw=0;
+    yrs.forEach((yr,i)=>{const s=S[yr]; if(s.fld_runs==null||!s.pa) return;
+      const w=(W[i]||.05)*Math.min(1,s.pa/300); wf+=s.fld_runs/s.pa*600*w; wb+=(s.bsr_runs||0)/s.pa*600*w; tw+=w;});
+    if (tw>0) {
+      dR = Math.max(-15, Math.min(15, (wf/tw) * TUNE.fldKeep * dAg));
+      const spdAge = age > 28 ? Math.max(0.5, 1 - (age-28)*0.06) : 1;
+      bsr = Math.max(-6, Math.min(6, (wb/tw) * TUNE.bsrKeep * spdAge));
+    }
+  }
   const ap=getAP(posCode), pk=ap.peak;
   // Trend detection (before aging)
   let tb=0;
@@ -1174,7 +1194,9 @@ export function projectFromStatcast(sP, age, posCode, playerName, playerId) {
   let wrc = Math.round(wRCPlusFromWOBA(regXwOBA) + db);
   if (yrsToPeak > 0) wrc = Math.round(wrc * (1 + Math.min(yrsToPeak * TUNE.agePrePerYr, TUNE.agePreCap)));
   else if (age > TUNE.ageDeclineStart) wrc = Math.round(wrc * Math.max(TUNE.ageDeclineFloor, 1 - (age - TUNE.ageDeclineStart) * TUNE.ageDeclinePerYr));
-  wrc = Math.round(100 + (wrc - 100) * TUNE.wrcShrink);
+  const pa3 = yrs.slice(0, 3).reduce((t, yr) => t + (S[yr]?.pa || 0), 0);
+  const relH = TUNE.hRegPA > 0 ? pa3 / (pa3 + TUNE.hRegPA) : 1;
+  wrc = Math.round(100 + (wrc - 100) * TUNE.wrcShrink * relH);
   wrc = Math.max(60, Math.min(200, wrc));
 
   // Step 3: AVG from xBA with PA regression
@@ -1616,6 +1638,10 @@ export function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   if (!yrs.length) return null;
   const W = [0.55, 0.30, 0.15], lat = S[yrs[0]] || {};
   const bfp0 = lat.bfp || 0;
+  // Sample-size reliability: thin MLB track records get pulled toward league
+  // average (rel = BF / (BF + pRegBF) over the last 3 seasons).
+  const bf3 = yrs.slice(0, 3).reduce((t, yr) => t + (S[yr]?.bfp || 0), 0);
+  const relP = TUNE.pRegBF > 0 ? bf3 / (bf3 + TUNE.pRegBF) : 1;
   if (bfp0 < 30) return null;
 
   // L1: Stuff Quality (xwOBA against, xERA)
@@ -1648,7 +1674,7 @@ export function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
     else if (s.whiff_pct != null) wsw += s.whiff_pct * pw;
   });
   // Default K%=20 (league avg), BB%=8.5 (slightly above avg = conservative)
-  const pK = tw2 > 0 ? 22.5 + (wk / tw2 - 22.5) * TUNE.kShrink : 20;
+  const pK = tw2 > 0 ? 22.5 + (wk / tw2 - 22.5) * TUNE.kShrink * relP : 20;
   const pBB = tw2 > 0 ? wbb / tw2 : 8.5;
   const pSw = tw2 > 0 ? wsw / tw2 : 10;
 
@@ -1715,7 +1741,11 @@ export function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
     if (fgtw > 0) eraAnchor = wAnchor / fgtw;
   }
   let projERA = Math.max(1.50, Math.min(6.50, (eraAnchor + tb) * af));
-  projERA = TUNE.lgEra + (projERA - TUNE.lgEra) * TUNE.eraShrink;
+  projERA = TUNE.lgEra + (projERA - TUNE.lgEra) * TUNE.eraShrink * relP;
+  // Stuff adjustment: swing-and-miss (usage-weighted whiff%) predicts run
+  // prevention beyond what K% and the ERA estimators capture (backtests 2025-26).
+  const stuffAdj = tw2 > 0 && pSw ? -TUNE.whiffCoef * (pSw - TUNE.lgWhiff) * relP : 0;
+  projERA = Math.max(1.50, Math.min(6.50, projERA + stuffAdj));
 
   const projK9 = Math.max(4, Math.min(13.5, pK / 100 * 9 * TUNE.bfPerIp));
   const projBB9 = Math.max(1.5, Math.min(5.5, pBB / 100 * 9 * TUNE.bfPerIp));
@@ -1774,7 +1804,7 @@ export function projectPitcherFromStatcast(pSav, age, playerName, playerId) {
   const hrRate = 1.2 * (0.5 + pBrl / 10);
   const estHR = Math.max(3, Math.round(estIP / 9 * hrRate));
   const fipRaw = ((13 * estHR) + (3 * estBB) - (2 * estK)) / estIP + 3.10;
-  const fip = Math.max(1.80, Math.min(6.50, TUNE.lgEra + (fipRaw - TUNE.lgEra) * TUNE.fipShrink));
+  const fip = Math.max(1.80, Math.min(6.50, TUNE.lgEra + (fipRaw - TUNE.lgEra) * TUNE.fipShrink * relP + stuffAdj));
   const fipBasedWAR = ((useRepl - fip) / rpw) * (estIP / 9);
 
   // Blended fWAR: 30% xERA-based + 70% FIP-based (FanGraphs fWAR is FIP-only;

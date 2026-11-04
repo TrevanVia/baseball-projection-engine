@@ -2420,13 +2420,21 @@ function TickerBar() {
     return (
       <div style={{overflow:"hidden",borderRadius:10,background:"#1e3a5f",padding:"10px 0",border:`1px solid #2d5a8a`}}>
         <div className="via-ticker" style={{display:"flex",gap:40,whiteSpace:"nowrap",animation:"ticker 25s linear infinite"}}>
-          {[...Array(3)].flatMap((_,dup) => [
-            {t:"Bobby Witt Jr.",s:"8.5 fWAR",c:"#4ade80",d:"#1 projected hitter"},
-            {t:"Konnor Griffin",s:"70 FV",c:"#fbbf24",d:"#1 prospect in baseball"},
-            {t:"Skenes changeup",s:"A+ grade",c:"#4ade80",d:"43.9% whiff rate"},
-            {t:"Aaron Judge",s:".460 xwOBA",c:"#4ade80",d:"24.7% barrel rate"},
-            {t:"Mason Miller",s:"54.6% whiff",c:"#c084fc",d:"Best slider in baseball"},
-          ].map((item,i) => (
+          {[...Array(3)].flatMap((_,dup) => (() => {
+            // Offseason fallback, built from current data so it never goes stale.
+            const H = PRECOMPUTED.hitters || [], P = PRECOMPUTED.pitchers || [];
+            const topHR = [...H].sort((a,b)=>(b.projHR||0)-(a.projHR||0))[0];
+            const topPros = (prospectsData.players||[]).find(p=>!p.graduated);
+            const lastH = LIVE_LB?.hitters?.[0], lastP = LIVE_LB?.pitchers?.[0];
+            return [
+              H[0] && {t:H[0].name,s:`${H[0].projWAR} fWAR`,c:"#4ade80",d:`#1 projected hitter for ${PROJ_SEASON}`},
+              P[0] && {t:P[0].name,s:`${P[0].projWAR} fWAR`,c:"#4ade80",d:`#1 projected pitcher for ${PROJ_SEASON}`},
+              topPros && {t:topPros.name,s:`${topPros.fv} FV`,c:"#fbbf24",d:"top-ranked prospect"},
+              topHR && {t:topHR.name,s:`${topHR.projHR} HR`,c:"#c084fc",d:`projected ${PROJ_SEASON} home run leader`},
+              lastH && {t:lastH.name,s:`${lastH.war} fWAR`,c:"#60a5fa",d:`led all hitters in ${LIVE_LB.season}`},
+              lastP && {t:lastP.name,s:`${lastP.war} fWAR`,c:"#60a5fa",d:`led all pitchers in ${LIVE_LB.season}`},
+            ].filter(Boolean);
+          })().map((item,i) => (
             <span key={dup+"_"+i} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontFamily:F}}>
               <span style={{color:"#fff",fontWeight:700}}>{item.t}</span>
               <span style={{color:item.c,fontWeight:800,fontSize:12}}>{item.s}</span>

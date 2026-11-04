@@ -529,51 +529,51 @@
   "nP": 571,
   "rows": [
    {
-    "metric": "Hitter WAR — avg miss",
+    "metric": "Hitter WAR: avg miss",
     "old": 1.21,
-    "new": 1.11,
+    "new": 1.1,
     "better": "lower"
    },
    {
-    "metric": "Hitter WAR — correlation",
+    "metric": "Hitter WAR: correlation",
     "old": 0.5,
     "new": 0.57,
     "better": "higher"
    },
    {
-    "metric": "OPS — avg miss (400+ PA)",
+    "metric": "OPS: avg miss (400+ PA)",
     "old": 0.071,
     "new": 0.059,
     "better": "lower"
    },
    {
-    "metric": "Home runs — bias (400+ PA)",
+    "metric": "Home runs: bias (400+ PA)",
     "old": 10.6,
     "new": 0.6,
     "better": "zero"
    },
    {
-    "metric": "Pitcher WAR — avg miss",
+    "metric": "Pitcher WAR: avg miss",
     "old": 0.8,
-    "new": 0.77,
+    "new": 0.74,
     "better": "lower"
    },
    {
-    "metric": "Pitcher WAR — correlation",
+    "metric": "Pitcher WAR: correlation",
     "old": 0.5,
-    "new": 0.49,
+    "new": 0.53,
     "better": "higher"
    },
    {
-    "metric": "FIP — avg miss (100+ IP)",
+    "metric": "FIP: avg miss (100+ IP)",
     "old": 0.61,
-    "new": 0.57,
+    "new": 0.55,
     "better": "lower"
    },
    {
-    "metric": "Starter innings — bias",
+    "metric": "Starter innings: bias",
     "old": -22,
-    "new": -2,
+    "new": 4,
     "better": "zero"
    }
   ]

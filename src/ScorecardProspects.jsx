@@ -83,7 +83,7 @@ export function ScorecardPanel({ Panel, C, F, onPickName }) {
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".15em", color: C.accent, fontFamily: F, textTransform: "uppercase", marginBottom: 6 }}>{SC.season} Scorecard</div>
         <h2 style={{ margin: 0, fontSize: 22, color: C.navy, fontFamily: F, lineHeight: 1.3, letterSpacing: "-0.02em" }}>How our {SC.season} projections held up</h2>
         <p style={{ margin: "8px 0 0", fontSize: 11, color: C.dim, fontFamily: F, maxWidth: 640, lineHeight: 1.6 }}>
-          Every projection we published on {date} — {h.n} hitters and {p.n} pitchers — graded against final {SC.season} results.
+          Every projection we published on {date} ({h.n} hitters and {p.n} pitchers), graded against final {SC.season} results.
           The good calls, the bad misses, and what we changed because of them. WAR is FanGraphs fWAR; anyone who didn't play counts as 0.
         </p>
       </Panel>
@@ -119,12 +119,12 @@ export function ScorecardPanel({ Panel, C, F, onPickName }) {
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
-        <Panel title="Biggest misses — too low" sub="Players who blew past us. Mostly young players: our aging curve was too pessimistic on them." style={{ flex: "1 1 320px", borderTop: `3px solid ${C.accent}` }}>
+        <Panel title="Biggest misses: too low" sub="Players who blew past us. Mostly young players: our aging curve was too pessimistic on them." style={{ flex: "1 1 320px", borderTop: `3px solid ${C.accent}` }}>
           {sideTabs}
           <PlayerRows C={C} F={F} onPick={onPickName} rows={SC.misses.under[side]}
             right={r => <ProjVsActual C={C} F={F} proj={r.proj} act={r.act} extra={<Tag C={C} F={F} color={C.accent}>{sign(r.err)}</Tag>} />} />
         </Panel>
-        <Panel title="Biggest misses — too high" sub="Players who fell short. Injuries and lost playing time explain a lot of these." style={{ flex: "1 1 320px", borderTop: `3px solid ${C.accent}` }}>
+        <Panel title="Biggest misses: too high" sub="Players who fell short. Injuries and lost playing time explain a lot of these." style={{ flex: "1 1 320px", borderTop: `3px solid ${C.accent}` }}>
           {sideTabs}
           <PlayerRows C={C} F={F} onPick={onPickName} rows={SC.misses.over[side]}
             right={r => <ProjVsActual C={C} F={F} proj={r.proj} act={r.act}
@@ -206,13 +206,14 @@ export function ScorecardPanel({ Panel, C, F, onPickName }) {
           </table>
         </div>
         <ul style={{ margin: "14px 0 0", paddingLeft: 18, fontSize: 11, color: C.dim, fontFamily: F, lineHeight: 1.7 }}>
+          <li><b style={{ color: C.text }}>Defense and baserunning</b> now use several seasons of fielding and baserunning runs instead of one season's numbers.</li>
           <li><b style={{ color: C.text }}>One engine.</b> The leaderboard used a stripped-down copy of the model. Now the leaderboard, player pages and home page all run the same engine.</li>
           <li><b style={{ color: C.text }}>Home runs</b> now come from barrel rate and contact rate, and slugging is fit to real hitters, so power bats aren't shortchanged.</li>
           <li><b style={{ color: C.text }}>K/9</b> unit bug fixed; strikeout rates now track reality.</li>
           <li><b style={{ color: C.text }}>Aging:</b> more credit for growth before the peak, decline starting at 31 instead of 32 and falling faster.</li>
-          <li><b style={{ color: C.text }}>Regression:</b> extreme projections are pulled toward average more — one great season isn't treated as the new normal.</li>
+          <li><b style={{ color: C.text }}>Regression:</b> extreme projections get pulled toward average harder, so one great season isn't treated as the new normal.</li>
           <li><b style={{ color: C.text }}>Playing time:</b> projections now expect the ~125 PA a typical player loses to injuries, platoons and slumps, and starters' innings are realistic.</li>
-          <li><b style={{ color: C.text }}>Honest gap:</b> pitcher <i>ranking</i> didn't improve. Getting the order of pitchers right is the main target for next year.</li>
+          <li><b style={{ color: C.text }}>Pitchers:</b> swing-and-miss stuff (whiff rate) now counts, thin track records get pulled toward average, and innings follow each starter's real workload. Pitcher ranking improved, but only modestly. It's still the main target.</li>
         </ul>
       </Panel>
     </div>

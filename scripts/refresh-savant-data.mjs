@@ -279,7 +279,7 @@ async function main() {
       });
     }
 
-    // 7. Walk / strikeout rates for every hitter (MLB Stats API — Savant's
+    // 7. Walk / strikeout rates, fielding and baserunning runs for every hitter (MLB Stats API — Savant's
     //    custom leaderboard only covers qualified hitters). Fractions of PA.
     try {
       const res = await fetch(`https://statsapi.mlb.com/api/v1/stats?stats=season&group=hitting&season=${year}&sportId=1&gameType=R&playerPool=ALL&limit=5000`);
@@ -295,6 +295,17 @@ async function main() {
         n++;
       }
       console.log(`   ✅ BB%/K% (MLB API) ${year}: ${n} hitters`);
+      // FanGraphs fielding + baserunning runs by season (fWAR components).
+      const sab = await fetch(`https://statsapi.mlb.com/api/v1/stats?stats=sabermetrics&group=hitting&season=${year}&sportId=1&gameType=R&playerPool=ALL&limit=5000`).then(r => r.json());
+      let m = 0;
+      for (const sp of sab.stats?.[0]?.splits || []) {
+        const s = hitters[String(sp.player?.id)]?.seasons?.[year];
+        if (!s) continue;
+        s.fld_runs = Math.round((sp.stat?.fielding || 0) * 100) / 100;
+        s.bsr_runs = Math.round((sp.stat?.baseRunning || 0) * 100) / 100;
+        m++;
+      }
+      console.log(`   ✅ Fielding/BsR runs (MLB API) ${year}: ${m} hitters`);
     } catch (err) {
       console.log(`   ❌ BB%/K% (MLB API) ${year}: ${err.message?.substring(0, 80)}`);
     }

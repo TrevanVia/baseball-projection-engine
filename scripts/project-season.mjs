@@ -107,6 +107,23 @@ async function main() {
   }
   const isActive = (id) => pool ? pool.has(String(id)) : (people[id]?.active !== false || playedLast.has(String(id)));
 
+  // Live mode: team = current 40-man roster; free agents (MLB's free-agent list)
+  // show as "FA" until they sign, then their new team. Backtests keep currentTeam.
+  const rosterTeam = {};
+  if (!backtest) {
+    for (const tid of Object.keys(TEAM_ABBR)) {
+      const r = await getJSON(`${API}/teams/${tid}/roster?rosterType=40Man`);
+      for (const x of r.roster || []) rosterTeam[x.person.id] = TEAM_ABBR[tid];
+    }
+    const fa = await getJSON(`${API}/people/freeAgents?season=${season - 1}`);
+    for (const f of fa.freeAgents || []) {
+      const id = f.player.id;
+      if (rosterTeam[id]) continue;
+      rosterTeam[id] = f.newTeam?.id ? (TEAM_ABBR[f.newTeam.id] || "FA") : "FA";
+    }
+  }
+  const teamOf = (id, p) => rosterTeam[id] || TEAM_ABBR[p.currentTeam?.id] || TEAM_ABBR[p.currentTeam?.parentOrgId] || "FA";
+
   const hitters = [], pitchers = [];
   for (const id of hitIds) {
     const p = people[id]; if (!p || !isActive(id)) continue;
@@ -116,7 +133,7 @@ async function main() {
     if (!proj || proj.highestLevel !== "MLB") continue;
     const fwd = E.projectForward(proj, age, pos, 10);
     hitters.push({
-      id: Number(id), name: p.fullName, team: TEAM_ABBR[p.currentTeam?.id] || p.currentTeam?.abbreviation || "FA",
+      id: Number(id), name: p.fullName, team: teamOf(Number(id), p), on40: !!rosterTeam[Number(id)] && rosterTeam[Number(id)] !== "FA",
       pos: E.posLabel(pos), age,
       projWAR: proj.baseWAR, cumWAR: Math.round(fwd.reduce((s, r) => s + Math.max(0, r.war), 0) * 10) / 10,
       projWRC: proj.wRCPlus, projOPS: proj.ops, projAVG: proj.avg, projOBP: proj.obp, projSLG: proj.slg,
@@ -131,7 +148,7 @@ async function main() {
     if (!proj) continue;
     const fwd = E.projectPitcherForward(proj, age, 10);
     pitchers.push({
-      id: Number(id), name: p.fullName, team: TEAM_ABBR[p.currentTeam?.id] || p.currentTeam?.abbreviation || "FA",
+      id: Number(id), name: p.fullName, team: teamOf(Number(id), p), on40: !!rosterTeam[Number(id)] && rosterTeam[Number(id)] !== "FA",
       pos: proj.isReliever ? "RP" : "SP", age,
       projWAR: proj.baseWAR, cumWAR: Math.round(fwd.reduce((s, r) => s + Math.max(0, r.war), 0) * 10) / 10,
       projERA: proj.era, projFIP: proj.fip, projWHIP: proj.whip, projK9: proj.k9, projBB9: proj.bb9,
